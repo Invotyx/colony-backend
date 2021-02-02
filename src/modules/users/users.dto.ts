@@ -99,6 +99,10 @@ export class UpdateProfileDto {
   @Length(8, 20)
   @IsOptional()
   password: string;
+
+  
+  @Length(8, 20)
+  @IsOptional()
   oldPassword: string;
 
   @IsIn(['male', 'female'])
@@ -119,7 +123,7 @@ export class UpdateProfileDto {
   @IsOptional()
   age: number;
   
-  @IsNotEmpty()
+  @IsOptional()
   profileImage: string;
 
   @IsOptional()

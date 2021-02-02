@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { oneLine } from 'common-tags';
 import { TABLES } from '../../consts/tables.const';
-import { FileEntity } from '../../entities/file.entity';
 import { UserToRoleEntity } from '../../entities/user-to-role.entity';
 import { UserHasPermissionEntity } from '../../entities/users-has-permissions.entity';
 import { PermissionsService } from '../../modules/users/services/permissions.service';
@@ -21,13 +20,6 @@ export class AccessControlService {
   public async getUser(userId) {
     const query = await this.usersService.repository
       .createQueryBuilder(TABLES.USERS.name)
-      .leftJoinAndSelect(
-        FileEntity,
-        TABLES.FILE.name,
-        oneLine`(${TABLES.FILE.name}.tableId = :tableId AND
-          ${TABLES.FILE.name}.itemId = ${TABLES.USERS.name}.id)`,
-        { tableId: TABLES.USERS.id }
-      )
       .where('users.id = :userId', { userId })
       .getOne();
     return query;

@@ -53,6 +53,17 @@ export class UserEntity {
   public gender: gender;
 
   @Column({ nullable: true })
+  public age: number;
+
+  @Column({ nullable: true,length:20 })
+  public location: string;
+
+  @Column({ nullable: true,length:300 })
+  public statusMessage: string;
+
+  
+
+  @Column({ nullable: true })
   public image: string;
 
 
@@ -84,6 +95,7 @@ export class UserEntity {
 
   @Column({ type: 'json',nullable:true })
   public meta: string;
+
 
 
   toJSON() {

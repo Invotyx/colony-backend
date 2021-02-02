@@ -11,7 +11,6 @@ import { RoleRepository } from '../../../repos/roles.repo';
 import { UserRepository } from '../repos/user.repo';
 import { isExist } from '../../../shared/repo.fun';
 import { PasswordHashEngine } from '../../auth/hash.service';
-import { FileMgrService, IAppFile } from '../../../services/file-mgr/file-mgr.service';
 import {
   EmailAlreadyExistError,
   PhoneAlreadyExistError,
@@ -31,7 +30,6 @@ import { extname } from 'path';
 export class UsersService {
   constructor(
     public readonly repository: UserRepository,
-    private readonly fileMgrService: FileMgrService,
     private readonly roleRepository: RoleRepository,
     private readonly languageService: LanguageService,
     private readonly emailVerfications: EmailVerificationsRepository,
@@ -290,6 +288,15 @@ export class UsersService {
       if (user.language) {
         updateData.language = user.language;
       }
+      if (user.age) {
+        updateData.age = user.age;
+      }
+      if (user.statusMessage) {
+        updateData.statusMessage = user.statusMessage;
+      }
+      if (user.location) {
+        updateData.location = user.location;
+      }
       
       
       if (user.firstName) {
@@ -306,7 +313,6 @@ export class UsersService {
     }
   }
 
-  async getRoles(id: string) {}
   async updateRoles(id: string | number, user: UpdateRole) {
     const RoleId = user.roleId;
     const users = await this.repository.findOne(id, {
@@ -323,25 +329,17 @@ export class UsersService {
     users.roles = allRoles;
     await this.repository.save(users);
   }
-  activateUser(isActive: boolean) {}
 
-  async userHasPic(user: UserEntity) {
-    return !!user.image;
-  }
 
   async deleteUserPic(user: UserEntity) {
-    const file = await this.fileMgrService.repository.findOne(user.image);
-    const res = await this.fileMgrService.deleteFiles([file]);
     const dbRes = await this.repository.update(user.id, { image: null });
-    console.log(dbRes);
-    return res;
+    return dbRes;
   }
 
-  async setPic(
+  async setProfileImage(
     user: UserEntity,
     file
   ) {
-    
       user.image = file.originalname;
       await this.repository.save(user);
       return true;

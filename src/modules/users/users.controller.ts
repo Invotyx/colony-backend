@@ -19,11 +19,8 @@ import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TABLES } from '../../consts/tables.const';
 import { Auth } from '../../decorators/auth.decorator';
-import { JSONQuery } from '../../decorators/common.decorator';
-import { FileEntity } from '../../entities/file.entity';
 import { PasswordHashEngine } from '../auth/hash.service';
 import { CompressJSON } from '../../services/common/compression/compression.interceptor';
-import { FileMgrService } from '../../services/file-mgr/file-mgr.service';
 import { RolesService } from './services/roles.service';
 import {
   InValidDataError,
@@ -61,7 +58,6 @@ import { editFileName, imageFileFilter } from './imageupload.service';
 export class UsersController {
   constructor(
     private readonly userService: UsersService,
-    private readonly fileMgrService: FileMgrService,
     private readonly emailTokenSend: EmailTokenSender,
     private readonly rolesService: RolesService
   ) {}
@@ -81,17 +77,7 @@ export class UsersController {
         gender: { table: userTable, column: 'gender' },
         mobile: { table: userTable, column: 'mobile' },
         //password: { table: userTable, column: 'password' },
-        image: {
-          table: TABLES.FILE.name,
-          column: 'path',
-          valueMapper: (path, user: any) =>
-            path &&
-            this.fileMgrService.genFileUrl({
-              moduleId: TABLES.USERS.id,
-              itemId: user.id,
-              path,
-            }),
-        },
+        image: { table: userTable, column: 'image' },
         isActive: {
           table: userTable,
           column: 'isActive',
@@ -117,12 +103,6 @@ export class UsersController {
       });
       const query = await this.userService.repository
         .createQueryBuilder(TABLES.USERS.name)
-        .leftJoinAndSelect(
-          FileEntity,
-          TABLES.FILE.name,
-          `(${TABLES.FILE.name}.tableId = :tableId AND ${TABLES.FILE.name}.itemId = ${userTable}.id)`,
-          { tableId: TABLES.USERS.id }
-        )
         .select(columnListToSelect(columnList))
         .where(filters.sql);
 
@@ -260,6 +240,7 @@ export class UsersController {
   @UsePipes(ValidationPipe)
   async updateUser(@Body() user: UpdateProfileDto, @Param('id') id: string,@Res() res:Response) {
     try {
+      
       const updateUser = await this.userService.updateUser(id, user);
       
       res.status(HttpStatus.CREATED).send({ data: updateUser });
@@ -327,37 +308,12 @@ export class UsersController {
     const user = await this.userService.findOne(id);
 
     //upload pic 
-    return this.userService.setPic(user, image);
+    return this.userService.setProfileImage(user, image);
   }
 
   @Get(':id')
   async getSingleUser(@Param('id') id: number) {
-    let imageUrl;
-    const thumb = await this.fileMgrService.findUser(id);
-    if (thumb) {
-      const path = thumb.path;
-      imageUrl =
-        // thumb: {
-        //   table: TABLES.FILE.name,
-        //   column: 'path',
-        //   valueMapper: (path) =>
-        //     path &&
-        this.fileMgrService.genFileUrl({
-          moduleId: TABLES.USERS.id,
-          itemId: id,
-          path,
-        });
-    }
-
-    console.log(imageUrl);
-    // console.log(id);
-    // const image = this.fileMgrService.genFileUrl({
-    //   moduleId: TABLES.MESSENGER.id,
-    //   itemId: id,
-    //   orgId: 1,
-    // });
     const allData = await this.userService.findOne(id);
-    allData.image = imageUrl as any;
-    return allData;
+    return { user:allData };
   }
 }

@@ -1,13 +1,11 @@
 import { HttpModule, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TokenModule } from './modules/token/token.module';
 import { SeederController } from './seeder/seeder.controller';
 import { SeederProviders } from './seeder/seeder.module';
 import { AccessControlService } from './services/access-control/access-control.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { CompressionInterceptor } from './services/common/compression/compression.interceptor';
-import { FileMgrModule } from './services/file-mgr/file-mgr.module';
 import { AppLogger } from './services/logs/log.service';
 import { MailModule } from './services/mail/mail.module';
 import { PermissionsService } from './modules/users/services/permissions.service';
@@ -31,9 +29,7 @@ import { join } from 'path';
       rootPath: join(__dirname, '..', 'uploads'),
       exclude: ['/api*'],
     }),
-    TokenModule,
     AuthModule,
-    FileMgrModule,
     MailModule,
     MainMysqlModule,
     LanguageModule,

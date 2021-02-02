@@ -42,15 +42,28 @@ export class CreateUserDto {
   @IsNotEmpty()
   password: string;
 
+  
+  @Length(5, 30)
+  @IsOptional()
+  location: string;
+  
+  @Length(0, 300)
+  @IsOptional()
+  statusMessage: string;
+
+
   @IsOptional()
   gender: gender;
 
-  @IsOptional()
-  meta: any;
-
   
   @IsOptional()
-  profileImage: string;
+  age: number;
+
+  @IsOptional()
+  meta: any;
+  
+  @IsOptional()
+  image: any;
 
   @IsOptional()
   isActive: boolean;
@@ -90,12 +103,21 @@ export class UpdateProfileDto {
 
   @IsIn(['male', 'female'])
   @IsOptional()
-  gender: string;
+  gender: gender;
 
   @IsOptional()
-  meta: any;
-
+  meta: any;  
   
+  @Length(5, 30)
+  @IsOptional()
+  location: string;
+  
+  @Length(0, 300)
+  @IsOptional()
+  statusMessage: string;
+  
+  @IsOptional()
+  age: number;
   
   @IsNotEmpty()
   profileImage: string;

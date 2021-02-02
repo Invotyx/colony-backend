@@ -4,14 +4,12 @@ import { isExist } from '../../../shared/repo.fun';
 import { PermissionRepository } from '../../../repos/permission.repo';
 import { RoleRepository } from '../../../repos/roles.repo';
 import { PermissionData } from '../../../services/access-control/consts/permission.const';
-import { FileMgrService } from '../../../services/file-mgr/file-mgr.service';
 import { PermissionAlreadyExistError } from '../errors/permissions.error';
 
 @Injectable()
 export class PermissionsService {
   constructor(
     public readonly repository: PermissionRepository,
-    private readonly fileMgrService: FileMgrService,
     private readonly roleRepository: RoleRepository
   ) {}
 

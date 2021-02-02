@@ -1,4 +1,4 @@
-FROM node:14-alpine As development
+FROM node:14 As development
 
 WORKDIR /usr/src/app
 
@@ -10,7 +10,7 @@ COPY . .
 
 RUN npm run build
 
-FROM node:14-alpine as production
+FROM node:14 as production
 
 LABEL org.opencontainers.image.source https://github.com/Invotyx/colony-backend
 

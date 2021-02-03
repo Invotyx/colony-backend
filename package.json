@@ -24,8 +24,7 @@
     "typeorm:migration:revert": "typeorm migration:revert",
     "typeorm:migration:create": "typeorm migration:create -n",
     "typeorm:migration:show": "typeorm migration:show",
-    "typeorm:cache:clear": "typeorm cache:clear",
-    "typeorm:model:generate": "typeorm-model-generator -h localhost -d te -u postgres -p 5432 -x dr903 -e postgres -o ./src/models -s public"
+    "typeorm:cache:clear": "typeorm cache:clear"
   },
   "dependencies": {
     "@casl/ability": "^4.1.6",
@@ -78,13 +77,11 @@
     "sift": "^13.5.0",
     "swagger-ui-express": "^4.1.6",
     "typeorm": "^0.2.25",
-    "typeorm-model-generator": "^0.4.3",
     "typeorm-polymorphic": "0.0.10",
     "util": "^0.12.3",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0",
-    "zone.js": "^0.10.3",
-    "sqlite3": "^5.0.0"
+    "zone.js": "^0.10.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.5.1",

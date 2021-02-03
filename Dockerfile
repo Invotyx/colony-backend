@@ -20,6 +20,7 @@ COPY package*.json ./
 
 RUN npm install
 
+COPY ormconfig.js ./
 COPY --from=development /usr/src/app/dist ./dist
 
 ARG NODE_ENV=production

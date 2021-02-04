@@ -1,18 +1,14 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class main1612438925184 implements MigrationInterface {
-    name = 'main1612438925184'
+export class MainMigration1612251182127 implements MigrationInterface {
+    name = 'MainMigration1612251182127'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "forgot_password" ("id" SERIAL NOT NULL, "newPasswordToken" character varying NOT NULL, "email" character varying NOT NULL, "timestamp" TIMESTAMP NOT NULL, CONSTRAINT "UQ_e193e226d1b1295f32ccec51147" UNIQUE ("email"), CONSTRAINT "PK_9b1bedb8b9dd6834196533ee41b" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "pages" ("id" SERIAL NOT NULL, "title" character varying(200) NOT NULL, "subTitle" character varying(200) NOT NULL, "slug" character varying(250) NOT NULL, CONSTRAINT "UQ_fe66ca6a86dc94233e5d7789535" UNIQUE ("slug"), CONSTRAINT "PK_8f21ed625aa34c8391d636b7d3b" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "sections" ("id" SERIAL NOT NULL, "title" character varying(200) NOT NULL, "subTitle" character varying(200), "primaryButton" character varying(250), "secondaryButton" character varying(250), "imagePosition" character varying(10), "content" text, "sortOrder" integer NOT NULL, "pagesId" integer NOT NULL, CONSTRAINT "PK_f9749dd3bffd880a497d007e450" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "images" ("id" SERIAL NOT NULL, "url" character varying(300) NOT NULL, "pagesId" integer, "sectionsId" integer, CONSTRAINT "UQ_a4d7e908a3574e21ca5f06d0aad" UNIQUE ("url"), CONSTRAINT "PK_1fe148074c6a1a91b63cb9ee3c9" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "language" ("id" SERIAL NOT NULL, "title" character varying(100) NOT NULL, "code" character varying(10) NOT NULL, CONSTRAINT "UQ_309191611bdb9820fea5bfa2acd" UNIQUE ("title"), CONSTRAINT "UQ_465b3173cdddf0ac2d3fe73a33c" UNIQUE ("code"), CONSTRAINT "PK_cc0a99e710eb3733f6fb42b1d4c" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "permissions" ("id" SERIAL NOT NULL, "action" character varying(60) NOT NULL, "subject" character varying(60) NOT NULL, "meta" json NOT NULL, CONSTRAINT "UQ_c9cd48649b85cbed355d3e113f7" UNIQUE ("action", "subject"), CONSTRAINT "PK_920331560282b8bd21bb02290df" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "posts" ("id" SERIAL NOT NULL, "title" character varying(200) NOT NULL, "subTitle" character varying(200), "slug" character varying(250) NOT NULL, "content" text, CONSTRAINT "UQ_54ddf9075260407dcfdd7248577" UNIQUE ("slug"), CONSTRAINT "PK_2829ac61eff60fcec60d7274b9e" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "users_gender_enum" AS ENUM('male', 'female')`);
-        await queryRunner.query(`CREATE TABLE "users" ("id" SERIAL NOT NULL, "firstName" character varying(60) NOT NULL, "lastName" character varying(60), "username" character varying(60) NOT NULL, "email" character varying(60) NOT NULL, "mobile" character varying(20), "password" character varying(100) NOT NULL, "gender" "users_gender_enum", "age" integer, "location" character varying(20), "statusMessage" character varying(300), "image" character varying, "isActive" boolean NOT NULL DEFAULT false, "isApproved" boolean NOT NULL DEFAULT false, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "meta" json, "languageId" integer, CONSTRAINT "UQ_fe0bb3f6520ee0469504521e710" UNIQUE ("username"), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "UQ_d376a9f93bba651f32a2c03a7d3" UNIQUE ("mobile"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "users" ("id" SERIAL NOT NULL, "firstName" character varying(60) NOT NULL, "lastName" character varying(60), "username" character varying(60) NOT NULL, "email" character varying(60) NOT NULL, "mobile" character varying(20), "password" character varying(100) NOT NULL, "gender" "users_gender_enum", "age" integer, "location" character varying(20), "statusMessage" character varying(300), "image" character varying, "isActive" boolean NOT NULL DEFAULT false, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "meta" json, "languageId" integer, CONSTRAINT "UQ_fe0bb3f6520ee0469504521e710" UNIQUE ("username"), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "UQ_d376a9f93bba651f32a2c03a7d3" UNIQUE ("mobile"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "user_role" ("userId" integer NOT NULL, "roleId" integer NOT NULL, "meta" json, CONSTRAINT "PK_7b4e17a669299579dfa55a3fc35" PRIMARY KEY ("userId", "roleId"))`);
         await queryRunner.query(`CREATE TABLE "roles" ("id" SERIAL NOT NULL, "role" character varying(60) NOT NULL, CONSTRAINT "PK_c1433d71a4838793a49dcad46ab" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "role_has_permission" ("roleId" integer NOT NULL, "permId" integer NOT NULL, CONSTRAINT "PK_c1f78d13c4cf1dcb076cb6ec5e7" PRIMARY KEY ("roleId", "permId"))`);
@@ -22,9 +18,6 @@ export class main1612438925184 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "user_role" ADD "meta" json`);
         await queryRunner.query(`CREATE INDEX "IDX_ab40a6f0cd7d3ebfcce082131f" ON "user_role" ("userId") `);
         await queryRunner.query(`CREATE INDEX "IDX_dba55ed826ef26b5b22bd39409" ON "user_role" ("roleId") `);
-        await queryRunner.query(`ALTER TABLE "sections" ADD CONSTRAINT "FK_67aad1a5683fb3e96f4d0fd778b" FOREIGN KEY ("pagesId") REFERENCES "pages"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "images" ADD CONSTRAINT "FK_afaf738b25024d85606d17b7480" FOREIGN KEY ("pagesId") REFERENCES "pages"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "images" ADD CONSTRAINT "FK_e2ed4cdfe61bc9b51291141831c" FOREIGN KEY ("sectionsId") REFERENCES "sections"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "users" ADD CONSTRAINT "FK_43e931f63c91f094d879aeeea29" FOREIGN KEY ("languageId") REFERENCES "language"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "user_role" ADD CONSTRAINT "FK_ab40a6f0cd7d3ebfcce082131fd" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "user_role" ADD CONSTRAINT "FK_dba55ed826ef26b5b22bd39409b" FOREIGN KEY ("roleId") REFERENCES "roles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
@@ -42,9 +35,6 @@ export class main1612438925184 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "user_role" DROP CONSTRAINT "FK_dba55ed826ef26b5b22bd39409b"`);
         await queryRunner.query(`ALTER TABLE "user_role" DROP CONSTRAINT "FK_ab40a6f0cd7d3ebfcce082131fd"`);
         await queryRunner.query(`ALTER TABLE "users" DROP CONSTRAINT "FK_43e931f63c91f094d879aeeea29"`);
-        await queryRunner.query(`ALTER TABLE "images" DROP CONSTRAINT "FK_e2ed4cdfe61bc9b51291141831c"`);
-        await queryRunner.query(`ALTER TABLE "images" DROP CONSTRAINT "FK_afaf738b25024d85606d17b7480"`);
-        await queryRunner.query(`ALTER TABLE "sections" DROP CONSTRAINT "FK_67aad1a5683fb3e96f4d0fd778b"`);
         await queryRunner.query(`DROP INDEX "IDX_dba55ed826ef26b5b22bd39409"`);
         await queryRunner.query(`DROP INDEX "IDX_ab40a6f0cd7d3ebfcce082131f"`);
         await queryRunner.query(`ALTER TABLE "user_role" DROP COLUMN "meta"`);
@@ -56,12 +46,8 @@ export class main1612438925184 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "user_role"`);
         await queryRunner.query(`DROP TABLE "users"`);
         await queryRunner.query(`DROP TYPE "users_gender_enum"`);
-        await queryRunner.query(`DROP TABLE "posts"`);
         await queryRunner.query(`DROP TABLE "permissions"`);
         await queryRunner.query(`DROP TABLE "language"`);
-        await queryRunner.query(`DROP TABLE "images"`);
-        await queryRunner.query(`DROP TABLE "sections"`);
-        await queryRunner.query(`DROP TABLE "pages"`);
         await queryRunner.query(`DROP TABLE "forgot_password"`);
     }
 

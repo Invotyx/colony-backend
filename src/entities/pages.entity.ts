@@ -25,6 +25,12 @@ export class PagesEntity {
   @Column({length:250,unique: true})
   public slug: string;
 
+  @Column({ length: 300, nullable: true })
+  public metaDescription: string;
+  
+  @Column({ length: 300, nullable: true })
+  public metaTags: string;
+
   @OneToMany(type => ImagesEntity, images => images.pages, { eager: false })
   public images: ImagesEntity[];
 }

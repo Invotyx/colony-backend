@@ -11,6 +11,14 @@ export class PagesDto {
   @IsOptional()
   @Length(3,200)
   public subTitle: string;
+  
+  @IsOptional()
+  @Length(3,300)
+  public metaTags: string;
+  
+  @IsOptional()
+  @Length(3,300)
+  public metaDescription: string;
 
   @IsOptional()
   @Length(3,300)

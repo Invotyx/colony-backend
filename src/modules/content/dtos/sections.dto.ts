@@ -1,5 +1,16 @@
 import { IsNotEmpty, IsOptional, Length } from "class-validator";
+import { ImagesEntity } from "src/entities/images.entity";
 import { PagesEntity } from "src/entities/pages.entity";
+
+
+enum sectionType{
+  regular = "regular",
+  faqs = "faqs",
+  packages = "packages",
+  featuredIn = "featuredIn",
+  clients = "clients"
+
+}
 
 export class SectionsDto {
   
@@ -35,5 +46,8 @@ export class SectionsDto {
 
   @IsOptional()
   public pages: PagesEntity;
+
+  @IsOptional()
+  public sectionType: sectionType;
   
 }

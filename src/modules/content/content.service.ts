@@ -36,12 +36,16 @@ export class ContentService {
 
   async getPage(slug: string) {
     const page = await this.pagesRepo.findOne({ where: { slug: slug } });
-    if (isEmpty(page.slug)) {
-      return "no records found";
-    } else {  
-      let sections: any;
-      sections = await this.sectionsRepo.find({ where: { pages: page.id } });
-      return ({ page, sections });
+    if (page) {
+      if (isEmpty(page.slug)) {
+        return "no records found";
+      } else {
+        let sections: any;
+        sections = await this.sectionsRepo.find({ where: { pages: page.id } });
+        return ({ page, sections });
+      }
+    } else {
+      throw "page not found";
     }
   }
 
@@ -60,8 +64,8 @@ export class ContentService {
   async updatePage(data: PagesDto, id: number) {
     const check = await this.pagesRepo.findOne(id);
     if (check) {
-        
-        let page: any;
+      try {
+        let page = await this.pagesRepo.findOne(id);
         if (data.title) {
           page.title = data.title;
         }
@@ -71,11 +75,20 @@ export class ContentService {
         if (data.subTitle) {
           page.subTitle = data.subTitle;
         }
-        return await this.pagesRepo.update(id,page); 
-      } else {
-        throw new HttpException("Page not found.", HttpStatus.NOT_FOUND);
-      } 
-         
+        if (data.metaTags) {
+          page.metaTags = data.metaTags;
+        }
+        if (data.metaDescription) {
+          page.metaDescription = data.metaDescription;
+        }
+        const res = await this.pagesRepo.update(id, page);
+        return res;
+      } catch (e) {
+        throw e;
+      }
+    } else {
+      throw new HttpException("Page not found.", HttpStatus.NOT_FOUND);
+    }   
   }
 
   async deletePage(id: number) {
@@ -87,9 +100,9 @@ export class ContentService {
         await this.deleteSection(id, section.id);
       });
     }
-    const images = await this.getPageImages(id);
+    const images = await this.imagesRepo.find({ where: { pages:id,sections:null } });
     images.forEach(async image => {
-      await this.deletePageImage(id, image.id);
+      await this.imagesRepo.delete(image.id);
     });
     return await this.pagesRepo.delete(id);      
   }
@@ -107,7 +120,7 @@ export class ContentService {
         if (sec) {
           throw new HttpException("section with same title already exists for this page.", HttpStatus.BAD_REQUEST);
         } else {
-          data.pages = id as any;
+          data.pages = page ;
           const create = await this.sectionsRepo.save(data);
           return create;
         }
@@ -122,30 +135,34 @@ export class ContentService {
       const page = await this.pagesRepo.findOne(pageId);
       if (page) {
         const section = await this.sectionsRepo.findOne({ where: { pages: page.id, id: secId } })
-        let sec: any;
+        console.log(section);
         if (section) {
           if (data.primaryButton) {
-            sec.primaryButton = data.primaryButton;
+            section.primaryButton = data.primaryButton;
           }
           if (data.content) {
-            sec.content = data.content;
+            section.content = data.content;
           }
           if (data.secondaryButton) {
-            sec.secondaryButton = data.secondaryButton;
+            section.secondaryButton = data.secondaryButton;
           }
           if (data.imagePosition) {
-            sec.imagePosition = data.imagePosition;
+            section.imagePosition = data.imagePosition;
           }
           if (data.sortOrder) {
-            sec.sortOrder = data.sortOrder;
+            section.sortOrder = data.sortOrder;
           }
           if (data.subTitle) {
-            sec.subTitle = data.subTitle;
+            section.subTitle = data.subTitle;
           }
           if (data.title) {
-            sec.title = data.title;
+            section.title = data.title;
           }
-          return await this.sectionsRepo.update(section.id, sec);
+          if (data.sectionType) {
+            section.sectionType = data.sectionType;
+          }
+          
+          return await this.sectionsRepo.save(section);
         } else {
           throw new HttpException("specified section not found for this page.", HttpStatus.BAD_REQUEST);
         }
@@ -164,13 +181,18 @@ export class ContentService {
       if (page) {
         const section = await this.sectionsRepo.findOne({ where: { pages: page.id, id: secId } })
         if (section) {
-          const secImages = await this.getSectionImages(pageId, secId);
-          if (secImages) {
-            secImages.forEach(async image => {
-              await this.deleteSectionImage(pageId, secId, image.id);
-            });
+          try {
+            const secImages = await this.imagesRepo.find({ where: { pages:pageId, sections:secId } });
+            if (secImages.length != 0) {
+              secImages.forEach(async image => {
+                await this.imagesRepo.delete(image.id);
+              });
+            }
+            return await this.sectionsRepo.delete(section.id);
+          } catch (e) {
+            console.info(e);
+            throw e;
           }
-          return await this.sectionsRepo.delete(section);
         } else {
           throw new HttpException("section not found for specified page.", HttpStatus.BAD_REQUEST);
         }
@@ -185,8 +207,12 @@ export class ContentService {
   async getSectionByPageId(pid: number) {
     try {
       const page = await this.pagesRepo.findOne({ where: { id: pid } });
-      const sections  = await this.sectionsRepo.find({where: { pages: pid } });
-      return { page, sections };
+      if (page) {
+        const sections = await this.sectionsRepo.find({ where: { pages: pid } });
+        return { page, sections };
+      } else {
+        throw "page not found";
+      }
     } catch (e) {
       throw e;
     }

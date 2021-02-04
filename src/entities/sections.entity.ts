@@ -12,6 +12,15 @@ import { TABLES } from '../consts/tables.const';
 import { ImagesEntity } from './images.entity';
 import { PagesEntity } from './pages.entity';
 
+enum sectionType{
+  regular = "regular",
+  faqs = "faqs",
+  packages = "packages",
+  featuredIn = "featuredIn",
+  clients = "clients"
+
+}
+
 @Entity({ name: TABLES.SECTIONS.name })
 export class SectionsEntity {
   [x: string]: any;
@@ -38,12 +47,15 @@ export class SectionsEntity {
 
   @Column({ type: "int",unsigned:true })
   public sortOrder: number;
+
+  @Column({ type: "enum", enum: sectionType, default: sectionType.regular })
+  public sectionType: sectionType;
   
-  @ManyToOne(type=>PagesEntity, pages=>pages.id,{eager:false,nullable:false})
+  @ManyToOne(type=>PagesEntity, pages=>pages.id,{nullable:false})
   @JoinColumn({name:'pagesId'})
   public pages: PagesEntity;
 
   @OneToMany(type => ImagesEntity, images => images.sections, { eager: true })
-  public images: ImagesEntity[];
+  public images!: ImagesEntity[];
 
 }

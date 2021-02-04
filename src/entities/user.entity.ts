@@ -70,6 +70,10 @@ export class UserEntity {
   @Column({ default: false })
   public isActive: boolean;
 
+  
+  @Column({ default: false })
+  public isApproved: boolean;
+
   @CreateDateColumn()
   public createdAt: Date;
 

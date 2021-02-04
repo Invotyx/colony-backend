@@ -7,6 +7,10 @@ import { UserHasPermissionEntity } from '../entities/users-has-permissions.entit
 import { LanguageEntity } from '../entities/language.entity';
 import { EmailVerifications } from '../entities/verifyemail.entity';
 import { ForgotPassword } from '../entities/forgottenpassword.entity';
+import { ImagesEntity } from '../entities/images.entity';
+import { PagesEntity } from '../entities/pages.entity';
+import { PostsEntity } from '../entities/posts.entity';
+import { SectionsEntity } from '../entities/sections.entity';
 import { JOIN_HELPER } from './join-helper.const';
 
 export const EntitiesRegister = {
@@ -18,8 +22,11 @@ export const EntitiesRegister = {
   UserToRoleEntity,
   LanguageEntity,
   EmailVerifications,
-  ForgotPassword
-  
+  ForgotPassword,
+  ImagesEntity,
+  PagesEntity,
+  PostsEntity,
+  SectionsEntity  
 };
 
 export const Entities = Object.values(EntitiesRegister);

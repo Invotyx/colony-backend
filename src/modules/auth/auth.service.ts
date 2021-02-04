@@ -16,7 +16,7 @@ export class AuthService {
       const user = await this.usersService.searchUserForAuth(
         credentials.username
       );
-      if(user && user.isActive){
+      if(user && user.isActive && user.isApproved){
         const isPwdMatch = await PasswordHashEngine.check(
           credentials.password,
           user.password

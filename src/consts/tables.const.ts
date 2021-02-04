@@ -15,7 +15,11 @@ const TablesList = {
   TOKEN: new TableData(),
   LANGUAGE: new TableData(),
   EMAIL_VERIFICATIONS: new TableData(),
-  FORGOT_PASSWORD : new TableData()
+  FORGOT_PASSWORD: new TableData(),
+  PAGES: new TableData(),
+  SECTIONS: new TableData(),
+  IMAGES: new TableData(),
+  POSTS: new TableData()
 
 };
 

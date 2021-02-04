@@ -18,6 +18,7 @@ import { PasswordHashModule } from './modules/password-hash/password-hash.module
 import { MulterModule } from '@nestjs/platform-express';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ContentModule } from './modules/content/content.module';
 
 
 @Module({
@@ -37,6 +38,7 @@ import { join } from 'path';
     FactoryModule,
     ApiCallingModule,
     PasswordHashModule,
+    ContentModule,
   ],
   controllers: [AppController, SeederController],
   providers: [

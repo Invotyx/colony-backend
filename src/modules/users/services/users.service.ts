@@ -121,6 +121,7 @@ export class UsersService {
       var userFromDb = await this.repository.findOne({ where: { email: emailVerif.email } });
       if (userFromDb) {
         userFromDb.isActive = true;
+        userFromDb.isApproved = true;
         var savedUser = await this.repository.update({ id: userFromDb.id as any }, userFromDb);
         await this.emailVerfications.remove(emailVerif);
         return !!savedUser;

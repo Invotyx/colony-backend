@@ -1,0 +1,176 @@
+import { Body, Controller, Delete, Get, HttpException, HttpService, HttpStatus, Injectable, Param, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { editFileName, imageFileFilter } from '../users/imageupload.service';
+import { ContentService } from './content.service';
+import { PagesDto } from './dtos/pages.dto';
+import { SectionsDto } from './dtos/sections.dto';
+
+@Injectable()
+@Controller('content')
+export class ContentController {
+  constructor(
+    private readonly contentService: ContentService
+  ) { }
+  
+  @Get('page')
+  async getPages() {
+    try {
+      const res = await this.contentService.getAllPages();
+      return res;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Get('page/:slug')
+  async getPage(@Param('slug') slug:string) {
+    try {
+      const res = await this.contentService.getPage(slug);
+      return res;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Post('page')
+  async createPage(@Body() data: PagesDto) {
+    try {
+      console.log(data);
+      const res = await this.contentService.createPage(data);
+      return res;
+    } catch (e) {
+      console.log(e)
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Put('page/:id')
+  async updatePage(@Body() data: PagesDto, @Param('id') id: number) {
+    try {
+      const res = await this.contentService.updatePage(data,id);
+      return res;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+  
+  @Delete('page/:id')
+  async deletePage(@Param('id') id: number) {
+    try {
+      const res = await this.contentService.deletePage(id);
+      return res;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+
+  
+  @Post('page/:id/section')
+  async createSection(@Body() data: SectionsDto,@Param('id') id:number) {
+    try {
+      const res = await this.contentService.createSection(id,data);
+      return res;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+  
+  @Put('page/:pid/section/:secId')
+  async updateSection(@Body() data: SectionsDto,@Param('pid') pid:number,@Param('secId') secId:number) {
+    try {
+      const res = await this.contentService.updateSection(pid,secId,data);
+      return res;
+    } catch (e) {
+      console.log(e);
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Delete('page/:pid/section/:secId')
+  async deleteSection(@Param('pid') pid:number,@Param('secId') secId:number) {
+    try {
+      const res = await this.contentService.deleteSection(pid,secId);
+      return res;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Get('page/:pid/section')
+  async getSectionsByPageId(@Param('pid') pid:number) {
+    try {
+      const res = await this.contentService.getSectionByPageId(pid);
+      return res;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  
+  @Get('page/:pid/section/:secId')
+  async getSection(@Param('pid') pid:number,@Param('secId') secId:number) {
+    try {
+      const res = await this.contentService.getSectionDetails(pid,secId);
+      return res;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  // @Auth({})
+  @Post('page/:id/set-image')
+  @UseInterceptors(FileInterceptor('image', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: editFileName,
+    }),
+    fileFilter: imageFileFilter,
+  }),)
+  async uploadPageImage(
+    @UploadedFile() image,
+    @Param('id') id: number /* ,@LoginUser() user: UserEntity */
+  ) {
+    const res = await this.contentService.addPageImage(id,image);
+    return res;
+  }
+
+  @Post('page/:id/section/:secId/set-image')
+  @UseInterceptors(FileInterceptor('image', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: editFileName,
+    }),
+    fileFilter: imageFileFilter,
+  }),)
+  async uploadSectionImage(
+    @UploadedFile() image,
+    @Param('id') id: number,
+    @Param('secId') secId: number, 
+  ) {
+    const res = await this.contentService.addSectionImage(id,secId,image);
+    return res;
+  }
+
+  @Get('page/:pid/section/:secId/get-images')
+  async getSectionImages(@Param('pid') pid: number,@Param('secId') secId: number,) {
+    try {
+      const sectionImages = await this.contentService.getSectionImages(pid,secId);
+      return sectionImages;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Get('page/:id/get-images')
+  async getPageImages(@Param('id') id: number) {
+    try {
+      const pageImages = await this.contentService.getPageImages(id);
+      return pageImages;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+}

@@ -250,6 +250,7 @@ export class UsersService {
   async updateUser(id: string | number|any, user: UpdateProfileDto) {
     const updateData: any = {};
     let isAlreadyExist: any;
+    
     try {
       if (user.email && this.isValidEmail(user.email)) {
         isAlreadyExist = await this.isEmailExists(user.email);

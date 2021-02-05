@@ -6,16 +6,16 @@ import { ROLES } from './consts/roles.const';
 export class ACLBuilder {
   static build(user: ActiveUser, orgId: number) {
     const ability = new AbilityBuilder();
-    if (user.hasRole(ROLES.MASTER)) {
+    if (user.hasRole(ROLES.ADMIN)) {
       ability.can(
-        PermissionsList.create$PostMessenger.action,
-        PermissionsList.create$PostMessenger.subject
+        PermissionsList.create$Users.action,
+        PermissionsList.create$Users.subject
       );
     } else {
         if (user.hasRoleWithCtx(ROLES.ADMIN,{})) //pass context
           ability.can(
-            PermissionsList.create$PostMessenger.action,
-            PermissionsList.create$PostMessenger.subject,
+            PermissionsList.create$Users.action,
+            PermissionsList.create$Users.subject,
             { orgId }
           );
       

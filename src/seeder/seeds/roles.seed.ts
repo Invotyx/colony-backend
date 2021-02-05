@@ -9,10 +9,13 @@ export class RolesSeed implements ISeed {
   async up() {
     
     const Roles = Object.values(ROLES);
-    const res = await Promise.all(
-      Roles.map((v) => this.rolesService.createRole(v))
-    );
-    return res;
+    Roles.forEach(async role => {
+      const r = await this.rolesService.repository.findOne({ where: { role: role } });
+      if (!r) {
+        await this.rolesService.createRole(role);
+      }
+    })
+    
   }
   async down() {}
 }

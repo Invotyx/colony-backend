@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, HttpException, HttpService, HttpStatus, Injectable, Param, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { Auth } from 'src/decorators/auth.decorator';
+import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { editFileName, imageFileFilter } from '../users/imageupload.service';
 import { ContentService } from './content.service';
 import { PagesDto } from './dtos/pages.dto';
@@ -13,6 +15,7 @@ export class ContentController {
     private readonly contentService: ContentService
   ) { }
   
+  @Auth({ roles: [ROLES.ADMIN] })
   @Get('page')
   async getPages() {
     try {
@@ -33,6 +36,7 @@ export class ContentController {
     }
   }
 
+  @Auth({ roles: [ROLES.ADMIN] })
   @Post('page')
   async createPage(@Body() data: PagesDto) {
     try {
@@ -45,6 +49,7 @@ export class ContentController {
     }
   }
 
+  @Auth({ roles: [ROLES.ADMIN] })
   @Put('page/:id')
   async updatePage(@Body() data: PagesDto, @Param('id') id: number) {
     try {
@@ -55,6 +60,7 @@ export class ContentController {
     }
   }
   
+  @Auth({ roles: [ROLES.ADMIN] })
   @Delete('page/:id')
   async deletePage(@Param('id') id: number) {
     try {
@@ -66,7 +72,7 @@ export class ContentController {
   }
 
 
-  
+  @Auth({ roles: [ROLES.ADMIN] })
   @Post('page/:id/section')
   async createSection(@Body() data: SectionsDto,@Param('id') id:number) {
     try {
@@ -76,7 +82,8 @@ export class ContentController {
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
     }
   }
-  
+
+  @Auth({ roles: [ROLES.ADMIN] })  
   @Put('page/:pid/section/:secId')
   async updateSection(@Body() data: SectionsDto,@Param('pid') pid:number,@Param('secId') secId:number) {
     try {
@@ -88,6 +95,7 @@ export class ContentController {
     }
   }
 
+  @Auth({ roles: [ROLES.ADMIN] })
   @Delete('page/:pid/section/:secId')
   async deleteSection(@Param('pid') pid:number,@Param('secId') secId:number) {
     try {
@@ -97,6 +105,7 @@ export class ContentController {
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
     }
   }
+
 
   @Get('page/:pid/section')
   async getSectionsByPageId(@Param('pid') pid:number) {
@@ -119,7 +128,7 @@ export class ContentController {
     }
   }
 
-  // @Auth({})
+  @Auth({ roles: [ROLES.ADMIN] })
   @Post('page/:id/set-image')
   @UseInterceptors(FileInterceptor('image', {
     storage: diskStorage({
@@ -136,6 +145,7 @@ export class ContentController {
     return res;
   }
 
+  @Auth({ roles: [ROLES.ADMIN] })
   @Post('page/:id/section/:secId/set-image')
   @UseInterceptors(FileInterceptor('image', {
     storage: diskStorage({

@@ -6,7 +6,7 @@ import { ISeed } from './seeds.interface';
 @Injectable()
 export class SeederService {
   constructor(private moduleRef: ModuleRef) {}
-  async sow({ klass, up }) {
+  public async sow({ klass, up }) {
     const seedService: ISeed = await this.moduleRef.resolve(SEEDS[klass]);
     if (up) {
       return await seedService.up();

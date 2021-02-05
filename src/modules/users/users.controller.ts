@@ -62,6 +62,7 @@ export class UsersController {
     private readonly rolesService: RolesService
   ) {}
 
+  @Auth({ roles: [ROLES.ADMIN] })
   @Get('')
   @CompressJSON()
   async getAllUsers(@Body('jData') data,@Res() res:Response) {
@@ -216,6 +217,7 @@ export class UsersController {
     return res;
   }
 
+  @Auth({ roles: [ROLES.ADMIN] })
   @Get(':id/roleId')
   getRolesId(@Param('id') id: string) {
     return this.userService.repository.findOne(id, { relations: ['roles'] });
@@ -227,6 +229,9 @@ export class UsersController {
   @UsePipes(ValidationPipe)
   async createUser(@Body() user: CreateUserDto,@Res() res:Response) {
     try {
+      if (user.username == "admin") {
+        res.status(HttpStatus.BAD_REQUEST).send({ message: "You cannot create user with username admin" });
+      } 
       const newUser = await this.userService.createUser(user);
       res.status(HttpStatus.CREATED).send({ data: newUser });
       
@@ -241,6 +246,9 @@ export class UsersController {
   async updateUser(@Body() user: UpdateProfileDto, @Param('id') id: string,@Res() res:Response) {
     try {
       
+      if (user.username == "admin") {
+        res.status(HttpStatus.BAD_REQUEST).send({ message: "You cannot change username to admin" });
+      } 
       const updateUser = await this.userService.updateUser(id, user);
       
       res.status(HttpStatus.CREATED).send({ data: updateUser });

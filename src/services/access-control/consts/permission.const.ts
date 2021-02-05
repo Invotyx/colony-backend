@@ -8,11 +8,7 @@ export class PermissionData {
 
 //add permissions here
 export const PermissionsList = {
-  create$PostMessenger: new PermissionData(),
-  read$PostMessenger: new PermissionData(),
-  update$PostMessenger: new PermissionData(),
-  delete$PostMessenger: new PermissionData(),
-  manage$PostMessenger: new PermissionData()
+  create$Users: new PermissionData(),
 };
 
 const permissionsMapper = (k, v) => {

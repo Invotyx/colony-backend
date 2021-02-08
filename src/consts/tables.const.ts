@@ -19,7 +19,10 @@ const TablesList = {
   PAGES: new TableData(),
   SECTIONS: new TableData(),
   IMAGES: new TableData(),
-  POSTS: new TableData()
+  POSTS: new TableData(),
+  FAQS: new TableData(),
+  BUTTONS: new TableData()
+  
 
 };
 

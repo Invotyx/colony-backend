@@ -9,27 +9,28 @@ import { SeederService } from './seeder/seeder.service';
 
 async function bootstrap() {
   NestFactory.createApplicationContext(SeederModule)
-  .then((appContext) => {
-    const seeder = appContext.get(SeederService);
-    seeder
-      .sow({ klass: "RolesSeed", up: true })
-      .then(() => {
-        console.log('Roles Seeding complete!');
-      })
-      .catch((error) => {
-        console.log('Roles Seeding failed!');
-        throw error;
-      });
-    seeder
-      .sow({klass:"CreateAdminSeed",up:true})
-      .then(() => {
-        console.log('user Seeding complete!');
-      })
-      .catch((error) => {
-        console.log('User Seeding failed!');
-        throw error;
-      })
-      .finally(() => appContext.close());
+    .then((appContext) => {
+      const seeder = appContext.get(SeederService);
+      seeder
+        .sow({ klass: "RolesSeed", up: true })
+        .then(() => {
+          console.log('Roles Seeding complete!');
+        })
+        .catch((error) => {
+          console.log('Roles Seeding failed!');
+          throw error;
+        });
+      seeder
+        .sow({ klass: "CreateAdminSeed", up: true })
+        .then(() => {
+          console.log('user Seeding complete!');
+        })
+        .catch((error) => {
+          console.log('User Seeding failed!');
+          throw error;
+        }).finally(() => {
+          appContext.close();
+        });
   })
   .catch((error) => {
     throw error;

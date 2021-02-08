@@ -11,6 +11,7 @@ import { ImagesEntity } from '../entities/images.entity';
 import { PagesEntity } from '../entities/pages.entity';
 import { PostsEntity } from '../entities/posts.entity';
 import { SectionsEntity } from '../entities/sections.entity';
+import { ButtonsEntity } from '../entities/buttons.entity';
 import { JOIN_HELPER } from './join-helper.const';
 
 export const EntitiesRegister = {
@@ -26,7 +27,8 @@ export const EntitiesRegister = {
   ImagesEntity,
   PagesEntity,
   PostsEntity,
-  SectionsEntity  
+  SectionsEntity,
+  ButtonsEntity
 };
 
 export const Entities = Object.values(EntitiesRegister);

@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
 import { ImagesEntity } from './images.entity';
+import { ButtonsEntity } from './buttons.entity';
 import { PagesEntity } from './pages.entity';
 
 enum sectionType{
@@ -17,7 +18,7 @@ enum sectionType{
   faqs = "faqs",
   packages = "packages",
   featuredIn = "featuredIn",
-  clients = "clients"
+  clients = "banner"
 
 }
 
@@ -32,18 +33,12 @@ export class SectionsEntity {
   
   @Column({length:200,unique: false, nullable:true})
   public subTitle: string;
-
-  @Column({length:250,unique: false, nullable:true})
-  public primaryButton: string;
-
-  @Column({length:250,unique: false, nullable:true})
-  public secondaryButton: string;
-
-  @Column({length:10,unique: false, nullable:true})
-  public imagePosition: string;
   
   @Column({type:"text",unique: false, nullable:true})
   public content: string;
+
+  @Column({default:true, nullable:false})
+  public isActive: boolean;
 
   @Column({ type: "int",unsigned:true })
   public sortOrder: number;
@@ -51,11 +46,15 @@ export class SectionsEntity {
   @Column({ type: "enum", enum: sectionType, default: sectionType.regular })
   public sectionType: sectionType;
   
-  @ManyToOne(type=>PagesEntity, pages=>pages.id,{nullable:false})
+  @ManyToOne(type => PagesEntity, pages => pages.id, { nullable: false, eager: false})
   @JoinColumn({name:'pagesId'})
   public pages: PagesEntity;
 
   @OneToMany(type => ImagesEntity, images => images.sections, { eager: true })
   public images!: ImagesEntity[];
+
+  
+  @OneToMany(type => ButtonsEntity, buttons => buttons.sections, { eager: true, cascade: true })
+  public buttons!: ButtonsEntity[];
 
 }

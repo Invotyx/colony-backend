@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsOptional, Length } from "class-validator";
 import { ImagesEntity } from "src/entities/images.entity";
 import { PagesEntity } from "src/entities/pages.entity";
+import { ButtonsDto } from "./buttons.dto";
 
 
 enum sectionType{
@@ -26,15 +27,6 @@ export class SectionsDto {
   public subTitle: string;
 
   @IsOptional()
-  @Length(3,200)
-  public primaryButton: string;
-
-  @IsOptional()
-  @Length(3,200)
-  public secondaryButton: string;
-
-
-  @IsOptional()
   @Length(3,10)
   public imagePosition: string;
 
@@ -48,6 +40,12 @@ export class SectionsDto {
   public pages: PagesEntity;
 
   @IsOptional()
+  public isActive: boolean;
+
+  @IsOptional()
   public sectionType: sectionType;
+
+  @IsOptional()
+  public buttons: any;
   
 }

@@ -3,10 +3,14 @@ import { isEmpty } from 'class-validator';
 import { unlinkSync } from 'fs';
 import { join } from 'path';
 import { TABLES } from 'src/consts/tables.const';
+import { ButtonsEntity } from 'src/entities/buttons.entity';
 import { ImagesEntity } from 'src/entities/images.entity';
 import { SectionsEntity } from 'src/entities/sections.entity';
+import { FaqsDto } from './dtos/faqs.dto';
 import { PagesDto } from './dtos/pages.dto';
 import { SectionsDto } from './dtos/sections.dto';
+import { ButtonsRepository } from './repos/buttons.repo';
+import { FaqsRepository } from './repos/faqs.repo';
 import { ImagesRepository } from './repos/images.repo';
 import { PagesRepository } from './repos/pages.repo';
 import { PostsRepository } from './repos/posts.repo';
@@ -19,7 +23,7 @@ export class ContentService {
     private readonly pagesRepo: PagesRepository,
     private readonly sectionsRepo: SectionsRepository,
     private readonly imagesRepo: ImagesRepository,
-    private readonly postsRepo:PostsRepository
+    private readonly faqsRepo: FaqsRepository,
   ) { }
   
   //#region pages
@@ -137,17 +141,8 @@ export class ContentService {
         const section = await this.sectionsRepo.findOne({ where: { pages: page.id, id: secId } })
         console.log(section);
         if (section) {
-          if (data.primaryButton) {
-            section.primaryButton = data.primaryButton;
-          }
           if (data.content) {
             section.content = data.content;
-          }
-          if (data.secondaryButton) {
-            section.secondaryButton = data.secondaryButton;
-          }
-          if (data.imagePosition) {
-            section.imagePosition = data.imagePosition;
           }
           if (data.sortOrder) {
             section.sortOrder = data.sortOrder;
@@ -162,7 +157,16 @@ export class ContentService {
             section.sectionType = data.sectionType;
           }
           
-          return await this.sectionsRepo.save(section);
+          if (data.isActive) {
+            section.isActive = data.isActive;
+          }
+
+          if (data.buttons) {
+            section.buttons = data.buttons;
+          }
+          
+          const sec = await this.sectionsRepo.save(section);
+          return sec;
         } else {
           throw new HttpException("specified section not found for this page.", HttpStatus.BAD_REQUEST);
         }
@@ -252,6 +256,7 @@ export class ContentService {
   async addSectionImage(
     pid: number,
     secId: number,
+    position:string,
     file
   ) {
     console.log(file);
@@ -263,6 +268,7 @@ export class ContentService {
         image.pages = page;
         image.sections = section;
         image.url = file.filename;
+        image.imagePosition = position;
         await this.imagesRepo.save(image);
         return "Image uploaded";
       }else {
@@ -328,5 +334,27 @@ export class ContentService {
   }
 
   //#endregion
+
+
+  async addFaq(faq: FaqsDto) {
+    console.log(faq);
+
+    return await this.faqsRepo.save(faq);
+  }
+
+  async removeFaq(id: number) {
+    return await this.faqsRepo.delete(id);
+  }
+
+  async updateFaq(id: number, faqs:any) {
+    return await this.faqsRepo.update(id,faqs);
+  }
+
+  async getFaq(id: number) {
+    return await this.faqsRepo.findOne(id);
+  }
+
+  
+
 
 }

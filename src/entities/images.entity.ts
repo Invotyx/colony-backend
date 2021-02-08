@@ -31,4 +31,8 @@ export class ImagesEntity {
   @JoinColumn({name:'sectionsId'})
   public sections: SectionsEntity;
 
+  
+  @Column({length:10,unique: false, default:"center", nullable:true})
+  public imagePosition: string;
+
 }

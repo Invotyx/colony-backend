@@ -8,6 +8,9 @@ import { ImagesRepository } from '../modules/content/repos/images.repo';
 import { PagesRepository } from '../modules/content/repos/pages.repo';
 import { PostsRepository } from '../modules/content/repos/posts.repo';
 import { SectionsRepository } from '../modules/content/repos/sections.repo';
+import { ButtonsRepository } from '../modules/content/repos/buttons.repo';
+import { FaqsRepository } from '../modules/content/repos/faqs.repo';
+
 
 export const REPOS = [
   PermissionRepository,
@@ -19,5 +22,7 @@ export const REPOS = [
   ImagesRepository,
   PagesRepository,
   PostsRepository,
-  SectionsRepository
+  SectionsRepository,
+  ButtonsRepository,
+  FaqsRepository
 ];

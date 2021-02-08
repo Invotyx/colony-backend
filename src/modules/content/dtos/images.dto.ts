@@ -18,5 +18,8 @@ export class ImagesDto {
   public sectionsId: number|string;
 
   @IsOptional()
-  public postsId: number|string;
+  public postsId: number | string;
+  
+  @IsOptional()
+  public imagePosition: string;
 }

@@ -1,16 +1,3 @@
-
-## Factory
-
-```sh
- GET /api/factory?klass=UserFactory&param={"expect":10}
-```
-
-## Seeder
-
-```sh
- GET /api/seed?klass=RolesSeed&up=1
-```
-
 ## APIs
 
 ```sh
@@ -19,5 +6,8 @@
   GET AuthToken     GET   /api/token
 
   LOGIN             POST  /api/auth/login
-  
+
+  Complete POSTMAN COLLECTION https://documenter.getpostman.com/view/5721584/TW71jktC
+  SWAGGER COLLECTION https://colony.invotyx.gq/api/docs/
+
 ```

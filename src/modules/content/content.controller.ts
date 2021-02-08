@@ -1,18 +1,24 @@
-import { Body, Controller, Delete, Get, HttpException, HttpService, HttpStatus, Injectable, Param, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpService, HttpStatus, Injectable, Param, Post, Put, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { TABLES } from 'src/consts/tables.const';
 import { Auth } from 'src/decorators/auth.decorator';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
+import { CompressJSON } from 'src/services/common/compression/compression.interceptor';
+import { columnListToSelect, dataViewer, mapColumns, paginateQuery, PaginatorError, PaginatorErrorHandler } from 'src/shared/paginator';
 import { editFileName, imageFileFilter } from '../users/imageupload.service';
 import { ContentService } from './content.service';
+import { FaqsDto } from './dtos/faqs.dto';
 import { PagesDto } from './dtos/pages.dto';
 import { SectionsDto } from './dtos/sections.dto';
+import { FaqsRepository } from './repos/faqs.repo';
 
 @Injectable()
 @Controller('content')
 export class ContentController {
   constructor(
-    private readonly contentService: ContentService
+    private readonly contentService: ContentService,
+    private readonly faqsRepo: FaqsRepository,
   ) { }
   
   @Auth({ roles: [ROLES.ADMIN] })
@@ -158,8 +164,10 @@ export class ContentController {
     @UploadedFile() image,
     @Param('id') id: number,
     @Param('secId') secId: number, 
+    @Query('position') position: string, 
+    
   ) {
-    const res = await this.contentService.addSectionImage(id,secId,image);
+    const res = await this.contentService.addSectionImage(id,secId,position,image);
     return res;
   }
 
@@ -182,5 +190,75 @@ export class ContentController {
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
     }
   }
+
+  @Get('faqs')
+  @CompressJSON()
+  async getAllUsers(@Body('jData') data) {
+    try {
+      const faqsTable = TABLES.FAQS.name;
+      const columnList: any = {
+        id: { table: faqsTable, column: 'id' },
+        question: { table: faqsTable, column: 'question' },
+        answer: { table: faqsTable, column: 'answer' },
+      };
+      const sortList = {
+        id: { table: faqsTable, column: 'id' },
+        question: { table: faqsTable, column: 'question' },
+      };
+      const filterList = {
+        question: { table: faqsTable, column: 'question' },
+      };
+      const { filters, configs } = dataViewer({
+        data,
+        filterList,
+        sortList,
+        columnList,
+      });
+      const query = await this.faqsRepo
+        .createQueryBuilder(TABLES.FAQS.name)
+        .select()
+        .where(filters.sql);
+
+      const paginatedData = await paginateQuery(query, configs, faqsTable);
+      if (paginatedData.data.length) {
+        paginatedData.data = paginatedData.data.map(
+          mapColumns(paginatedData.data[0], columnList)
+        );
+      }
+      return { data: paginatedData.data, meta: paginatedData.meta };
+
+    } catch (error) {
+      if (error instanceof PaginatorError) {
+        throw PaginatorErrorHandler(error);
+      }
+      throw error;
+    }
+  }
+
+  @Post('faqs')
+  async addFaq(@Body() faq: FaqsDto) {
+    try {
+      return await this.contentService.addFaq(faq);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  
+  @Put('faqs/:id')
+  async updateFaq(@Param('id') id: number, @Body() faqs:FaqsDto) {
+    return await this.contentService.updateFaq(id,faqs);
+  }
+
+  @Delete('faqs/:id')
+  async removeFaq(@Param('id') id: number) {
+    return await this.contentService.removeFaq(id);
+  }
+
+  @Get('faqs/:id')
+  async getFaq(@Param('id') id: number) {
+    return await this.contentService.getFaq(id);
+  }
+
 
 }

@@ -10,6 +10,10 @@ export class ImagesDto {
   @Length(3,200)
   public url: string;
   
+  @IsOptional()
+  @Length(3,100)
+  public title: string;
+  
   
   @IsOptional()
   public pagesId: number|string;

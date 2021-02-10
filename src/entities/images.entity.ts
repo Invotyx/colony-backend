@@ -20,6 +20,10 @@ export class ImagesEntity {
 
   @Column({length:300,unique: true})
   public url: string;
+
+  
+  @Column({length:100, nullable:true})
+  public title: string;
   
   @Exclude()
   @ManyToOne(type=>PagesEntity, pages => pages.images, {eager:false,nullable:true})

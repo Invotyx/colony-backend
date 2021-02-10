@@ -256,10 +256,10 @@ export class ContentService {
   async addSectionImage(
     pid: number,
     secId: number,
-    position:string,
+    position: string,
+    title: string,
     file
   ) {
-    console.log(file);
     const page =await this.pagesRepo.findOne(pid);
     if (page) {
       const section = await this.sectionsRepo.findOne(secId);
@@ -269,6 +269,7 @@ export class ContentService {
         image.sections = section;
         image.url = file.filename;
         image.imagePosition = position;
+        image.title = title;
         await this.imagesRepo.save(image);
         return "Image uploaded";
       }else {

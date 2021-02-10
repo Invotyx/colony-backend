@@ -164,10 +164,11 @@ export class ContentController {
     @UploadedFile() image,
     @Param('id') id: number,
     @Param('secId') secId: number, 
-    @Query('position') position: string, 
+    @Body('position') position: string, 
+    @Body('title') title: string, 
     
   ) {
-    const res = await this.contentService.addSectionImage(id,secId,position,image);
+    const res = await this.contentService.addSectionImage(id,secId,position,title,image);
     return res;
   }
 

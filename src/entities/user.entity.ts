@@ -15,6 +15,7 @@ import {
 import { JOIN_HELPER } from '../consts/join-helper.const';
 import { TABLES } from '../consts/tables.const';
 import { LanguageEntity } from './language.entity';
+import { PaymentMethodsEntity } from './payment-methods.entity';
 import { RoleEntity } from './role.entity';
 import { UserToRoleEntity } from './user-to-role.entity';
 
@@ -95,12 +96,16 @@ export class UserEntity {
   @JoinColumn({name:'languageId'})
   public language:LanguageEntity;
 
-
+ 
+  @Column({ length: 100, nullable: true, unique: true })
+  customerId: string;
 
   @Column({ type: 'json',nullable:true })
   public meta: string;
 
 
+  @OneToMany(type => PaymentMethodsEntity, pm => pm.user, { eager: true, cascade: true })
+  public paymentMethod!: PaymentMethodsEntity[];
 
   toJSON() {
     return classToPlain(this);

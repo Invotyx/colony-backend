@@ -18,7 +18,7 @@ enum sectionType{
   faqs = "faqs",
   packages = "packages",
   featuredIn = "featuredIn",
-  clients = "banner"
+  banner = "banner"
 
 }
 
@@ -47,14 +47,14 @@ export class SectionsEntity {
   public sectionType: sectionType;
   
   @ManyToOne(type => PagesEntity, pages => pages.id, { nullable: false, eager: false})
-  @JoinColumn({name:'pagesId'})
-  public pages: PagesEntity;
+  @JoinColumn({name:'pageId'})
+  public page: PagesEntity;
 
-  @OneToMany(type => ImagesEntity, images => images.sections, { eager: true })
+  @OneToMany(type => ImagesEntity, images => images.section, { eager: true })
   public images!: ImagesEntity[];
 
   
-  @OneToMany(type => ButtonsEntity, buttons => buttons.sections, { eager: true, cascade: true })
+  @OneToMany(type => ButtonsEntity, buttons => buttons.section, { eager: true, cascade: true })
   public buttons!: ButtonsEntity[];
 
 }

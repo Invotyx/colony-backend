@@ -12,6 +12,10 @@ import { PagesEntity } from '../entities/pages.entity';
 import { PostsEntity } from '../entities/posts.entity';
 import { SectionsEntity } from '../entities/sections.entity';
 import { ButtonsEntity } from '../entities/buttons.entity';
+import { PlansEntity } from '../entities/plans.entity';
+import { ProductsEntity } from '../entities/products.entity';
+import { SubscriptionsEntity } from '../entities/subscriptions.entity';
+import { PaymentMethodsEntity } from '../entities/payment-methods.entity';
 import { JOIN_HELPER } from './join-helper.const';
 
 export const EntitiesRegister = {
@@ -28,7 +32,11 @@ export const EntitiesRegister = {
   PagesEntity,
   PostsEntity,
   SectionsEntity,
-  ButtonsEntity
+  ButtonsEntity,
+  PlansEntity,
+  ProductsEntity,
+  SubscriptionsEntity,
+  PaymentMethodsEntity
 };
 
 export const Entities = Object.values(EntitiesRegister);

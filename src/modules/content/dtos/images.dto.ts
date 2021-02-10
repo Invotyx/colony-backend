@@ -16,13 +16,13 @@ export class ImagesDto {
   
   
   @IsOptional()
-  public pagesId: number|string;
+  public pageId: number|string;
   
   @IsOptional()
-  public sectionsId: number|string;
+  public sectionId: number|string;
 
   @IsOptional()
-  public postsId: number | string;
+  public postId: number | string;
   
   @IsOptional()
   public imagePosition: string;

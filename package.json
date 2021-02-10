@@ -75,6 +75,7 @@
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.3",
     "sift": "^13.5.0",
+    "stripe": "^8.135.0",
     "swagger-ui-express": "^4.1.6",
     "typeorm": "^0.2.25",
     "typeorm-polymorphic": "0.0.10",

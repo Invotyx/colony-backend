@@ -21,9 +21,11 @@ const TablesList = {
   IMAGES: new TableData(),
   POSTS: new TableData(),
   FAQS: new TableData(),
-  BUTTONS: new TableData()
-  
-
+  BUTTONS: new TableData(),
+  PRODUCTS: new TableData(),
+  PLANS: new TableData(),
+  PAYMENT_METHODS: new TableData(),
+  SUBSCRIPTIONS: new TableData(),
 };
 
 const numHash = (t: string) =>

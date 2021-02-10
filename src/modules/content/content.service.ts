@@ -45,7 +45,7 @@ export class ContentService {
         return "no records found";
       } else {
         let sections: any;
-        sections = await this.sectionsRepo.find({ where: { pages: page.id } });
+        sections = await this.sectionsRepo.find({ where: { page: page.id } });
         return ({ page, sections });
       }
     } else {
@@ -124,7 +124,7 @@ export class ContentService {
         if (sec) {
           throw new HttpException("section with same title already exists for this page.", HttpStatus.BAD_REQUEST);
         } else {
-          data.pages = page ;
+          data.page = page ;
           const create = await this.sectionsRepo.save(data);
           return create;
         }
@@ -183,10 +183,10 @@ export class ContentService {
     try {
       const page = await this.pagesRepo.findOne(pageId);
       if (page) {
-        const section = await this.sectionsRepo.findOne({ where: { pages: page.id, id: secId } })
+        const section = await this.sectionsRepo.findOne({ where: { page: page.id, id: secId } })
         if (section) {
           try {
-            const secImages = await this.imagesRepo.find({ where: { pages:pageId, sections:secId } });
+            const secImages = await this.imagesRepo.find({ where: { page:pageId, sections:secId } });
             if (secImages.length != 0) {
               secImages.forEach(async image => {
                 await this.imagesRepo.delete(image.id);
@@ -212,7 +212,7 @@ export class ContentService {
     try {
       const page = await this.pagesRepo.findOne({ where: { id: pid } });
       if (page) {
-        const sections = await this.sectionsRepo.find({ where: { pages: pid } });
+        const sections = await this.sectionsRepo.find({ where: { page: pid } });
         return { page, sections };
       } else {
         throw "page not found";
@@ -224,7 +224,7 @@ export class ContentService {
 
   async getSectionDetails(pid: number, secId: number) {
     try {
-      const section = await this.sectionsRepo.findOne({ where: { pages: pid, id: secId } })
+      const section = await this.sectionsRepo.findOne({ where: { page: pid, id: secId } })
       return section;
     } catch (e) {
       throw e;
@@ -244,7 +244,7 @@ export class ContentService {
     const page =await this.pagesRepo.findOne(pid);
     if (page) {
       const image = new ImagesEntity();
-      image.pages = page;
+      image.page = page;
       image.url = file.filename;
       await this.imagesRepo.save(image);
       return  "Image uploaded";
@@ -265,8 +265,8 @@ export class ContentService {
       const section = await this.sectionsRepo.findOne(secId);
       if (section) {
         const image = new ImagesEntity();
-        image.pages = page;
-        image.sections = section;
+        image.page = page;
+        image.section = section;
         image.url = file.filename;
         image.imagePosition = position;
         image.title = title;
@@ -289,7 +289,7 @@ export class ContentService {
     if (page) {
       const section = await this.sectionsRepo.findOne(secId);
       if (section) {
-        const images = this.imagesRepo.find({ where: { pages: pid, sections: secId } });
+        const images = this.imagesRepo.find({ where: { page: pid, section: secId } });
         return await images;
       }else {
         throw new HttpException("section not found for specified page.", HttpStatus.BAD_REQUEST);
@@ -304,7 +304,7 @@ export class ContentService {
   ) {
     const page =await this.pagesRepo.findOne(pid);
     if (page) {
-      const images = this.imagesRepo.find({ where: { pages: pid, sections:null } });
+      const images = this.imagesRepo.find({ where: { page: pid, section:null } });
       return await images;
     }else {
       throw new HttpException("page not found.", HttpStatus.BAD_REQUEST);
@@ -316,7 +316,7 @@ export class ContentService {
     pid: number,
     id: number
   ) {
-    return await this.imagesRepo.delete(await this.imagesRepo.findOne({ where: { pages: pid, id: id } }));
+    return await this.imagesRepo.delete(await this.imagesRepo.findOne({ where: { page: pid, id: id } }));
   }
 
   
@@ -327,8 +327,8 @@ export class ContentService {
   ) {
     return await this.imagesRepo.delete(await this.imagesRepo.findOne({
       where: {
-        pages: pid,
-        sections: secId,
+        page: pid,
+        section: secId,
         id: id
       }
     }));

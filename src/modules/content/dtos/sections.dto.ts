@@ -9,7 +9,7 @@ enum sectionType{
   faqs = "faqs",
   packages = "packages",
   featuredIn = "featuredIn",
-  clients = "clients"
+  banner = "banner"
 
 }
 
@@ -37,7 +37,7 @@ export class SectionsDto {
   public sortOrder: number;
 
   @IsOptional()
-  public pages: PagesEntity;
+  public page: PagesEntity;
 
   @IsOptional()
   public isActive: boolean;

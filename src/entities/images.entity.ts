@@ -27,13 +27,13 @@ export class ImagesEntity {
   
   @Exclude()
   @ManyToOne(type=>PagesEntity, pages => pages.images, {eager:false,nullable:true})
-  @JoinColumn({name:'pagesId'})
-  public pages: PagesEntity;
+  @JoinColumn({name:'pageId'})
+  public page: PagesEntity;
 
   @Exclude()
   @ManyToOne(type=>SectionsEntity, section => section.images,{eager:false,nullable:true})
-  @JoinColumn({name:'sectionsId'})
-  public sections: SectionsEntity;
+  @JoinColumn({name:'sectionId'})
+  public section: SectionsEntity;
 
   
   @Column({length:10,unique: false, default:"center", nullable:true})

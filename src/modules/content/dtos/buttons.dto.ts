@@ -19,5 +19,5 @@ export class ButtonsDto {
   public type: string;
 
   @IsOptional()
-  public sections: SectionsEntity;
+  public section: SectionsEntity;
 }

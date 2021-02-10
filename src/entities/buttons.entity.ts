@@ -26,7 +26,7 @@ export class ButtonsEntity {
 
   
   @ManyToOne(type=>SectionsEntity, section => section.buttons,{eager:false,nullable:true})
-  @JoinColumn({name:'sectionsId'})
-  public sections: SectionsEntity;
+  @JoinColumn({name:'sectionId'})
+  public section: SectionsEntity;
 
 }

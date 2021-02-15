@@ -23,7 +23,7 @@ export class AuthMailer {
     ].join('\n\n');
     const markdownHTML = await MarkDown(markdownContent);
     const htmlContent = await this.mailBuilder.build({ content: markdownHTML });
-    const mail = await this.mailClient.send({
+    await this.mailClient.send({
       to: { name: user.name, address: user.email },
       subject: 'Password Reset Request',
       html: htmlContent,
@@ -31,6 +31,4 @@ export class AuthMailer {
     });
     return token;
   }
-
-
 }

@@ -3,7 +3,6 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
@@ -15,18 +14,19 @@ export class ButtonsEntity {
   @PrimaryGeneratedColumn({ unsigned: true })
   public id: number;
 
-  @Column({length:60,unique: false})
+  @Column({ length: 60, unique: false })
   public text: string;
-  
-  @Column({length:300,unique: false, nullable:true})
+
+  @Column({ length: 300, unique: false, nullable: true })
   public link: string;
 
-  @Column({length:60,unique: false})
+  @Column({ length: 60, unique: false })
   public type: string;
 
-  
-  @ManyToOne(type=>SectionsEntity, section => section.buttons,{eager:false,nullable:true})
-  @JoinColumn({name:'sectionId'})
+  @ManyToOne(() => SectionsEntity, (section) => section.buttons, {
+    eager: false,
+    nullable: true,
+  })
+  @JoinColumn({ name: 'sectionId' })
   public section: SectionsEntity;
-
 }

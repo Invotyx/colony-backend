@@ -3,7 +3,7 @@ import { AuthModule } from '../auth/auth.module';
 import { PasswordHashController } from './password-hash.controller';
 
 @Module({
-  imports:[AuthModule],
+  imports: [AuthModule],
   controllers: [PasswordHashController],
 })
 export class PasswordHashModule {}

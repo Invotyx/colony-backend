@@ -1,4 +1,4 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SeederController } from './seeder/seeder.controller';
@@ -10,16 +10,13 @@ import { AppLogger } from './services/logs/log.service';
 import { MailModule } from './services/mail/mail.module';
 import { PermissionsService } from './modules/users/services/permissions.service';
 
-import {LanguageModule} from './modules/language/language.module';
-import {FactoryModule} from './factories/factories.module';
+import { LanguageModule } from './modules/language/language.module';
 import { MainMysqlModule } from './shared/main-mysql.module';
-import { ApiCallingModule } from './services/api-calling/api-calling.module';
-import { PasswordHashModule } from './modules/password-hash/password-hash.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ContentModule } from './modules/content/content.module';
-
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -34,11 +31,8 @@ import { ContentModule } from './modules/content/content.module';
     MailModule,
     MainMysqlModule,
     LanguageModule,
-    HttpModule,
-    FactoryModule,
-    ApiCallingModule,
-    PasswordHashModule,
     ContentModule,
+    ProductsModule,
   ],
   controllers: [AppController, SeederController],
   providers: [
@@ -47,8 +41,7 @@ import { ContentModule } from './modules/content/content.module';
     AppLogger,
     AppService,
     CompressionInterceptor,
-    PermissionsService,  
-    
+    PermissionsService,
   ],
 })
 export class AppModule {}

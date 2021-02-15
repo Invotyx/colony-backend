@@ -1,11 +1,30 @@
-import { Body, Controller, Delete, Get, HttpException, HttpService, HttpStatus, Injectable, Param, Post, Put, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Param,
+  Post,
+  Put,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { TABLES } from 'src/consts/tables.const';
 import { Auth } from 'src/decorators/auth.decorator';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { CompressJSON } from 'src/services/common/compression/compression.interceptor';
-import { columnListToSelect, dataViewer, mapColumns, paginateQuery, PaginatorError, PaginatorErrorHandler } from 'src/shared/paginator';
+import {
+  dataViewer,
+  mapColumns,
+  paginateQuery,
+  PaginatorError,
+  PaginatorErrorHandler,
+} from 'src/shared/paginator';
 import { editFileName, imageFileFilter } from '../users/imageupload.service';
 import { ContentService } from './content.service';
 import { FaqsDto } from './dtos/faqs.dto';
@@ -19,8 +38,8 @@ export class ContentController {
   constructor(
     private readonly contentService: ContentService,
     private readonly faqsRepo: FaqsRepository,
-  ) { }
-  
+  ) {}
+
   @Auth({ roles: [ROLES.ADMIN] })
   @Get('page')
   async getPages() {
@@ -33,7 +52,7 @@ export class ContentController {
   }
 
   @Get('page/:slug')
-  async getPage(@Param('slug') slug:string) {
+  async getPage(@Param('slug') slug: string) {
     try {
       const res = await this.contentService.getPage(slug);
       return res;
@@ -50,7 +69,7 @@ export class ContentController {
       const res = await this.contentService.createPage(data);
       return res;
     } catch (e) {
-      console.log(e)
+      console.log(e);
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
     }
   }
@@ -59,13 +78,13 @@ export class ContentController {
   @Put('page/:id')
   async updatePage(@Body() data: PagesDto, @Param('id') id: number) {
     try {
-      const res = await this.contentService.updatePage(data,id);
+      const res = await this.contentService.updatePage(data, id);
       return res;
     } catch (e) {
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
     }
   }
-  
+
   @Auth({ roles: [ROLES.ADMIN] })
   @Delete('page/:id')
   async deletePage(@Param('id') id: number) {
@@ -77,23 +96,26 @@ export class ContentController {
     }
   }
 
-
   @Auth({ roles: [ROLES.ADMIN] })
   @Post('page/:id/section')
-  async createSection(@Body() data: SectionsDto,@Param('id') id:number) {
+  async createSection(@Body() data: SectionsDto, @Param('id') id: number) {
     try {
-      const res = await this.contentService.createSection(id,data);
+      const res = await this.contentService.createSection(id, data);
       return res;
     } catch (e) {
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
     }
   }
 
-  @Auth({ roles: [ROLES.ADMIN] })  
+  @Auth({ roles: [ROLES.ADMIN] })
   @Put('page/:pid/section/:secId')
-  async updateSection(@Body() data: SectionsDto,@Param('pid') pid:number,@Param('secId') secId:number) {
+  async updateSection(
+    @Body() data: SectionsDto,
+    @Param('pid') pid: number,
+    @Param('secId') secId: number,
+  ) {
     try {
-      const res = await this.contentService.updateSection(pid,secId,data);
+      const res = await this.contentService.updateSection(pid, secId, data);
       return res;
     } catch (e) {
       console.log(e);
@@ -103,18 +125,20 @@ export class ContentController {
 
   @Auth({ roles: [ROLES.ADMIN] })
   @Delete('page/:pid/section/:secId')
-  async deleteSection(@Param('pid') pid:number,@Param('secId') secId:number) {
+  async deleteSection(
+    @Param('pid') pid: number,
+    @Param('secId') secId: number,
+  ) {
     try {
-      const res = await this.contentService.deleteSection(pid,secId);
+      const res = await this.contentService.deleteSection(pid, secId);
       return res;
     } catch (e) {
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
     }
   }
 
-
   @Get('page/:pid/section')
-  async getSectionsByPageId(@Param('pid') pid:number) {
+  async getSectionsByPageId(@Param('pid') pid: number) {
     try {
       const res = await this.contentService.getSectionByPageId(pid);
       return res;
@@ -123,11 +147,10 @@ export class ContentController {
     }
   }
 
-  
   @Get('page/:pid/section/:secId')
-  async getSection(@Param('pid') pid:number,@Param('secId') secId:number) {
+  async getSection(@Param('pid') pid: number, @Param('secId') secId: number) {
     try {
-      const res = await this.contentService.getSectionDetails(pid,secId);
+      const res = await this.contentService.getSectionDetails(pid, secId);
       return res;
     } catch (e) {
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
@@ -136,46 +159,61 @@ export class ContentController {
 
   @Auth({ roles: [ROLES.ADMIN] })
   @Post('page/:id/set-image')
-  @UseInterceptors(FileInterceptor('image', {
-    storage: diskStorage({
-      destination: './uploads',
-      filename: editFileName,
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
     }),
-    fileFilter: imageFileFilter,
-  }),)
+  )
   async uploadPageImage(
-    @UploadedFile() image,
-    @Param('id') id: number /* ,@LoginUser() user: UserEntity */
+    @UploadedFile() image: any,
+    @Param('id') id: number /* ,@LoginUser() user: UserEntity */,
   ) {
-    const res = await this.contentService.addPageImage(id,image);
+    const res = await this.contentService.addPageImage(id, image);
     return res;
   }
 
   @Auth({ roles: [ROLES.ADMIN] })
   @Post('page/:id/section/:secId/set-image')
-  @UseInterceptors(FileInterceptor('image', {
-    storage: diskStorage({
-      destination: './uploads',
-      filename: editFileName,
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
     }),
-    fileFilter: imageFileFilter,
-  }),)
+  )
   async uploadSectionImage(
-    @UploadedFile() image,
+    @UploadedFile() image: any,
     @Param('id') id: number,
-    @Param('secId') secId: number, 
-    @Body('position') position: string, 
-    @Body('title') title: string, 
-    
+    @Param('secId') secId: number,
+    @Body('position') position: string,
+    @Body('title') title: string,
   ) {
-    const res = await this.contentService.addSectionImage(id,secId,position,title,image);
+    const res = await this.contentService.addSectionImage(
+      id,
+      secId,
+      position,
+      title,
+      image,
+    );
     return res;
   }
 
   @Get('page/:pid/section/:secId/get-images')
-  async getSectionImages(@Param('pid') pid: number,@Param('secId') secId: number,) {
+  async getSectionImages(
+    @Param('pid') pid: number,
+    @Param('secId') secId: number,
+  ) {
     try {
-      const sectionImages = await this.contentService.getSectionImages(pid,secId);
+      const sectionImages = await this.contentService.getSectionImages(
+        pid,
+        secId,
+      );
       return sectionImages;
     } catch (e) {
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
@@ -194,7 +232,7 @@ export class ContentController {
 
   @Get('faqs')
   @CompressJSON()
-  async getAllUsers(@Body('jData') data) {
+  async getAllUsers(@Body('jData') data: any) {
     try {
       const faqsTable = TABLES.FAQS.name;
       const columnList: any = {
@@ -223,11 +261,10 @@ export class ContentController {
       const paginatedData = await paginateQuery(query, configs, faqsTable);
       if (paginatedData.data.length) {
         paginatedData.data = paginatedData.data.map(
-          mapColumns(paginatedData.data[0], columnList)
+          mapColumns(paginatedData.data[0], columnList),
         );
       }
       return { data: paginatedData.data, meta: paginatedData.meta };
-
     } catch (error) {
       if (error instanceof PaginatorError) {
         throw PaginatorErrorHandler(error);
@@ -245,10 +282,9 @@ export class ContentController {
     }
   }
 
-  
   @Put('faqs/:id')
-  async updateFaq(@Param('id') id: number, @Body() faqs:FaqsDto) {
-    return await this.contentService.updateFaq(id,faqs);
+  async updateFaq(@Param('id') id: number, @Body() faqs: FaqsDto) {
+    return await this.contentService.updateFaq(id, faqs);
   }
 
   @Delete('faqs/:id')
@@ -260,6 +296,4 @@ export class ContentController {
   async getFaq(@Param('id') id: number) {
     return await this.contentService.getFaq(id);
   }
-
-
 }

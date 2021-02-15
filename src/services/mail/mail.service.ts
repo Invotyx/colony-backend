@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Options as MailOptions } from 'nodemailer/lib/mailer';
 import { AppConfig } from '../../configs/app.config';
-import { MailConfig,MailerConfig } from '../../configs/mail.config';
+import { MailConfig, MailerConfig } from '../../configs/mail.config';
 import { InlineCSS } from '../../shared/inline-css';
 
 @Injectable()
@@ -14,7 +14,6 @@ export class MailBuilder implements OnModuleInit {
     content: '',
     footer: '',
   };
-  constructor() {}
 
   async onModuleInit() {
     this.init();
@@ -31,7 +30,7 @@ export class MailBuilder implements OnModuleInit {
 
   async build(
     data: { content: string },
-    options: { inlineCss?: boolean } = {}
+    options: { inlineCss?: boolean } = {},
   ) {
     //let htmlContent = this.#layout({ ...this.#layoutParam, ...data });
     let htmlContent;
@@ -43,11 +42,8 @@ export class MailBuilder implements OnModuleInit {
   }
 }
 
-const mailConfig = MailConfig();
-
 @Injectable()
 export class MailClient implements OnModuleInit {
-  
   #from = { address: '', name: '' };
   #transport = nodemailer.createTransport(MailerConfig().mailerConfig);
 

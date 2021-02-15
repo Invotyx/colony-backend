@@ -10,26 +10,24 @@ import { PermissionAlreadyExistError } from '../errors/permissions.error';
 export class PermissionsService {
   constructor(
     public readonly repository: PermissionRepository,
-    private readonly roleRepository: RoleRepository
+    private readonly roleRepository: RoleRepository,
   ) {}
 
-  
-  async isPermissionExists(val) {
-    const a =await isExist(this.repository, 'subject',val.subject);
-    const b =await isExist(this.repository, 'action',val.action); 
+  async isPermissionExists(val: any) {
+    const a = await isExist(this.repository, 'subject', val.subject);
+    const b = await isExist(this.repository, 'action', val.action);
 
     let z = true;
-    if(a && b)
-    {
+    if (a && b) {
       z = true;
     }
-    if(!a && !b){
+    if (!a && !b) {
       z = false;
     }
-    if(a && !b){
+    if (a && !b) {
       z = false;
     }
-    if(!a && b){
+    if (!a && b) {
       z = false;
     }
     return z;

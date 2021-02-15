@@ -1,33 +1,28 @@
-import { IsNotEmpty, IsOptional, Length } from "class-validator";
-import { ImagesEntity } from "src/entities/images.entity";
-import { PagesEntity } from "src/entities/pages.entity";
-import { ButtonsDto } from "./buttons.dto";
+import { IsNotEmpty, IsOptional, Length } from 'class-validator';
+import { PagesEntity } from 'src/entities/pages.entity';
 
-
-enum sectionType{
-  regular = "regular",
-  faqs = "faqs",
-  packages = "packages",
-  featuredIn = "featuredIn",
-  banner = "banner"
-
+enum sectionType {
+  regular = 'regular',
+  faqs = 'faqs',
+  packages = 'packages',
+  featuredIn = 'featuredIn',
+  banner = 'banner',
 }
 
 export class SectionsDto {
-  
   @IsOptional()
   public id: number;
 
   @IsOptional()
-  @Length(3,200)
+  @Length(3, 200)
   public title: string;
 
   @IsOptional()
-  @Length(3,200)
+  @Length(3, 200)
   public subTitle: string;
 
   @IsOptional()
-  @Length(3,10)
+  @Length(3, 10)
   public imagePosition: string;
 
   @IsOptional()
@@ -47,5 +42,4 @@ export class SectionsDto {
 
   @IsOptional()
   public buttons: any;
-  
 }

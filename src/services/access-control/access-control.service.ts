@@ -14,10 +14,10 @@ export class AccessControlService {
   constructor(
     private readonly permissionsService: PermissionsService,
     private readonly rolesService: RolesService,
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
   ) {}
 
-  public async getUser(userId) {
+  public async getUser(userId: any) {
     const query = await this.usersService.repository
       .createQueryBuilder(TABLES.USERS.name)
       .where('users.id = :userId', { userId })
@@ -25,8 +25,7 @@ export class AccessControlService {
     return query;
   }
 
- 
-  public async getUserRoles(userId) {
+  public async getUserRoles(userId: any) {
     const query = await this.rolesService.repository
       .createQueryBuilder(TABLES.ROLES.name)
       .innerJoinAndSelect(
@@ -34,7 +33,7 @@ export class AccessControlService {
         TABLES.USER_ROLE.name,
         oneLine`(${TABLES.USER_ROLE.name}.userId = :userId AND
           ${TABLES.USER_ROLE.name}.roleId = ${TABLES.ROLES.name}.id)`,
-        { userId }
+        { userId },
       )
       .select([
         '`roles`.`id` as `id`',
@@ -45,7 +44,7 @@ export class AccessControlService {
     return query;
   }
 
-  public async getUserPermissions(userId) {
+  public async getUserPermissions(userId: any) {
     const query = await this.permissionsService.repository
       .createQueryBuilder(TABLES.PERMISSIONS.name)
       .innerJoinAndSelect(
@@ -53,13 +52,11 @@ export class AccessControlService {
         TABLES.USER_HAS_PERMISSIONS.name,
         oneLine`(${TABLES.USER_HAS_PERMISSIONS.name}.userId = :userId AND
           ${TABLES.USER_HAS_PERMISSIONS.name}.permId = ${TABLES.PERMISSIONS.name}.id)`,
-        { userId }
+        { userId },
       )
       .getMany();
     return query;
   }
-
-  
 
   public async buildACL() {
     const userId = 1;
@@ -72,9 +69,7 @@ export class AccessControlService {
 
     console.log(
       JSON.stringify(genActiveUser(userDetails), null, 2),
-      ACLBuilder.build(genActiveUser(userDetails), 1).rules
+      ACLBuilder.build(genActiveUser(userDetails), 1).rules,
     );
   }
-
-  
 }

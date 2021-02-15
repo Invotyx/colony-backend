@@ -10,7 +10,10 @@ import { PostsRepository } from '../modules/content/repos/posts.repo';
 import { SectionsRepository } from '../modules/content/repos/sections.repo';
 import { ButtonsRepository } from '../modules/content/repos/buttons.repo';
 import { FaqsRepository } from '../modules/content/repos/faqs.repo';
-
+import { ProductsRepository } from '../modules/products/repos/products.repo';
+import { PlansRepository } from '../modules/products/repos/plans.repo';
+import { PaymentMethodsRepository } from '../modules/products/repos/payment-methods.repo';
+import { SubscriptionsRepository } from '../modules/products/repos/subscriptions.repo';
 
 export const REPOS = [
   PermissionRepository,
@@ -24,5 +27,9 @@ export const REPOS = [
   PostsRepository,
   SectionsRepository,
   ButtonsRepository,
-  FaqsRepository
+  FaqsRepository,
+  ProductsRepository,
+  PlansRepository,
+  PaymentMethodsRepository,
+  SubscriptionsRepository,
 ];

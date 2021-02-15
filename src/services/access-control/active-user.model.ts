@@ -30,10 +30,9 @@ export class ActiveUser {
   hasAnyRole(roles: string[]) {
     return this.roles.some((v) => roles.includes(v.name));
   }
-
 }
 
-export const genActiveUser = (userDetails) => {
+export const genActiveUser = (userDetails: any) => {
   const activeUser = new ActiveUser();
   activeUser.id = userDetails.id;
   activeUser.name = userDetails.name;
@@ -45,7 +44,7 @@ export const genActiveUser = (userDetails) => {
   activeUser.isActive = userDetails.isActive;
   activeUser.createdAt = userDetails.createdAt;
   activeUser.updatedAt = userDetails.updatedAt;
-  activeUser.roles = (userDetails.roles || []).map((role) => ({
+  activeUser.roles = (userDetails.roles || []).map((role: any) => ({
     id: role.id,
     name: role.name,
     userRoleMeta: JSON.parse(role.user_role_meta),

@@ -1,10 +1,9 @@
-import { ModuleRef, NestFactory } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { env } from 'process';
 import { AppModule } from './app.module';
 import { logger } from './services/logs/log.storage';
-import { SeederModule, SeederProviders } from './seeder/seeder.module';
-import { Logger } from '@nestjs/common';
+import { SeederModule } from './seeder/seeder.module';
 import { SeederService } from './seeder/seeder.service';
 
 async function bootstrap() {
@@ -12,7 +11,7 @@ async function bootstrap() {
     .then((appContext) => {
       const seeder = appContext.get(SeederService);
       seeder
-        .sow({ klass: "RolesSeed", up: true })
+        .sow({ klass: 'RolesSeed', up: true })
         .then(() => {
           console.log('Roles Seeding complete!');
         })
@@ -20,23 +19,36 @@ async function bootstrap() {
           console.log('Roles Seeding failed!');
           throw error;
         });
+
       seeder
-        .sow({ klass: "CreateAdminSeed", up: true })
+        .sow({ klass: 'AddProductsSeed', up: true })
+        .then(() => {
+          console.log('Products seeds completed!');
+        })
+        .catch((error) => {
+          console.log('Products seeds  failed!');
+          throw error;
+        });
+
+      seeder
+        .sow({ klass: 'CreateAdminSeed', up: true })
         .then(() => {
           console.log('user Seeding complete!');
         })
         .catch((error) => {
           console.log('User Seeding failed!');
           throw error;
-        }).finally(() => {
+        })
+        .finally(() => {
           appContext.close();
         });
-  })
-  .catch((error) => {
-    throw error;
-  });
+    })
+    .catch((error) => {
+      throw error;
+    });
 
-  const app = await NestFactory.create(AppModule, { ...logger,cors: true  });
+  const app = await NestFactory.create(AppModule, { ...logger, cors: true });
+
   const config = new DocumentBuilder()
     .setTitle('Colony API')
     .setDescription('Colony API Docs')
@@ -45,23 +57,18 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('colony')
     .build();
-  
-  
-  
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
-  
+
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   const port = env.port || '4000';
   await app.listen(port, () => {
     console.log(
-      'Listening API at http://localhost:' + port + '/' + globalPrefix
+      'Listening API at http://localhost:' + port + '/' + globalPrefix,
     );
   });
-
-
 }
-
 
 bootstrap();

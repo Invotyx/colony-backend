@@ -1,8 +1,4 @@
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
 
 @Entity({ name: TABLES.FAQS.name })
@@ -11,10 +7,9 @@ export class FaqsEntity {
   @PrimaryGeneratedColumn({ unsigned: true })
   public id: number;
 
-  @Column({length:300,unique: false})
+  @Column({ length: 300, unique: false })
   public question: string;
-  
-  @Column({type:"text",nullable:true})
-  public answer: string;
 
+  @Column({ type: 'text', nullable: true })
+  public answer: string;
 }

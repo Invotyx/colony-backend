@@ -4,8 +4,8 @@ import { ContentController } from './content.controller';
 import { ContentService } from './content.service';
 
 @Module({
-  imports:[MainMysqlModule],
+  imports: [MainMysqlModule],
   controllers: [ContentController],
-  providers: [ContentService]
+  providers: [ContentService],
 })
 export class ContentModule {}

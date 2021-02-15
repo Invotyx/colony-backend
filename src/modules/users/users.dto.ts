@@ -9,10 +9,9 @@ import {
 } from 'class-validator';
 import { LanguageEntity } from 'src/entities/language.entity';
 
-
 enum gender {
-  male="male",
-  female="female"
+  male = 'male',
+  female = 'female',
 }
 
 export class CreateUserDto {
@@ -42,26 +41,23 @@ export class CreateUserDto {
   @IsNotEmpty()
   password: string;
 
-  
   @Length(5, 30)
   @IsOptional()
   location: string;
-  
+
   @Length(0, 300)
   @IsOptional()
   statusMessage: string;
 
-
   @IsOptional()
   gender: gender;
 
-  
   @IsOptional()
   age: number;
 
   @IsOptional()
   meta: any;
-  
+
   @IsOptional()
   image: any;
 
@@ -70,8 +66,6 @@ export class CreateUserDto {
 
   @IsOptional()
   language: LanguageEntity;
-
-
 }
 
 export class UpdateProfileDto {
@@ -100,7 +94,6 @@ export class UpdateProfileDto {
   @IsOptional()
   password: string;
 
-  
   @Length(8, 20)
   @IsOptional()
   oldPassword: string;
@@ -110,19 +103,19 @@ export class UpdateProfileDto {
   gender: gender;
 
   @IsOptional()
-  meta: any;  
-  
+  meta: any;
+
   @Length(5, 30)
   @IsOptional()
   location: string;
-  
+
   @Length(0, 300)
   @IsOptional()
   statusMessage: string;
-  
+
   @IsOptional()
   age: number;
-  
+
   @IsOptional()
   profileImage: string;
 
@@ -131,10 +124,6 @@ export class UpdateProfileDto {
 
   @IsOptional()
   language: LanguageEntity;
-
-
-
-
 }
 
 export class PasswordChange {
@@ -142,7 +131,6 @@ export class PasswordChange {
   @IsNotEmpty()
   password: string;
 
-  
   @Length(5, 60)
   @IsNotEmpty()
   @IsEmail()

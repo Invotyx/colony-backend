@@ -11,7 +11,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { Auth, Authenticate } from '../../decorators/auth.decorator';
+import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { UserEntity } from '../../entities/user.entity';
 import { AuthMailer } from '../../mails/users/auth.mailer';
@@ -26,48 +26,47 @@ export class AuthController {
     private readonly authMailer: AuthMailer,
     private readonly authService: AuthService,
     private readonly logger: AppLogger,
-    private readonly userService: UsersService
+    private readonly userService: UsersService,
   ) {
     this.logger.setContext('AuthController');
   }
 
   @Post('login')
-  async login(@Request() req) {
-    try {      
-      return this.authService.login(await this.authService.validateUser(req.body));
+  async login(@Request() req: any) {
+    try {
+      return this.authService.login(
+        await this.authService.validateUser(req.body),
+      );
     } catch (e) {
-      throw new HttpException(e,HttpStatus.FORBIDDEN);
+      throw new HttpException(e, HttpStatus.FORBIDDEN);
     }
-    
   }
 
   @Auth({})
   @Get('profile')
   async getProfile(@LoginUser() user: UserEntity) {
     const allData = await this.userService.findOne(user.id);
-    allData.password = "";
+    allData.password = '';
     return { data: allData };
   }
 
-
   @Post('user-tfa')
-  async userTFA(@Body() data) {
+  async userTFA(@Body() data: any) {
     const user = await this.userService.isTFARequire(data.username);
     return user;
   }
-
 
   @Post(':id/updateUserProfile')
   @UsePipes(ValidationPipe)
   async updateUserProfile(
     @Body() user: UpdateProfileDto,
-    @Param('id') id: number
+    @Param('id') id: number,
   ) {
     try {
       const allData = await this.userService.findOne(id);
       const oldPassword = await PasswordHashEngine.check(
         user.oldPassword,
-        allData.password
+        allData.password,
       );
       if (oldPassword) {
         const updateUser = await this.userService.updateUser(id, user);

@@ -18,7 +18,7 @@ import { SubscriptionsEntity } from '../entities/subscriptions.entity';
 import { PaymentMethodsEntity } from '../entities/payment-methods.entity';
 import { JOIN_HELPER } from './join-helper.const';
 
-export const EntitiesRegister = {
+export const EntitiesRegister: any = {
   PermissionEntity,
   RoleEntity,
   RoleHasPermissionEntity,
@@ -36,8 +36,8 @@ export const EntitiesRegister = {
   PlansEntity,
   ProductsEntity,
   SubscriptionsEntity,
-  PaymentMethodsEntity
+  PaymentMethodsEntity,
 };
 
-export const Entities = Object.values(EntitiesRegister);
+export const Entities: any = Object.values(EntitiesRegister);
 Object.entries(EntitiesRegister).forEach(([k, v]) => (JOIN_HELPER[k] = v));

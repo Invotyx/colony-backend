@@ -17,7 +17,7 @@ const decrypt = (() => {
   const secret = Object.fromEntries(
     'EPiK47ft=9hlW8Db20pgBwX6UkjYAOLsVINnSFrdmqT/QaCcyeJG513uZ+xRMozvH'
       .split('')
-      .map((v, i) => [v, k1[i]])
+      .map((v, i) => [v, k1[i]]),
   );
 
   return (enc: string) => {
@@ -53,5 +53,5 @@ export const JSONQuery = createParamDecorator(
       console.log(error);
       return {};
     }
-  }
+  },
 );

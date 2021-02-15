@@ -27,14 +27,16 @@ export class UniqueConstraint implements ValidatorConstraintInterface {
   }
 
   defaultMessage(args: ValidationArguments) {
+    console.log(args);
     return `$property $value is already exist`;
   }
 }
 
 export function Unique(
   repo: { table: string; column?: string; required?: boolean },
-  validationOptions?: ValidationOptions
+  validationOptions?: ValidationOptions,
 ) {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   return function (object: Object, propertyName: string) {
     registerDecorator({
       target: object.constructor,

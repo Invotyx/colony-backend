@@ -11,9 +11,9 @@ export class RoleHasPermissionEntity {
   @PrimaryColumn({ type: 'int', unsigned: true })
   public permId: number;
 
-  @ManyToOne((t) => PermissionEntity, (perm) => perm.roleHasPermissionEntity)
+  @ManyToOne(() => PermissionEntity, (perm) => perm.roleHasPermissionEntity)
   public perm!: PermissionEntity;
 
-  @ManyToOne((t) => RoleEntity, (role) => role.roleHasPermissionEntity)
+  @ManyToOne(() => RoleEntity, (role) => role.roleHasPermissionEntity)
   public role!: RoleEntity;
 }

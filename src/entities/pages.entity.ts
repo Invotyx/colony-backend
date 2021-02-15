@@ -1,14 +1,6 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
 import { ImagesEntity } from './images.entity';
-import { SectionsEntity } from './sections.entity';
 
 @Entity({ name: TABLES.PAGES.name })
 export class PagesEntity {
@@ -16,21 +8,21 @@ export class PagesEntity {
   @PrimaryGeneratedColumn({ unsigned: true })
   public id: number;
 
-  @Column({length:200,unique: false})
+  @Column({ length: 200, unique: false })
   public title: string;
-  
-  @Column({length:200,unique: false})
+
+  @Column({ length: 200, unique: false })
   public subTitle: string;
 
-  @Column({length:250,unique: true})
+  @Column({ length: 250, unique: true })
   public slug: string;
 
   @Column({ length: 300, nullable: true })
   public metaDescription: string;
-  
+
   @Column({ length: 300, nullable: true })
   public metaTags: string;
 
-  @OneToMany(type => ImagesEntity, images => images.pages, { eager: false })
+  @OneToMany(() => ImagesEntity, (images) => images.pages, { eager: false })
   public images: ImagesEntity[];
 }

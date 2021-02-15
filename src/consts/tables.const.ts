@@ -3,11 +3,11 @@ class TableData {
   name: string;
   path: string;
 }
-const TablesList = {
+const TablesList: any = {
   USERS: new TableData(),
   ROLES: new TableData(),
   FILE: new TableData(),
-  
+
   USER_ROLE: new TableData(),
   ROLE_HAS_PERMISSION: new TableData(),
   PERMISSIONS: new TableData(),
@@ -31,12 +31,12 @@ const TablesList = {
 const numHash = (t: string) =>
   [...t].map((v, i) => (i + 1) * v.charCodeAt(0)).reduce((a, b) => a + b);
 
-const genTablesName = ({ p, s }) => {
+const genTablesName: any = ({ p, s }) => {
   Object.keys(TablesList).forEach((v) => {
     TablesList[v].id = numHash(v);
     TablesList[v].name = p + v.toLowerCase() + s;
   });
-  const ids = Object.values(TablesList).map((v) => v.id);
+  const ids = Object.values(TablesList).map((v: any) => v.id);
   if (ids.length !== new Set(ids).size) {
     throw new Error('Non Unique Id');
   }

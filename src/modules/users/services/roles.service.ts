@@ -8,7 +8,7 @@ import { RoleAlreadyExistError } from '../errors/roles.error';
 export class RolesService {
   constructor(public readonly repository: RoleRepository) {}
 
-  async isRoleExists(val) {
+  async isRoleExists(val: any) {
     return isExist(this.repository, 'role', val);
   }
 

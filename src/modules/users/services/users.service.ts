@@ -1,12 +1,12 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
-import { TABLES } from '../../../consts/tables.const';
-import { UserEntity } from '../../../entities/user.entity';
 import {
-  CreateUserDto,
-  UpdateProfileDto,
-  UpdateRole,
-} from '../users.dto';
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
+import { plainToClass } from 'class-transformer';
+import { UserEntity } from '../../../entities/user.entity';
+import { CreateUserDto, UpdateProfileDto, UpdateRole } from '../users.dto';
 import { RoleRepository } from '../../../repos/roles.repo';
 import { UserRepository } from '../repos/user.repo';
 import { isExist } from '../../../shared/repo.fun';
@@ -16,26 +16,22 @@ import {
   PhoneAlreadyExistError,
   UserNameAlreadyExistError,
 } from '../errors/users.error';
-import { LanguageService } from '../../language/language.service';
 import { EmailVerificationsRepository } from '../repos/verifyemail.repo';
 import { EmailVerifications } from '../../../entities/verifyemail.entity';
 import { EmailTokenSender } from '../../../mails/users/emailtoken.mailer';
-import { use } from 'passport';
 import { ForgotPassword } from 'src/entities/forgottenpassword.entity';
 import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer';
 import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
-import { extname } from 'path';
 
 @Injectable()
 export class UsersService {
   constructor(
     public readonly repository: UserRepository,
     private readonly roleRepository: RoleRepository,
-    private readonly languageService: LanguageService,
     private readonly emailVerfications: EmailVerificationsRepository,
     private readonly password: ForgotPasswordRepository,
     private readonly emailTokenSend: EmailTokenSender,
-    private readonly sendForgotPassword: ForgotPasswordTokenSender
+    private readonly sendForgotPassword: ForgotPasswordTokenSender,
   ) {}
 
   findAll(): Promise<UserEntity[]> {
@@ -56,19 +52,19 @@ export class UsersService {
     await this.repository.delete(id);
   }
 
-  async isEmailExists(val) {
+  async isEmailExists(val: any) {
     return isExist(this.repository, 'email', val);
   }
 
-  async isUserNameExists(val) {
+  async isUserNameExists(val: any) {
     return isExist(this.repository, 'username', val);
   }
 
-  async isPhoneExists(val) {
+  async isPhoneExists(val: any) {
     return isExist(this.repository, 'mobile', val);
   }
 
-  makeid(length) {
+  makeid(length: any) {
     let result = '' + Math.round(+new Date() / 1000);
     const characters =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -81,13 +77,12 @@ export class UsersService {
 
   isValidEmail(email: string) {
     if (email) {
-      var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       return re.test(email);
     } else return false;
   }
 
   async createUser(user: CreateUserDto) {
-
     try {
       if (this.isValidEmail(user.email)) {
         let isAlreadyExist = await this.isEmailExists(user.email);
@@ -104,11 +99,11 @@ export class UsersService {
         }
         user.password = await PasswordHashEngine.make(user.password);
         const newUser = await this.repository.save(user);
-          await this.createEmailToken(user.email);
-          await this.emailTokenSend.sendEmailVerification(user.email);
+        await this.createEmailToken(user.email);
+        await this.emailTokenSend.sendEmailVerification(user.email);
         return { user: newUser };
       } else {
-        throw new BadRequestException("Invalid email format");
+        throw new BadRequestException('Invalid email format');
       }
     } catch (error) {
       throw error;
@@ -116,13 +111,20 @@ export class UsersService {
   }
 
   async verifyEmail(token: string): Promise<boolean> {
-    var emailVerif = await this.emailVerfications.findOne({ emailToken: token });
+    const emailVerif = await this.emailVerfications.findOne({
+      emailToken: token,
+    });
     if (emailVerif) {
-      var userFromDb = await this.repository.findOne({ where: { email: emailVerif.email } });
+      const userFromDb = await this.repository.findOne({
+        where: { email: emailVerif.email },
+      });
       if (userFromDb) {
         userFromDb.isActive = true;
         userFromDb.isApproved = true;
-        var savedUser = await this.repository.update({ id: userFromDb.id as any }, userFromDb);
+        const savedUser = await this.repository.update(
+          { id: userFromDb.id as any },
+          userFromDb,
+        );
         await this.emailVerfications.remove(emailVerif);
         return !!savedUser;
       }
@@ -134,8 +136,7 @@ export class UsersService {
     }
   }
 
-  
-  async sendResetPasswordVerification(email: string): Promise<Boolean> {
+  async sendResetPasswordVerification(email: string): Promise<boolean> {
     try {
       const forget = await this.createForgottenPasswordToken(email);
       return await this.sendForgotPassword.sendEmail(forget);
@@ -145,19 +146,20 @@ export class UsersService {
     }
   }
 
-  
   async verifyResetPasswordToken(
     token: string,
     email: string,
   ): Promise<boolean> {
-    var emailVerif = await this.password.findOne({
+    const emailVerif = await this.password.findOne({
       where: {
         newPasswordToken: token,
         email: email,
-      }
+      },
     });
     if (emailVerif && emailVerif.newPasswordToken) {
-      var userFromDb = await this.repository.findOne({ where: { email: emailVerif.email } });
+      const userFromDb = await this.repository.findOne({
+        where: { email: emailVerif.email },
+      });
       if (userFromDb) {
         return true;
       } else {
@@ -169,7 +171,9 @@ export class UsersService {
   }
 
   async createForgottenPasswordToken(email: string): Promise<ForgotPassword> {
-    var forgottenPassword = await this.password.findOne({ where: { email: email } });
+    const forgottenPassword = await this.password.findOne({
+      where: { email: email },
+    });
     if (
       forgottenPassword &&
       (new Date().getTime() -
@@ -182,17 +186,17 @@ export class UsersService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     } else {
-      let _emver = new ForgotPassword();
+      const _emver = new ForgotPassword();
       if (!forgottenPassword) {
         _emver.email = email;
         _emver.newPasswordToken = this.makeid(60);
         _emver.timestamp = new Date();
-        
+
         this.password.save(_emver);
 
         return _emver;
       } else {
-        var forgottenPasswordModel = await this.password.update(
+        const forgottenPasswordModel = await this.password.update(
           { email: email },
           {
             newPasswordToken: this.makeid(60), //Generate 7 digits number,
@@ -210,9 +214,11 @@ export class UsersService {
       }
     }
   }
-  
+
   async createEmailToken(email: string): Promise<boolean> {
-    var emailVerification = await this.emailVerfications.findOne({ where: { email: email } });
+    const emailVerification = await this.emailVerfications.findOne({
+      where: { email: email },
+    });
 
     if (
       emailVerification &&
@@ -226,31 +232,30 @@ export class UsersService {
       );
     } else {
       console.log(emailVerification);
-      var _emver = new EmailVerifications();
+      const _emver = new EmailVerifications();
       if (!emailVerification) {
         _emver.email = email;
         _emver.emailToken = this.makeid(60);
         _emver.timestamp = new Date();
         await this.emailVerfications.save(_emver);
       } else {
-        var emailVerificationModel = await emailVerificationModel.findOneAndUpdate(
+        await this.emailVerfications.update(
           { email: email },
           {
             email: email,
             emailToken: this.makeid(60), //Generate 60 character
             timestamp: new Date(),
           },
-          { upsert: true, new: true },
         );
       }
       return true;
     }
   }
 
-  async updateUser(id: string | number|any, user: UpdateProfileDto) {
+  async updateUser(id: string | number | any, user: UpdateProfileDto) {
     const updateData: any = {};
     let isAlreadyExist: any;
-    
+
     try {
       if (user.email && this.isValidEmail(user.email)) {
         isAlreadyExist = await this.isEmailExists(user.email);
@@ -278,7 +283,7 @@ export class UsersService {
       if (user.meta) {
         updateData.meta = user.meta;
       }
-      
+
       if (user.isActive) {
         updateData.isActive = user.isActive;
       }
@@ -299,12 +304,11 @@ export class UsersService {
       if (user.location) {
         updateData.location = user.location;
       }
-      
-      
+
       if (user.firstName) {
         updateData.firstName = user.firstName;
       }
-      
+
       if (user.lastName) {
         updateData.lastName = user.lastName;
       }
@@ -332,22 +336,18 @@ export class UsersService {
     await this.repository.save(users);
   }
 
-
   async deleteUserPic(user: UserEntity) {
     const dbRes = await this.repository.update(user.id, { image: null });
     return dbRes;
   }
 
-  async setProfileImage(
-    user: UserEntity,
-    file
-  ) {
-      user.image = file.originalname;
-      await this.repository.save(user);
-      return true;
+  async setProfileImage(user: UserEntity, file: any) {
+    user.image = file.originalname;
+    await this.repository.save(user);
+    return true;
   }
 
-  async searchUserForAuth(username) {
+  async searchUserForAuth(username: any) {
     try {
       const user = await this.repository
         .createQueryBuilder('users')

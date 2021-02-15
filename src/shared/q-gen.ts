@@ -1,11 +1,13 @@
 export const qGen = (() => {
   const Utils = {
     escapeChars: { '\0': '\\0', '\n': '\\n', '\r': '\\r', '\b': '\\b' },
-    error(...v) {},
-    fmt(str, ...args) {
-      return str.replace(/{([0-9]+)}/g, (m, i) => args[i]);
+    error(...v: any) {
+      console.log(v);
     },
-    escapeString(value) {
+    fmt(str: any, ...args: any) {
+      return str.replace(/{([0-9]+)}/g, (m: any, i: any) => args[i]);
+    },
+    escapeString(value: any) {
       if (typeof value !== 'string') {
         return value;
       }
@@ -143,7 +145,7 @@ export const qGen = (() => {
     conditions = ['AND', 'OR'];
     default_condition = 'AND';
 
-    operators = [
+    operators: any = [
       'equal',
       'not_equal',
       'in',
@@ -166,7 +168,7 @@ export const qGen = (() => {
       'is_not_null',
     ];
 
-    getOperatorByType(type, doThrow) {
+    getOperatorByType(type: any, doThrow: any) {
       if (type === '-1') {
         return null;
       }
@@ -181,7 +183,7 @@ export const qGen = (() => {
         doThrow !== false,
         'UndefinedOperator',
         'Undefined operator "{0}"',
-        type
+        type,
       );
 
       return null;
@@ -189,7 +191,7 @@ export const qGen = (() => {
   }
 
   class SQLGenerator extends QueryBuilder {
-    settings = {
+    settings: any = {
       sqlOperators: {
         equal: { op: '= ?' },
         not_equal: { op: '!= ?' },
@@ -214,13 +216,13 @@ export const qGen = (() => {
       },
 
       sqlRuleOperator: {
-        '=': (v) => {
+        '=': (v: any) => {
           return { val: v, op: v === '' ? 'is_empty' : 'equal' };
         },
-        '!=': (v) => {
+        '!=': (v: any) => {
           return { val: v, op: v === '' ? 'is_not_empty' : 'not_equal' };
         },
-        LIKE: (v) => {
+        LIKE: (v: any) => {
           if (v.slice(0, 1) === '%' && v.slice(-1) === '%') {
             return { val: v.slice(1, -1), op: 'contains' };
           } else if (v.slice(0, 1) === '%') {
@@ -231,7 +233,7 @@ export const qGen = (() => {
             Utils.error('SQLParse', 'Invalid value for LIKE operator "{0}"', v);
           }
         },
-        'NOT LIKE': (v) => {
+        'NOT LIKE': (v: any) => {
           if (v.slice(0, 1) === '%' && v.slice(-1) === '%') {
             return { val: v.slice(1, -1), op: 'not_contains' };
           } else if (v.slice(0, 1) === '%') {
@@ -242,53 +244,56 @@ export const qGen = (() => {
             Utils.error(
               'SQLParse',
               'Invalid value for NOT LIKE operator "{0}"',
-              v
+              v,
             );
           }
         },
-        IN: (v) => {
+        IN: (v: any) => {
           return { val: v, op: 'in' };
         },
-        'NOT IN': (v) => {
+        'NOT IN': (v: any) => {
           return { val: v, op: 'not_in' };
         },
-        '<': (v) => {
+        '<': (v: any) => {
           return { val: v, op: 'less' };
         },
-        '<=': (v) => {
+        '<=': (v: any) => {
           return { val: v, op: 'less_or_equal' };
         },
-        '>': (v) => {
+        '>': (v: any) => {
           return { val: v, op: 'greater' };
         },
-        '>=': (v) => {
+        '>=': (v: any) => {
           return { val: v, op: 'greater_or_equal' };
         },
-        BETWEEN: (v) => {
+        BETWEEN: (v: any) => {
           return { val: v, op: 'between' };
         },
-        'NOT BETWEEN': (v) => {
+        'NOT BETWEEN': (v: any) => {
           return { val: v, op: 'not_between' };
         },
-        IS: (v) => {
+        IS: (v: any) => {
           if (v !== null) {
             Utils.error('SQLParse', 'Invalid value for IS operator');
           }
-          return { val: null, op: 'is_null' };
+          const val: any = null;
+          return { val, op: 'is_null' };
         },
-        'IS NOT': (v) => {
+        'IS NOT': (v: any) => {
           if (v !== null) {
             Utils.error('SQLParse', 'Invalid value for IS operator');
           }
-          return { val: null, op: 'is_not_null' };
+
+          const val: any = null;
+          return { val, op: 'is_not_null' };
         },
       },
       default_condition: this.default_condition,
       sqlStatements: {
         question_mark: () => {
-          const params = [];
+          const params: any = [];
           return {
-            add: (rule, value) => {
+            add: (rule: any, value: any) => {
               params.push(value);
               return '?';
             },
@@ -296,12 +301,12 @@ export const qGen = (() => {
           };
         },
 
-        numbered: (char) => {
+        numbered: (char: any) => {
           if (!char || char.length > 1) char = '$';
           let index = 0;
-          const params = [];
+          const params: any = [];
           return {
-            add: (rule, value) => {
+            add: (rule: any, value: any) => {
               params.push(value);
               index++;
               return char + index;
@@ -310,12 +315,12 @@ export const qGen = (() => {
           };
         },
 
-        named: (char) => {
+        named: (char: any) => {
           if (!char || char.length > 1) char = ':';
-          const indexes = {};
-          const params = {};
+          const indexes: any = {};
+          const params: any = {};
           return {
-            add: (rule, value) => {
+            add: (rule: any, value: any) => {
               if (!indexes[rule.field]) indexes[rule.field] = 1;
               const key = rule.field + '_' + indexes[rule.field]++;
               params[key] = value;
@@ -327,42 +332,42 @@ export const qGen = (() => {
       },
 
       sqlRuleStatement: {
-        question_mark: (values) => {
+        question_mark: (values: any) => {
           let index = 0;
           return {
-            parse: (v) => (v === '?' ? values[index++] : v),
-            esc: (sql) => sql.replace(/\?/g, "'?'"),
+            parse: (v: any) => (v === '?' ? values[index++] : v),
+            esc: (sql: any) => sql.replace(/\?/g, "'?'"),
           };
         },
 
-        numbered: (values, char) => {
+        numbered: (values: any, char: any) => {
           if (!char || char.length > 1) char = '$';
           const regex1 = new RegExp('^\\' + char + '[0-9]+$');
           const regex2 = new RegExp('\\' + char + '([0-9]+)', 'g');
           return {
-            parse: (v) => (regex1.test(v) ? values[v.slice(1) - 1] : v),
-            esc: (sql) => {
+            parse: (v: any) => (regex1.test(v) ? values[v.slice(1) - 1] : v),
+            esc: (sql: any) => {
               return sql.replace(
                 regex2,
-                "'" + (char === '$' ? '$$' : char) + "$1'"
+                "'" + (char === '$' ? '$$' : char) + "$1'",
               );
             },
           };
         },
 
-        named: (values, char) => {
+        named: (values: any, char: any) => {
           if (!char || char.length > 1) char = ':';
           const regex1 = new RegExp('^\\' + char);
           const regex2 = new RegExp(
             '\\' + char + '(' + Object.keys(values).join('|') + ')',
-            'g'
+            'g',
           );
           return {
-            parse: (v) => (regex1.test(v) ? values[v.slice(1)] : v),
-            esc: (sql) => {
+            parse: (v: any) => (regex1.test(v) ? values[v.slice(1)] : v),
+            esc: (sql: any) => {
               return sql.replace(
                 regex2,
-                "'" + (char === '$' ? '$$' : char) + "$1'"
+                "'" + (char === '$' ? '$$' : char) + "$1'",
               );
             },
           };
@@ -382,13 +387,13 @@ export const qGen = (() => {
 
     operatorMapKeys = Object.keys(this.operatorMap);
 
-    getStmtConfig(stmt) {
+    getStmtConfig(stmt: any) {
       let config = stmt.match(/(question_mark|numbered|named)(?:\((.)\))?/);
       if (!config) config = [null, 'question_mark', undefined];
       return config;
     }
 
-    getSQL(stmt, nl, data) {
+    getSQL(stmt: any, nl: any, data: any) {
       if (!data) {
         return null;
       }
@@ -400,10 +405,10 @@ export const qGen = (() => {
         stmt = 'question_mark';
       }
       if (typeof stmt === 'string') {
-        const config = this.getStmtConfig(stmt);
+        const config: any = this.getStmtConfig(stmt);
         stmt = this.settings.sqlStatements[config[1]](config[2]);
       }
-      const parse = (group) => {
+      const parse = (group: any) => {
         if (!group.condition) {
           group.condition = this.settings.default_condition;
         }
@@ -411,14 +416,14 @@ export const qGen = (() => {
           Utils.error(
             'UndefinedSQLCondition',
             'Unable to build SQL query with condition "{0}"',
-            group.condition
+            group.condition,
           );
         }
         if (!group.rules) {
           return '';
         }
-        const parts = [];
-        group.rules.forEach((rule) => {
+        const parts: any = [];
+        group.rules.forEach((rule: any) => {
           if (rule.rules && rule.rules.length > 0) {
             parts.push('(' + nl + parse(rule) + nl + ')' + nl);
           } else {
@@ -432,14 +437,14 @@ export const qGen = (() => {
               Utils.error(
                 'UndefinedSQLOperator',
                 'Unknown SQL operation for operator "{0}"',
-                rule.operator
+                rule.operator,
               );
             }
             if (ope.nb_inputs !== 0) {
               if (!(rule.value instanceof Array)) {
                 rule.value = [rule.value];
               }
-              rule.value.forEach((v, i) => {
+              rule.value.forEach((v: any, i: any) => {
                 if (i > 0) {
                   value += sqlQ.sep;
                 }
@@ -466,7 +471,7 @@ export const qGen = (() => {
                 }
               });
             }
-            const sqlFn = (v) => {
+            const sqlFn = (v: any) => {
               return sqlQ.op.replace('?', () => {
                 return v;
               });
@@ -487,7 +492,7 @@ export const qGen = (() => {
       }
     }
   }
-  return (d, q = true, n = false) => new SQLGenerator().getSQL(q, n, d);
+  return (d: any, q = true, n = false) => new SQLGenerator().getSQL(q, n, d);
 })();
 
 /*

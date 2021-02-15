@@ -9,20 +9,20 @@ export class InValidDataError extends Error {
 
 export const EmailAlreadyExistError = new InValidDataError(
   'EmailAlreadyExistError',
-  'email already exist'
+  'email already exist',
 );
 
 export const PhoneAlreadyExistError = new InValidDataError(
   'PhoneAlreadyExistError',
-  'Phone already exist'
+  'Phone already exist',
 );
 
 export const UserNotExistError = new InValidDataError(
   'UserNotExistError',
-  'user not exist'
+  'user not exist',
 );
 
 export const UserNameAlreadyExistError = new InValidDataError(
   'UserNameAlreadyExistError',
-  'username already exist'
+  'username already exist',
 );

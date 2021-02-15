@@ -6,7 +6,6 @@ export const MailConfig = async () => {
   };
 };
 
-
 export const MailerConfig = () => {
   return {
     mailerConfig: {
@@ -16,7 +15,7 @@ export const MailerConfig = () => {
       requireTLS: true,
       auth: {
         user: env.MAIL_USERNAME,
-        pass: env.MAIL_PASSWORD
+        pass: env.MAIL_PASSWORD,
       },
     },
   };

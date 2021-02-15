@@ -1,9 +1,7 @@
-
 import {
   Body,
   Controller,
   Get,
-  HttpException,
   HttpStatus,
   Param,
   Post,
@@ -14,9 +12,7 @@ import {
 import { Response } from 'express';
 import { TABLES } from '../../consts/tables.const';
 import { CompressJSON } from '../../services/common/compression/compression.interceptor';
-import {
-  InValidDataError,
-} from '../users/errors/users.error';
+import { InValidDataError } from '../users/errors/users.error';
 import {
   columnListToSelect,
   dataViewer,
@@ -34,12 +30,10 @@ import { LanguageDto } from './language.dto';
 // };
 @Controller('Language')
 export class LanguageController {
-  constructor(
-    private readonly languageService: LanguageService
-  ) {}
+  constructor(private readonly languageService: LanguageService) {}
   @Get('')
   @CompressJSON()
-  async getAllLanguages(@Body('jData') data) {
+  async getAllLanguages(@Body('jData') data: any) {
     try {
       const LanguageTable = TABLES.LANGUAGE.name;
       const columnList: any = {
@@ -69,7 +63,7 @@ export class LanguageController {
       const paginatedData = await paginateQuery(query, configs, LanguageTable);
       if (paginatedData.data.length) {
         paginatedData.data = paginatedData.data.map(
-          mapColumns(paginatedData.data[0], columnList)
+          mapColumns(paginatedData.data[0], columnList),
         );
       }
       return { data: paginatedData.data, meta: paginatedData.meta };
@@ -86,7 +80,7 @@ export class LanguageController {
   async getLanguage(@Param('id') id: number) {
     try {
       const Language = await this.languageService.repository.findOne(id);
-      return { data: Language  };
+      return { data: Language };
     } catch (error) {
       if (error instanceof PaginatorError) {
         throw PaginatorErrorHandler(error);
@@ -97,10 +91,10 @@ export class LanguageController {
 
   @Post()
   @UsePipes(ValidationPipe)
-  async createLanguage(@Body() Language: LanguageDto,@Res() res:Response) {
+  async createLanguage(@Body() Language: LanguageDto, @Res() res: Response) {
     try {
       const newLanguage = await this.languageService.createlanguage(Language);
-      return { data : newLanguage };
+      return { data: newLanguage };
     } catch (error) {
       if (error instanceof InValidDataError) {
         res.send(HttpStatus.BAD_REQUEST).send(inValidDataRes([error.message]));
@@ -112,9 +106,16 @@ export class LanguageController {
   //@Auth({ roles: [ROLES.ADMIN] })
   @Post(':id/update')
   @UsePipes(ValidationPipe)
-  async updateLanguage(@Body() Language: LanguageDto, @Param('id') id: string,@Res() res:Response) {
+  async updateLanguage(
+    @Body() Language: LanguageDto,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
     try {
-      const updateLanguage = await this.languageService.updatelanguage(id, Language);
+      const updateLanguage = await this.languageService.updatelanguage(
+        id,
+        Language,
+      );
       return { data: updateLanguage };
     } catch (error) {
       if (error instanceof InValidDataError) {
@@ -123,5 +124,4 @@ export class LanguageController {
       res.send(HttpStatus.BAD_REQUEST).send(error.message);
     }
   }
-  
 }

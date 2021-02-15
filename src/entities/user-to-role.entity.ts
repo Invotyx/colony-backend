@@ -11,11 +11,11 @@ export class UserToRoleEntity {
   @PrimaryColumn({ type: 'int', unsigned: true })
   public roleId!: number;
 
-  @Column({ type: 'json', nullable:true }) public meta: any;
+  @Column({ type: 'json', nullable: true }) public meta: any;
 
-  @ManyToOne((t) => UserEntity, (user) => user.userToRole)
+  @ManyToOne(() => UserEntity, (user) => user.userToRole)
   public user!: UserEntity;
 
-  @ManyToOne((t) => RoleEntity, (role) => role.userToRole)
+  @ManyToOne(() => RoleEntity, (role) => role.userToRole)
   public role!: RoleEntity;
 }

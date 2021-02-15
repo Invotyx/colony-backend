@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { BadRequestException } from '@nestjs/common';
 import { SelectQueryBuilder } from 'typeorm';
 import { CommonError } from './common.error';
@@ -5,16 +6,16 @@ import { qGen } from './q-gen';
 
 export class PaginatorError extends CommonError {}
 
-export const RulesLengthOverError = (l) =>
+export const RulesLengthOverError = (l: number) =>
   new PaginatorError('RulesLengthOverError', `More than ${l} rules`);
 
-export const RulesDepthOverError = (d) =>
+export const RulesDepthOverError = (d: number) =>
   new PaginatorError('RulesDepthOverError', `Rules depth more than ${d}`);
 
-export const InvalidFilterFieldError = (m?) =>
+export const InvalidFilterFieldError = (m?: any) =>
   new PaginatorError(
     'InvalidFilterFieldError',
-    m || 'Invalid field found in filter list'
+    m || 'Invalid field found in filter list',
   );
 
 export const PaginatorErrorHandler = (error: PaginatorError) =>
@@ -33,7 +34,7 @@ const defaultConfigs: PaginatorConfig = {
   limit: 30,
 };
 
-const GenConfigs = (x, d = defaultConfigs): PaginatorConfig => {
+const GenConfigs = (x: any, d = defaultConfigs): PaginatorConfig => {
   return {
     sort: x.sort || d.sort || defaultConfigs.sort,
     order: x.order || d.order || defaultConfigs.order,
@@ -46,14 +47,18 @@ export interface FilterFieldMapper {
   [key: string]: {
     table: string;
     column: string;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     valueMapper?: Function;
   };
 }
 
-const filterFlatter = (x) =>
-  x.rules.flatMap((v) => (v.rules ? filterFlatter(v) : v));
-const calculateDepth = (x) =>
-  x.rules.reduce((a, b) => (b.rules ? a + calculateDepth(b) + 1 : a + 0), 0);
+const filterFlatter = (x: any) =>
+  x.rules.flatMap((v: any) => (v.rules ? filterFlatter(v) : v));
+const calculateDepth = (x: any) =>
+  x.rules.reduce(
+    (a: any, b: any) => (b.rules ? a + calculateDepth(b) + 1 : a + 0),
+    0,
+  );
 
 const MAX_DEPTH = 3;
 const MAX_LENGTH = 20;
@@ -66,14 +71,14 @@ export const dataViewer = ({
 }: {
   data: { filter: any; config: any };
   filterList: FilterFieldMapper;
-  sortList;
+  sortList: any;
   columnList: FilterFieldMapper;
 }) => {
   const totalRules = filterFlatter(data.filter);
   if (totalRules.length > MAX_LENGTH) {
     throw RulesLengthOverError(MAX_LENGTH);
   }
-  const totalFields = [...new Set(totalRules.map((v) => v.field))];
+  const totalFields = [...new Set(totalRules.map((v: any) => v.field))];
   const possibleFields = Object.keys(filterList);
   const allExist = totalFields.every((v: string) => possibleFields.includes(v));
   if (!allExist) {
@@ -82,7 +87,7 @@ export const dataViewer = ({
   if (calculateDepth(data.filter) >= MAX_DEPTH) {
     throw RulesDepthOverError(MAX_DEPTH);
   }
-  totalRules.forEach((v) => {
+  totalRules.forEach((v: any) => {
     const filedName =
       filterList[v.field].table + '.' + filterList[v.field].column;
     v.field = filedName;
@@ -92,9 +97,9 @@ export const dataViewer = ({
   return { filters, configs };
 };
 
-export const mapColumns = (sample, columnList) => {
+export const mapColumns = (sample: any, columnList: any) => {
   const keys = Object.keys(sample).filter((v) => !!columnList[v]?.valueMapper);
-  return (data) => {
+  return (data: any) => {
     keys.forEach((v) => {
       data[v] = columnList[v].valueMapper(data[v], data);
     });
@@ -102,7 +107,7 @@ export const mapColumns = (sample, columnList) => {
   };
 };
 
-export const genMeta = async (query, configs) => {
+export const genMeta = async (query: any, configs: any) => {
   const total = await query.getCount();
   const meta = {
     perPage: configs.limit,
@@ -117,8 +122,8 @@ export const genMeta = async (query, configs) => {
 
 export const paginateQuery = async (
   query: SelectQueryBuilder<any>,
-  configs,
-  table?
+  configs: any,
+  table?: any,
 ) => {
   const tableName = table ? table + '.' : '';
   const res = await Promise.all([
@@ -136,6 +141,6 @@ export const paginateQuery = async (
 export const columnListToSelect = (columnList: FilterFieldMapper) => {
   return Object.entries(columnList).map(
     ([k, v]: [any, any]) =>
-      `${v.table ? v.table + '.' : ''}${v.column}` + ` as \`${v.as || k}\``
+      `${v.table ? v.table + '.' : ''}${v.column}` + ` as \`${v.as || k}\``,
   );
 };

@@ -15,7 +15,7 @@ const genSvg = ({ initials, background, bold, color, rounded, size }: I) => {
         }" width="${size}" height="${size}" cy="${size / 2}" r="${size / 2}"/>`
       : `<rect fill="${background}" width="${size}" height="${size}"/>`
   }<text x="50%" y="50%" style="color: ${color}; line-height: 1;font-family: Arial;" alignment-baseline="middle" text-anchor="middle" font-size="${Math.floor(
-    0.44 * size
+    0.44 * size,
   )}" font-weight="${
     bold ? 600 : 500
   }" dy=".1em" dominant-baseline="middle" fill="${color}">${initials}</text></svg>`;
@@ -24,7 +24,7 @@ const genSvg = ({ initials, background, bold, color, rounded, size }: I) => {
 const drawCircle = (
   canvas: HTMLCanvasElement,
   context: CanvasRenderingContext2D,
-  background: string
+  background: string,
 ) => {
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
@@ -38,7 +38,7 @@ const drawCircle = (
 const drawSquare = (
   canvas: HTMLCanvasElement,
   context: CanvasRenderingContext2D,
-  background: string
+  background: string,
 ) => {
   context.fillStyle = background;
   context.fillRect(0, 0, canvas.width, canvas.height);
@@ -56,7 +56,7 @@ const genPng = ({ initials, background, bold, color, rounded, size }: I) => {
   }
 
   context.font = `${bold ? 'bold' : ''} ${Math.round(
-    canvas.width / 2
+    canvas.width / 2,
   )}px Arial`;
   context.textAlign = 'center';
   context.fillStyle = color;

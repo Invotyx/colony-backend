@@ -6,7 +6,7 @@ import { UserEntity } from '../../entities/user.entity';
 @Injectable()
 export class RolesGuard implements CanActivate {
   // ref = new Reflector();
-  constructor(/* private readonly reflector: Reflector */) {}
+  // constructor(/* private readonly reflector: Reflector */) {}
 
   canActivate(context: ExecutionContext): boolean {
     const roles = Reflect.getMetadata('roles', context.getHandler());

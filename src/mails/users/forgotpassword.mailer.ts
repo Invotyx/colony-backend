@@ -10,25 +10,32 @@ export class ForgotPasswordTokenSender {
   constructor(
     private readonly mailBuilder: MailBuilder,
     private readonly mailClient: MailClient,
-    private readonly forgotPass:ForgotPasswordRepository
+    private readonly forgotPass: ForgotPasswordRepository,
   ) {}
-
 
   async sendEmail(model: ForgotPassword): Promise<boolean> {
     try {
-      console.log("model: ",model);
+      console.log('model: ', model);
       if (model && model.newPasswordToken) {
         const appConfig = await AppConfig();
         const markdownContent = [
           'You are receiving this email because we received a request for account creation.',
           `#### Click this link to verify your email`,
-          `** ${process.env.PUBLIC_APP_URL + '/#/system/reset-password/' + model.newPasswordToken +'/'+model.email } **`,
+          `** ${
+            process.env.PUBLIC_APP_URL +
+            '/#/system/reset-password/' +
+            model.newPasswordToken +
+            '/' +
+            model.email
+          } **`,
           '---',
           'Best Regards,',
           `${appConfig.name} IT Team`,
         ].join('\n\n');
         const markdownHTML = await MarkDown(markdownContent);
-        const htmlContent = await this.mailBuilder.build({ content: markdownHTML });
+        const htmlContent = await this.mailBuilder.build({
+          content: markdownHTML,
+        });
         const mail = await this.mailClient.send({
           to: { name: model.email, address: model.email },
           subject: 'Password Reset Request',
@@ -44,5 +51,4 @@ export class ForgotPasswordTokenSender {
       );
     }
   }
-  
 }

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Entities } from '../consts/entities.const';
 import { REPOS } from '../consts/repos.const';
 
 const TypeOrm = [

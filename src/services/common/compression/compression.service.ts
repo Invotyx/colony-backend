@@ -25,7 +25,7 @@ const compress = (x: string) => compressor(x, { level: 5 } as ZlibOptions);
 //     [BROTLI_PARAM_QUALITY]: 1,
 //   } as BrotliOptions | ZlibOptions);
 
-const noopifyResponse = (res) => {
+const noopifyResponse = (res: any) => {
   const noop = () => res;
   res.end = noop;
   res.json = noop;
@@ -36,7 +36,9 @@ const noopifyResponse = (res) => {
   return res;
 };
 
-export const TxtResponseCompressor = (req, res) => async (raw: string) => {
+export const TxtResponseCompressor = (req: any, res: any) => async (
+  raw: string,
+) => {
   const acceptEncoding = accept(req).encoding(['gzip']);
   if (acceptEncoding === 'gzip') {
     res.setHeader('Vary', 'Accept-Encoding');

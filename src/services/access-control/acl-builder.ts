@@ -9,16 +9,16 @@ export class ACLBuilder {
     if (user.hasRole(ROLES.ADMIN)) {
       ability.can(
         PermissionsList.create$Users.action,
-        PermissionsList.create$Users.subject
+        PermissionsList.create$Users.subject,
       );
     } else {
-        if (user.hasRoleWithCtx(ROLES.ADMIN,{})) //pass context
-          ability.can(
-            PermissionsList.create$Users.action,
-            PermissionsList.create$Users.subject,
-            { orgId }
-          );
-      
+      if (user.hasRoleWithCtx(ROLES.ADMIN, {}))
+        //pass context
+        ability.can(
+          PermissionsList.create$Users.action,
+          PermissionsList.create$Users.subject,
+          { orgId },
+        );
     }
 
     // ability.can('manage', 'BlogPost', { author: user.id });

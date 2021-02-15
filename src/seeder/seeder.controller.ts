@@ -12,15 +12,15 @@ export class SeederController {
   constructor(private readonly seederService: SeederService) {}
 
   @Get()
-  public async seed(@Query() data) {
+  public async seed(@Query() data: any) {
     try {
       const crop = { klass: data.klass, up: !!Number(data.up) };
-      console.log(crop)
+      console.log(crop);
       return await this.seederService.sow(crop);
     } catch (error) {
       return new HttpException(
         error,
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       ).getResponse();
     }
   }

@@ -5,7 +5,6 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { JOIN_HELPER } from '../consts/join-helper.const';
 import { TABLES } from '../consts/tables.const';
 import { PermissionEntity } from './permissions.entity';
 import { RoleHasPermissionEntity } from './role-has-permissions.entity';
@@ -17,13 +16,13 @@ export class RoleEntity {
   @PrimaryGeneratedColumn({ unsigned: true })
   public id: number;
 
-  @Column({length:60})
+  @Column({ length: 60 })
   public role: string;
 
-  @OneToMany((t) => UserToRoleEntity, (role) => role.role)
+  @OneToMany(() => UserToRoleEntity, (role) => role.role)
   public userToRole!: UserToRoleEntity[];
 
-  @ManyToMany((t) => UserEntity, (org) => org.roles)
+  @ManyToMany(() => UserEntity, (org) => org.roles)
   public users: UserEntity[];
 
   @OneToMany('RoleHasPermissionEntity', 'role')

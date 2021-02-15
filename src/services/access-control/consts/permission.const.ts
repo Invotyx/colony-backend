@@ -7,16 +7,16 @@ export class PermissionData {
 }
 
 //add permissions here
-export const PermissionsList = {
+export const PermissionsList: any = {
   create$Users: new PermissionData(),
 };
 
-const permissionsMapper = (k, v) => {
+const permissionsMapper = (k: any, v: any) => {
   const [action, subject] = k.split('$');
   v.action = snakeCase(action);
   v.subject = dotCase(subject);
 };
 
-Object.keys(PermissionsList).forEach((k) =>
-  permissionsMapper(k, PermissionsList[k])
+Object.keys(PermissionsList).forEach((k: any) =>
+  permissionsMapper(k, PermissionsList[k]),
 );

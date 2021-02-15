@@ -13,7 +13,7 @@ import { TxtResponseCompressor } from './compression.service';
 export class CompressionInterceptor implements NestInterceptor {
   public intercept(
     context: ExecutionContext,
-    next: CallHandler
+    next: CallHandler,
   ): Observable<any> {
     const http = context.switchToHttp();
     const req = http.getRequest();

@@ -8,7 +8,7 @@ import { MarkDown } from '../../shared/marked';
 export class TestMailer {
   constructor(
     private readonly mailBuilder: MailBuilder,
-    private readonly mailClient: MailClient
+    private readonly mailClient: MailClient,
   ) {}
 
   async setTestEmail(user: UserEntity, data: any) {
@@ -22,9 +22,9 @@ export class TestMailer {
       `${appConfig.name} Team`,
     ].join('\n\n');
     const markdownHTML = await MarkDown(markdownContent);
-    const htmlContent = await this.mailBuilder.build({ content: markdownHTML }); 
-    
-    const mail = await this.mailClient.send({
+    const htmlContent = await this.mailBuilder.build({ content: markdownHTML });
+
+    await this.mailClient.send({
       to: { name: user.name, address: user.email },
       subject: 'Password Reset Request',
       html: htmlContent,

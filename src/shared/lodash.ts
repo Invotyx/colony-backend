@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 // export const cloneDeep = require('lodash/cloneDeep');
 // export const countBy = require('lodash/countBy');
 // export const curry = require('lodash/curry');

@@ -11,19 +11,22 @@ import { PlansEntity } from './plans.entity';
 
 @Entity({ name: TABLES.PRODUCTS.name })
 export class ProductsEntity {
-  @Column({length:100, unique:true,primary:true})
+  @Column({ length: 100, unique: true, primary: true })
   public id: string;
 
-  @Column({length:200,unique: true})
+  @Column({ length: 200, unique: true })
   public name: string;
 
-  @Column({length:10,unique: false, nullable:false})
+  @Column({ length: 10, unique: false, nullable: false })
   public type: string;
-  
-  @Column({length:300,unique: false})
+
+  @Column({ length: 300, unique: false })
   public description: string;
-  
-  @OneToMany(type => PlansEntity, plan => plan.product, { eager: true, cascade: true })
+
+  @OneToMany(() => PlansEntity, (plan) => plan.product, {
+    eager: true,
+    cascade: true,
+  })
   public plans!: PlansEntity[];
 
   @CreateDateColumn()
@@ -31,8 +34,7 @@ export class ProductsEntity {
 
   @UpdateDateColumn()
   public updatedAt: Date;
-  
+
   @DeleteDateColumn()
   public deletedAt: Date;
-
 }

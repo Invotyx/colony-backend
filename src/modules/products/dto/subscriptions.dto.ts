@@ -7,7 +7,10 @@ export enum collection_method {
 
 export class SubscriptionsDto {
   @IsOptional()
-  public id: string;
+  public id: number;
+
+  @IsOptional()
+  public stripeId: string;
 
   @IsNotEmpty()
   public planId: string;

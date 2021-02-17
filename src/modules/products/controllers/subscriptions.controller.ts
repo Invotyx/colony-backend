@@ -2,31 +2,27 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Injectable,
+  Param,
   Post,
+  Put,
 } from '@nestjs/common';
-import { env } from 'process';
 import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entities/user.entity';
 import { UsersService } from 'src/modules/users/services/users.service';
-import Stripe from 'stripe';
 import { SubscriptionsDto } from '../dto/subscriptions.dto';
 import { SubscriptionsService } from '../services/subscriptions.service';
 
 @Injectable()
 @Controller('subscriptions')
 export class SubscriptionsController {
-  private stripe: Stripe;
   constructor(
     public readonly subscriptionService: SubscriptionsService,
     public readonly userService: UsersService,
-  ) {
-    this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-      apiVersion: '2020-08-27',
-    });
-  }
+  ) {}
 
   @Auth({})
   @Post('')
@@ -40,13 +36,13 @@ export class SubscriptionsController {
         _user,
         subscription,
       );
-      if (result) {
-        return 'Subscription Created';
+      if (result.message) {
+        return result;
       } else {
-        return new BadRequestException('An error occurred');
+        throw new BadRequestException('An error occurred');
       }
     } catch (e) {
-      return new BadRequestException(e, 'An exception occurred');
+      throw new BadRequestException(e, 'An exception occurred');
     }
   }
 
@@ -56,6 +52,41 @@ export class SubscriptionsController {
     try {
       const _user = await this.userService.findOne(customer.id);
       const result = await this.subscriptionService.getSubscriptions(_user);
+
+      return result;
+    } catch (e) {
+      return new BadRequestException(e, 'An exception occurred');
+    }
+  }
+
+  @Auth({})
+  @Put(':subId')
+  public async updateSubscriptions(
+    @LoginUser() customer: UserEntity,
+    @Param('subId') subId: string,
+    @Body('planId') planId: string,
+  ) {
+    try {
+      const result = await this.subscriptionService.updateSubscription(
+        customer,
+        subId,
+        planId,
+      );
+
+      return result;
+    } catch (e) {
+      return new BadRequestException(e, 'An exception occurred');
+    }
+  }
+
+  @Auth({})
+  @Delete(':subId')
+  public async cancelSubscriptions(
+    @LoginUser() customer: UserEntity,
+    @Param('subId') subId: string,
+  ) {
+    try {
+      const result = await this.subscriptionService.cancelSubscription(subId);
 
       return result;
     } catch (e) {

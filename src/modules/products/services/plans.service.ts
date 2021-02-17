@@ -38,6 +38,27 @@ export class PlansService {
     }
   }
 
+  async createPriceInStripe(plan: PlansDto, productId: string): Promise<any> {
+    try {
+      const newPlan = await this.stripe.prices.create({
+        product: productId,
+        unit_amount_decimal: (plan.amount_decimal * 100).toString(),
+        currency: plan.currency,
+        active: true,
+        nickname: plan.nickname,
+      });
+
+      plan.id = newPlan.id;
+      plan.product = productId as any;
+      plan.active = true;
+      const dbPlan = await this.repository.save(plan);
+
+      return { plan: dbPlan };
+    } catch (e) {
+      throw e;
+    }
+  }
+
   async activateDeactivatePlan(
     planId: string,
     isActive: boolean,

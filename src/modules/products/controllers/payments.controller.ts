@@ -39,7 +39,7 @@ export class PaymentsController {
 
       if (_user.customerId) {
         const pm = await this.paymentService.createPaymentMethod(_user, data);
-        return { data: pm };
+        return pm;
       } else {
         const stripe_user = await this.stripe.customers.create({
           email: _user.email,
@@ -67,7 +67,7 @@ export class PaymentsController {
       if (paymentMethods) {
         return paymentMethods;
       } else {
-        return 'No records found';
+        return { message: 'No records found' };
       }
     } catch (e) {
       return new BadRequestException(e, 'An Exception Occurred');

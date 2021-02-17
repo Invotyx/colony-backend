@@ -68,6 +68,13 @@ export class UserEntity {
   @Column({ default: false })
   public isApproved: boolean;
 
+  
+  @Column({ default: 0, nullable: false })
+  public purchasedPhoneCount: number;
+
+  @Column({ default: 0, nullable: false })
+  public purchasedSmsCount: number;
+  
   @CreateDateColumn()
   public createdAt: Date;
 

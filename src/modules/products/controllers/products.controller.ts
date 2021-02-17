@@ -54,8 +54,13 @@ export class ProductsController {
   public async createPlan(@Param('pid') pid: string, @Body() data: PlansDto) {
     //createPlanInStripe
     try {
-      const plan = await this.planService.createPlanInStripe(data, pid);
-      return plan;
+      if (data.recurring == 'recurring') {
+        const plan = await this.planService.createPlanInStripe(data, pid);
+        return plan;
+      } else {
+        const plan = await this.planService.createPriceInStripe(data, pid);
+        return plan;
+      }
     } catch (e) {
       return new BadRequestException(e, 'An Exception Occurred');
     }

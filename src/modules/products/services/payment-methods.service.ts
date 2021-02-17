@@ -49,7 +49,7 @@ export class PaymentMethodsService {
         await this.stripe.customers.update(customer.customerId, {
           invoice_settings: { default_payment_method: pm.id },
         });
-        return 'Payment method added';
+        return { message: 'Payment method added' };
       } else {
         await this.repository.save({
           id: pm.id,
@@ -62,7 +62,7 @@ export class PaymentMethodsService {
         await this.stripe.customers.update(customer.customerId, {
           invoice_settings: { default_payment_method: pm.id },
         });
-        return 'Payment method added';
+        return { message: 'Payment method added' };
       }
     } catch (e) {
       throw e;

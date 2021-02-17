@@ -5,6 +5,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
@@ -18,8 +19,11 @@ enum collection_method {
 
 @Entity({ name: TABLES.SUBSCRIPTIONS.name })
 export class SubscriptionsEntity {
-  @Column({ length: 100, unique: true, primary: true })
-  public id: string;
+  @PrimaryGeneratedColumn({ unsigned: true })
+  public id: number;
+
+  @Column({ length: 100, unique: false, nullable: false })
+  public stripeId: string;
 
   @ManyToOne(() => UserEntity, (user) => user.paymentMethod, {
     eager: false,
@@ -42,8 +46,20 @@ export class SubscriptionsEntity {
   })
   public collection_method: collection_method;
 
+  @Column({ length: 100, nullable: false })
+  public stripeSubscriptionItem: string;
+
+  @Column({ nullable: false, length: 20 })
+  public paymentType: string;
+
   @Column({ nullable: false, default: false })
   public cancelled: boolean;
+
+  @Column({ nullable: true })
+  public currentStartDate: Date;
+  
+  @Column({ nullable: true })
+  public currentEndDate: Date;
 
   @CreateDateColumn()
   public createdAt: Date;

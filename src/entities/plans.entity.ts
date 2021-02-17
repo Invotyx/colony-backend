@@ -15,6 +15,13 @@ enum interval {
   month = 'month',
   year = 'year',
 }
+
+enum planType {
+  bundle = 'bundle',
+  phoneOnly = 'phoneOnly',
+  smsOnly = 'smsOnly',
+}
+
 @Entity({ name: TABLES.PLANS.name })
 export class PlansEntity {
   @Column({ length: 100, unique: true, primary: true })
@@ -26,7 +33,7 @@ export class PlansEntity {
   @Column({ length: 10, default: 'USD', unique: false })
   public currency: string;
 
-  @Column({ type: 'enum', enum: interval })
+  @Column({ type: 'enum', enum: interval, nullable: true })
   public interval: interval;
 
   @Column({ default: false })
@@ -47,6 +54,23 @@ export class PlansEntity {
     cascade: true,
   })
   public subscription!: SubscriptionsEntity;
+
+  @Column({
+    type: 'enum',
+    enum: planType,
+    nullable: false,
+    default: planType.bundle,
+  })
+  public planType: planType;
+
+  @Column({ nullable: false, length: 20 })
+  public recurring: string;
+
+  @Column({default:1, nullable:false, unsigned:true})
+  public phoneCount: number;
+
+  @Column({default:1, nullable:false, unsigned:true})
+  public smsCount: number;
 
   @CreateDateColumn()
   public createdAt: Date;

@@ -1,16 +1,26 @@
 import {
   IsBoolean,
   IsDecimal,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
   Length,
+  Min,
 } from 'class-validator';
 import { ProductsEntity } from 'src/entities/products.entity';
+
 export enum interval {
   month = 'month',
   year = 'year',
 }
+
+export enum planType {
+  bundle = 'bundle',
+  phoneOnly = 'phoneOnly',
+  smsOnly = 'smsOnly',
+}
+
 export class PlansDto {
   @IsOptional()
   public id: string;
@@ -28,8 +38,15 @@ export class PlansDto {
   public interval: interval;
 
   @IsOptional()
+  @IsIn(['one_time', 'recurring'])
+  public recurring: string;
+
+  @IsOptional()
   @IsBoolean()
   public active: boolean;
+
+  @IsNotEmpty()
+  public planType: planType;
 
   @IsOptional()
   @IsString()
@@ -39,4 +56,12 @@ export class PlansDto {
   @IsOptional()
   @IsString()
   public product: ProductsEntity;
+
+  @IsNotEmpty()
+  @Min(1)
+  public phoneCount: number;
+
+  @IsNotEmpty()
+  @Min(1)
+  public smsCount: number;
 }

@@ -129,7 +129,7 @@ export class UsersController {
   @Get('verify/:token')
   async verifyEmail(@Param('token') token: any, @Res() res: Response) {
     try {
-      const isEmailVerified = this.userService.verifyEmail(token);
+      const isEmailVerified =await this.userService.verifyEmail(token);
       if (isEmailVerified) res.status(HttpStatus.OK).send(isEmailVerified);
       else res.status(HttpStatus.NOT_FOUND).send('LOGIN_EMAIL_NOT_VERIFIED');
     } catch (error) {

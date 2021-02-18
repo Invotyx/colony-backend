@@ -284,7 +284,11 @@ export class ContentController {
 
   @Put('faqs/:id')
   async updateFaq(@Param('id') id: number, @Body() faqs: FaqsDto) {
-    return await this.contentService.updateFaq(id, faqs);
+    try {
+      return await this.contentService.updateFaq(id, faqs);
+    } catch (e) {
+      throw e;
+    }
   }
 
   @Delete('faqs/:id')
@@ -294,6 +298,11 @@ export class ContentController {
 
   @Get('faqs/:id')
   async getFaq(@Param('id') id: number) {
-    return await this.contentService.getFaq(id);
+    const faq = await this.contentService.getFaq(id);
+    if (faq) {
+      return faq;
+    } else {
+      return { message: 'No record found' };
+    }
   }
 }

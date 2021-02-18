@@ -4,6 +4,7 @@ import { ImagesEntity } from 'src/entities/images.entity';
 import { FaqsDto } from './dtos/faqs.dto';
 import { PagesDto } from './dtos/pages.dto';
 import { SectionsDto } from './dtos/sections.dto';
+import { ButtonsRepository } from './repos/buttons.repo';
 import { FaqsRepository } from './repos/faqs.repo';
 import { ImagesRepository } from './repos/images.repo';
 import { PagesRepository } from './repos/pages.repo';
@@ -16,6 +17,7 @@ export class ContentService {
     private readonly sectionsRepo: SectionsRepository,
     private readonly imagesRepo: ImagesRepository,
     private readonly faqsRepo: FaqsRepository,
+    private readonly buttonsRepo: ButtonsRepository,
   ) {}
 
   //#region pages
@@ -125,7 +127,7 @@ export class ContentService {
         );
       } else {
         const sec = await this.sectionsRepo.findOne({
-          where: { pages: id, title: data.title },
+          where: { page: id, title: data.title },
         });
         if (sec) {
           throw new HttpException(
@@ -148,7 +150,7 @@ export class ContentService {
       const page = await this.pagesRepo.findOne(pageId);
       if (page) {
         const section = await this.sectionsRepo.findOne({
-          where: { pages: page.id, id: secId },
+          where: { page: page.id, id: secId },
         });
         console.log(section);
         if (section) {
@@ -202,13 +204,21 @@ export class ContentService {
         if (section) {
           try {
             const secImages = await this.imagesRepo.find({
-              where: { page: pageId, sections: secId },
+              where: { page: pageId, section: secId },
             });
             if (secImages.length != 0) {
               secImages.forEach(async (image) => {
                 await this.imagesRepo.delete(image.id);
               });
             }
+
+            const buttons = await this.buttonsRepo.find({ where: { section: section.id } });
+            if (buttons) {
+              buttons.forEach(async button => {
+                await this.buttonsRepo.delete(button.id);
+              });
+            }
+
             return await this.sectionsRepo.delete(section.id);
           } catch (e) {
             console.info(e);
@@ -264,6 +274,8 @@ export class ContentService {
       const image = new ImagesEntity();
       image.page = page;
       image.url = file.filename;
+      image.imagePosition = 'center';
+      image.title = file.filename;
       await this.imagesRepo.save(image);
       return 'Image uploaded';
     } else {

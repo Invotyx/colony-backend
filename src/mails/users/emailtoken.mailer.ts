@@ -21,9 +21,9 @@ export class EmailTokenSender {
         const markdownContent = [
           'You are receiving this email because we received a request for account creation.',
           `#### Click this link to verify your email`,
-          `**${
+          `** ${
             process.env.PUBLIC_APP_URL + '/#/system/verify/' + model.emailToken
-          }**`,
+          } **`,
           '---',
           'Best Regards,',
           `${appConfig.name} IT Team`,
@@ -38,12 +38,12 @@ export class EmailTokenSender {
           html: htmlContent,
           text: markdownContent,
         });
-        console.log(mail);
+        console.log("Mail sent");
         return mail;
       }
     } catch (ex) {
       throw new HttpException(
-        'Mail server down, unable to send account verification email!',
+        ex,
         HttpStatus.SERVICE_UNAVAILABLE,
       );
     }

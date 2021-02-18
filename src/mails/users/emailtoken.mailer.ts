@@ -22,7 +22,7 @@ export class EmailTokenSender {
           'You are receiving this email because we received a request for account creation.',
           `#### Click this link to verify your email`,
           `** ${
-            process.env.PUBLIC_APP_URL + '/#/system/verify/' + model.emailToken
+            (process.env.PUBLIC_APP_URL).replace("\"",'') + '/#/system/verify/' + model.emailToken
           } **`,
           '---',
           'Best Regards,',

@@ -112,7 +112,7 @@ export class UsersService {
     }
   }
 
-  async verifyEmail(token: string): Promise<boolean> {
+  async verifyEmail(token: string): Promise<any> {
     const emailVerif = await this.emailVerfications.findOne({
       emailToken: token,
     });
@@ -120,16 +120,12 @@ export class UsersService {
       const userFromDb = await this.repository.findOne({
         where: { email: emailVerif.email },
       });
-      if (userFromDb) {
-        userFromDb.isActive = true;
-        userFromDb.isApproved = true;
-        const savedUser = await this.repository.update(
-          { id: userFromDb.id as any },
-          userFromDb,
-        );
-        await this.emailVerfications.remove(emailVerif);
-        return !!savedUser;
-      }
+      userFromDb.isActive = true;
+      userFromDb.isApproved = true;
+      const savedUser = await this.repository.save(userFromDb);
+      await this.emailVerfications.delete(emailVerif);
+      return { message: "Email verified." };
+      
     } else {
       throw new HttpException(
         'LOGIN_EMAIL_CODE_NOT_VALID',

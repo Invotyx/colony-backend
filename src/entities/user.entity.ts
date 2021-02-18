@@ -92,6 +92,7 @@ export class UserEntity {
   })
   roles: RoleEntity[];
 
+
   @ManyToOne(() => LanguageEntity)
   @JoinColumn({ name: 'languageId' })
   public language: LanguageEntity;

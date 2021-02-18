@@ -9,7 +9,7 @@ import { CompressionInterceptor } from './services/common/compression/compressio
 import { AppLogger } from './services/logs/log.service';
 import { MailModule } from './services/mail/mail.module';
 import { PermissionsService } from './modules/users/services/permissions.service';
-
+import { ScheduleModule } from '@nestjs/schedule';
 import { LanguageModule } from './modules/language/language.module';
 import { MainMysqlModule } from './shared/main-mysql.module';
 import { MulterModule } from '@nestjs/platform-express';
@@ -17,9 +17,11 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ContentModule } from './modules/content/content.module';
 import { ProductsModule } from './modules/products/products.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MulterModule.register({
       dest: './uploads',
     }),
@@ -33,6 +35,7 @@ import { ProductsModule } from './modules/products/products.module';
     LanguageModule,
     ContentModule,
     ProductsModule,
+    TasksModule,
   ],
   controllers: [AppController, SeederController],
   providers: [

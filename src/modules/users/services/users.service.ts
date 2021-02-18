@@ -85,16 +85,18 @@ export class UsersService {
   async createUser(user: CreateUserDto) {
     try {
       if (this.isValidEmail(user.email)) {
-        let isAlreadyExist = await this.isEmailExists(user.email);
-        if (isAlreadyExist) {
+        let count = await this.repository.count({ where: { email: user.email } });
+        
+        if (count>0) {
           throw EmailAlreadyExistError;
         }
-        isAlreadyExist = await this.isUserNameExists(user.username);
-        if (isAlreadyExist) {
+
+        count =  await this.repository.count({ where: { username: user.username } });
+        if (count>0) {
           throw UserNameAlreadyExistError;
         }
-        isAlreadyExist = await this.isPhoneExists(user.mobile);
-        if (isAlreadyExist) {
+        count = await this.repository.count({ where: { mobile: user.mobile } });
+        if (count> 0) {
           throw PhoneAlreadyExistError;
         }
         user.password = await PasswordHashEngine.make(user.password);

@@ -233,6 +233,8 @@ export class UsersController {
       const newUser = await this.userService.createUser(user);
       res.status(HttpStatus.CREATED).send({ data: newUser });
     } catch (error) {
+      
+      console.log(error)
       res.status(HttpStatus.BAD_REQUEST).send({ message: error.message });
     }
   }

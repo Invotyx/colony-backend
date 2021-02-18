@@ -93,6 +93,9 @@ export class UserEntity {
   roles: RoleEntity[];
 
 
+  @Column({ length: 100, nullable: false, default: 'Asia/Karachi' })
+  public timezone: string;
+
   @ManyToOne(() => LanguageEntity)
   @JoinColumn({ name: 'languageId' })
   public language: LanguageEntity;

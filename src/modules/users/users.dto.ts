@@ -66,6 +66,10 @@ export class CreateUserDto {
 
   @IsOptional()
   language: LanguageEntity;
+
+  @IsNotEmpty()
+  @Length(3,100)
+  timezone: string;
 }
 
 export class UpdateProfileDto {

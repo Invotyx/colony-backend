@@ -1,2 +1,2 @@
-import * as juice from 'juice';
+import juice from 'juice';
 export const InlineCSS = (content: string) => juice(content);

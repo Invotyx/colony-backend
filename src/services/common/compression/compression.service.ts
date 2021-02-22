@@ -1,4 +1,4 @@
-import * as accept from 'accepts';
+import accepts from 'accepts';
 import { gzip, ZlibOptions } from 'zlib';
 
 //#---------gZip-------------
@@ -39,7 +39,7 @@ const noopifyResponse = (res: any) => {
 export const TxtResponseCompressor = (req: any, res: any) => async (
   raw: string,
 ) => {
-  const acceptEncoding = accept(req).encoding(['gzip']);
+  const acceptEncoding = accepts(req).encoding(['gzip']);
   if (acceptEncoding === 'gzip') {
     res.setHeader('Vary', 'Accept-Encoding');
     if (typeof raw === 'object') {

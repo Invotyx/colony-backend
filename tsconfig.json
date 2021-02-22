@@ -13,6 +13,7 @@
     "incremental": true,
     "strict": false,
     "noImplicitAny": false,
-    "skipLibCheck": false
+    "skipLibCheck": false,
+    "esModuleInterop":true
   }
 }

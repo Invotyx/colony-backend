@@ -18,6 +18,9 @@ import { join } from 'path';
 import { ContentModule } from './modules/content/content.module';
 import { ProductsModule } from './modules/products/products.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { SmsModule } from './modules/sms/sms.module';
+import { PhoneModule } from './modules/phone/phone.module';
+import { ApiCallingModule } from './services/api-calling/api-calling.module';
 
 @Module({
   imports: [
@@ -36,6 +39,9 @@ import { TasksModule } from './modules/tasks/tasks.module';
     ContentModule,
     ProductsModule,
     TasksModule,
+    ApiCallingModule,
+    SmsModule,
+    PhoneModule
   ],
   controllers: [AppController, SeederController],
   providers: [

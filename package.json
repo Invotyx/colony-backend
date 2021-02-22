@@ -59,6 +59,7 @@
     "long": "^4.0.0",
     "lz-string": "^1.4.4",
     "marked": "^1.2.7",
+    "messagebird": "^3.5.0",
     "moment": "^2.29.1",
     "nest-winston": "^1.4.0",
     "nestjs-stripe": "^0.4.0",

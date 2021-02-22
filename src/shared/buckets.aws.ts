@@ -1,4 +1,4 @@
-import * as S3 from 'aws-sdk/clients/s3';
+import S3 from 'aws-sdk/clients/s3';
 import { FileSystemConfig } from '../configs/filesystem.config';
 
 export async function AppMainBucket() {

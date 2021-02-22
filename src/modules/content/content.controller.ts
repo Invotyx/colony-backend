@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -230,9 +231,33 @@ export class ContentController {
     }
   }
 
+
   @Get('faqs')
-  @CompressJSON()
-  async getAllUsers(@Body('jData') data: any) {
+  async getFaqs(@Query('page') page: number, @Query('limit') limit: number,) {
+    if (!page) {
+      page = 1;
+    }
+    if (!limit) {
+      limit = 20;
+    }
+    const data: any = {
+      filter: {
+        condition: "AND",
+        rules: [],
+        valid: true
+      },
+      config: {
+        sort: 'id',
+        order: 'ASC',
+        page: page,
+        limit: limit
+      }
+    };
+
+    return this.getAllFaqs(data);
+  }
+
+  async getAllFaqs(data: any) {
     try {
       const faqsTable = TABLES.FAQS.name;
       const columnList: any = {

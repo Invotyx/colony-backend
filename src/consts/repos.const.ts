@@ -14,6 +14,9 @@ import { ProductsRepository } from '../modules/products/repos/products.repo';
 import { PlansRepository } from '../modules/products/repos/plans.repo';
 import { PaymentMethodsRepository } from '../modules/products/repos/payment-methods.repo';
 import { SubscriptionsRepository } from '../modules/products/repos/subscriptions.repo';
+import { CityRepository } from '../services/city-country/repos/city.repo';
+import { CountryRepository } from 'src/services/city-country/repos/country.repo';
+import { TimezonesRepository } from 'src/services/city-country/repos/timezone.repo';
 
 export const REPOS = [
   PermissionRepository,
@@ -32,4 +35,7 @@ export const REPOS = [
   PlansRepository,
   PaymentMethodsRepository,
   SubscriptionsRepository,
+  CityRepository,
+  CountryRepository,
+  TimezonesRepository 
 ];

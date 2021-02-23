@@ -47,6 +47,7 @@ async function bootstrap() {
       throw error;
     });
 
+  
   const app = await NestFactory.create(AppModule, { ...logger, cors: true });
 
   const config = new DocumentBuilder()

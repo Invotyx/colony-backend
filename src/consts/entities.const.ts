@@ -16,6 +16,9 @@ import { PlansEntity } from '../entities/plans.entity';
 import { ProductsEntity } from '../entities/products.entity';
 import { SubscriptionsEntity } from '../entities/subscriptions.entity';
 import { PaymentMethodsEntity } from '../entities/payment-methods.entity';
+import { CityEntity } from '../entities/city.entity';
+import { CountryEntity } from '../entities/country.entity';
+import { TimezonesEntity } from '../entities/timezones.entity';
 import { JOIN_HELPER } from './join-helper.const';
 
 export const EntitiesRegister: any = {
@@ -37,6 +40,9 @@ export const EntitiesRegister: any = {
   ProductsEntity,
   SubscriptionsEntity,
   PaymentMethodsEntity,
+  CityEntity,
+  CountryEntity,
+  TimezonesEntity
 };
 
 export const Entities: any = Object.values(EntitiesRegister);

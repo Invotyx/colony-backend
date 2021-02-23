@@ -23,7 +23,7 @@ export class ForgotPasswordTokenSender {
           `#### Click this link to verify your email`,
           `** ${
             process.env.PUBLIC_APP_URL +
-            '/#/system/reset-password/' +
+            '/reset-password/' +
             model.newPasswordToken +
             '/' +
             model.email

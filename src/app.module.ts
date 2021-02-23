@@ -21,6 +21,8 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { SmsModule } from './modules/sms/sms.module';
 import { PhoneModule } from './modules/phone/phone.module';
 import { ApiCallingModule } from './services/api-calling/api-calling.module';
+import { CityCountryModule } from './services/city-country/city-country.module';
+import { CityCountryService } from './services/city-country/city-country.service';
 
 @Module({
   imports: [
@@ -41,7 +43,8 @@ import { ApiCallingModule } from './services/api-calling/api-calling.module';
     TasksModule,
     ApiCallingModule,
     SmsModule,
-    PhoneModule
+    PhoneModule,
+    CityCountryModule
   ],
   controllers: [AppController, SeederController],
   providers: [
@@ -51,6 +54,7 @@ import { ApiCallingModule } from './services/api-calling/api-calling.module';
     AppService,
     CompressionInterceptor,
     PermissionsService,
+    CityCountryService
   ],
 })
 export class AppModule {}

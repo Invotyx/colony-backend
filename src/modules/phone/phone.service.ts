@@ -40,6 +40,6 @@ export class PhoneService {
         return a;
     }, []).join('&');
     return str;
-}
+  }
 
 }

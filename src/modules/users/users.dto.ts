@@ -7,6 +7,8 @@ import {
   Length,
   MaxLength,
 } from 'class-validator';
+import { CityEntity } from 'src/entities/city.entity';
+import { CountryEntity } from 'src/entities/country.entity';
 import { LanguageEntity } from 'src/entities/language.entity';
 
 enum gender {
@@ -41,9 +43,13 @@ export class CreateUserDto {
   @IsNotEmpty()
   password: string;
 
-  @Length(5, 30)
+  @Length(3, 30)
   @IsOptional()
-  location: string;
+  city: CityEntity;
+
+  @Length(3, 30)
+  @IsOptional()
+  country: CountryEntity;
 
   @Length(0, 300)
   @IsOptional()
@@ -53,7 +59,7 @@ export class CreateUserDto {
   gender: gender;
 
   @IsOptional()
-  age: number;
+  dob: Date;
 
   @IsOptional()
   meta: any;
@@ -79,6 +85,10 @@ export class UpdateProfileDto {
   @IsOptional()
   @Length(3, 30)
   firstName: string;
+  
+  @Length(3, 30)
+  @IsOptional()
+  country: CountryEntity;
 
   @IsOptional()
   @Length(3, 30)
@@ -112,16 +122,16 @@ export class UpdateProfileDto {
   @IsOptional()
   meta: any;
 
-  @Length(5, 30)
+  @Length(3, 30)
   @IsOptional()
-  location: string;
+  city: CityEntity;
 
   @Length(0, 300)
   @IsOptional()
   statusMessage: string;
 
   @IsOptional()
-  age: number;
+  dob: Date;
 
   @IsOptional()
   profileImage: string;

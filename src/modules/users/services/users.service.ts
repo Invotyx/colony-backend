@@ -295,14 +295,17 @@ export class UsersService {
       if (user.language) {
         updateData.language = user.language;
       }
-      if (user.age) {
-        updateData.age = user.age;
+      if (user.dob) {
+        updateData.dob = user.dob;
       }
       if (user.statusMessage) {
         updateData.statusMessage = user.statusMessage;
       }
-      if (user.location) {
-        updateData.location = user.location;
+      if (user.city) {
+        updateData.city = user.city;
+      }
+      if (user.country) {
+        updateData.country = user.country;
       }
 
       if (user.firstName) {

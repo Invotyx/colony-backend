@@ -8,10 +8,13 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
+import { CityEntity } from './city.entity';
+import { CountryEntity } from './country.entity';
 import { LanguageEntity } from './language.entity';
 import { PaymentMethodsEntity } from './payment-methods.entity';
 import { RoleEntity } from './role.entity';
@@ -51,10 +54,7 @@ export class UserEntity {
   public gender: gender;
 
   @Column({ nullable: true })
-  public age: number;
-
-  @Column({ nullable: true, length: 20 })
-  public location: string;
+  public dob: Date;
 
   @Column({ nullable: true, length: 300 })
   public statusMessage: string;
@@ -114,6 +114,15 @@ export class UserEntity {
     cascade: false,
   })
   public paymentMethod!: PaymentMethodsEntity[];
+
+  @OneToOne(() => CityEntity,{nullable:true,eager:true})
+  @JoinColumn()
+  city: CityEntity;
+
+  
+  @OneToOne(() => CountryEntity,{nullable:true,eager:true})
+  @JoinColumn()
+  country: CountryEntity;
 
   toJSON() {
     return classToPlain(this);

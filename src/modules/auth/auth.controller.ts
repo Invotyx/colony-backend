@@ -63,7 +63,7 @@ export class AuthController {
     @Param('id') id: number,
   ) {
     try {
-      const allData = await this.userService.findOne(id);
+      const allData = await this.userService.repository.findOne({where:{id:id}});
       const oldPassword = await PasswordHashEngine.check(
         user.oldPassword,
         allData.password,
@@ -83,8 +83,8 @@ export class AuthController {
   @UsePipes(ValidationPipe)
   async updateProfile(@Body() user: UpdateProfileDto, @Param('id') id: number) {
     try {
-      const allData = await this.userService.findOne(id);
-      console.log(allData);
+      const allData = await this.userService.repository.findOne({ where: { id: id } });
+
       const updateUser = await this.userService.updateUser(id, user);
       return { data: updateUser };
     } catch (error) {

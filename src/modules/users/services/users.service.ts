@@ -253,9 +253,9 @@ export class UsersService {
   async updateUser(id: string | number | any, user: UpdateProfileDto) {
     const updateData: any = {};
     let isAlreadyExist: any;
-
     try {
-      if (user.email && this.isValidEmail(user.email)) {
+      /* if (user.email && this.isValidEmail(user.email)) {
+        
         isAlreadyExist = await this.isEmailExists(user.email);
         if (isAlreadyExist && isAlreadyExist.email !== user.email) {
           throw EmailAlreadyExistError;
@@ -269,7 +269,7 @@ export class UsersService {
           throw UserNameAlreadyExistError;
         }
         updateData.username = user.username;
-      }
+      } */
 
       if (user.password) {
         user.password = await PasswordHashEngine.make(user.password);
@@ -310,6 +310,8 @@ export class UsersService {
       if (user.lastName) {
         updateData.lastName = user.lastName;
       }
+
+      
       const updateUser = await this.repository.update(id, updateData);
       return { user: plainToClass(UserEntity, updateUser) };
     } catch (error) {

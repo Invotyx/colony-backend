@@ -99,8 +99,9 @@ export class UsersService {
         if (count> 0) {
           throw PhoneAlreadyExistError;
         }
-        const uniqueid = nanoid()
+        
         user.password = await PasswordHashEngine.make(user.password);
+        user.urlId = nanoid();
         const newUser = await this.repository.save(user);
         await this.createEmailToken(user.email);
         await this.emailTokenSend.sendEmailVerification(user.email);
@@ -311,6 +312,9 @@ export class UsersService {
       if (user.lastName) {
         updateData.lastName = user.lastName;
       }
+      if (user.timezone) {
+        updateData.timezone = user.timezone;
+      }
 
       
       const updateUser = await this.repository.update(id, updateData);
@@ -343,7 +347,7 @@ export class UsersService {
   }
 
   async setProfileImage(user: UserEntity, file: any) {
-    user.image = file.originalname;
+    user.image = file.filename;
     await this.repository.save(user);
     return true;
   }

@@ -84,7 +84,7 @@ export class UserEntity {
   @OneToMany(() => UserToRoleEntity, (roles) => roles.user)
   public userToRole!: UserToRoleEntity[];
 
-  @ManyToMany(() => RoleEntity, (roles) => roles.users)
+  @ManyToMany(() => RoleEntity, (roles) => roles.users,{eager:true})
   @JoinTable({
     name: TABLES.USER_ROLE.name,
     joinColumn: { name: 'userId', referencedColumnName: 'id' },
@@ -105,6 +105,9 @@ export class UserEntity {
 
   @Column({ type: 'json', nullable: true })
   public meta: string;
+
+  @Column({ length:100, nullable: false, unique:true })
+  public urlId: string;
 
   @OneToMany(() => PaymentMethodsEntity, (pm) => pm.user, {
     eager: true,

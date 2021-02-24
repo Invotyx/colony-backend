@@ -70,6 +70,9 @@ export class CreateUserDto {
   @IsNotEmpty()
   @Length(3,100)
   timezone: string;
+  
+  @IsOptional()
+  urlId: string;
 }
 
 export class UpdateProfileDto {
@@ -128,6 +131,14 @@ export class UpdateProfileDto {
 
   @IsOptional()
   language: LanguageEntity;
+
+  @IsOptional()
+  urlId: string;
+
+  
+  @IsOptional()
+  @Length(3,100)
+  timezone: string;
 }
 
 export class PasswordChange {

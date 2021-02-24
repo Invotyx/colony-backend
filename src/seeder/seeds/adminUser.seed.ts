@@ -5,6 +5,7 @@ import { UsersService } from 'src/modules/users/services/users.service';
 import { UserEntity } from 'src/entities/user.entity';
 import { UpdateRole } from 'src/modules/users/users.dto';
 import { PasswordHashEngine } from 'src/modules/auth/hash.service';
+import { nanoid } from 'nanoid';
 
 @Seeder()
 export class CreateAdminSeed implements ISeed {
@@ -23,7 +24,7 @@ export class CreateAdminSeed implements ISeed {
     admin.isActive = true;
     admin.isApproved = true;
     admin.statusMessage = "I'm system admin";
-
+    admin.urlId = nanoid();
     const check = await this.usersService.repository.findOne({
       where: { username: 'admin' },
     });

@@ -322,7 +322,7 @@ export class CityCountryService {
         }
       }));
       const response = await fetch(
-        `${this.baseUrl}/City?count=1&limit=100000&order=name&keys=name,cityId&where=${where}`,
+        `${this.baseUrl}/City?count=1&limit=50000&order=name&keys=name,cityId&where=${where}`,
         {
           headers: this.headers
         }

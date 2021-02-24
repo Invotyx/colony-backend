@@ -108,7 +108,7 @@ export class UserEntity {
 
   @OneToMany(() => PaymentMethodsEntity, (pm) => pm.user, {
     eager: true,
-    cascade: true,
+    cascade: false,
   })
   public paymentMethod!: PaymentMethodsEntity[];
 

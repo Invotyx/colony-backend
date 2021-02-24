@@ -298,7 +298,8 @@ export class UsersController {
         res.status(HttpStatus.BAD_REQUEST).send(UserNotExistError);
       }
       user.password = await PasswordHashEngine.make(data.password);
-      await this.userService.repository.update(user.id, user);
+      
+      await this.userService.repository.save(user);
       res.status(HttpStatus.CREATED).send({ data: user });
     } catch (error) {
       if (error instanceof InValidDataError) {

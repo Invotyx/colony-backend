@@ -22,7 +22,7 @@ import { EmailTokenSender } from '../../../mails/users/emailtoken.mailer';
 import { ForgotPassword } from 'src/entities/forgottenpassword.entity';
 import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer';
 import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
-
+import { nanoid } from 'nanoid';
 @Injectable()
 export class UsersService {
   constructor(
@@ -99,6 +99,7 @@ export class UsersService {
         if (count> 0) {
           throw PhoneAlreadyExistError;
         }
+        const uniqueid = nanoid()
         user.password = await PasswordHashEngine.make(user.password);
         const newUser = await this.repository.save(user);
         await this.createEmailToken(user.email);

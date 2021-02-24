@@ -300,14 +300,14 @@ export class UsersController {
       user.password = await PasswordHashEngine.make(data.password);
       
       await this.userService.repository.save(user);
-      res.status(HttpStatus.CREATED).send({ data: user });
+      res.status(HttpStatus.CREATED).send({ message: "Password updated successfully." });
     } catch (error) {
       if (error instanceof InValidDataError) {
         res
           .status(HttpStatus.BAD_REQUEST)
           .send(inValidDataRes([error.message]));
       }
-      res.status(HttpStatus.BAD_REQUEST).send(error.message);
+      res.status(HttpStatus.BAD_REQUEST).send({ message: error.message });
     }
   }
 

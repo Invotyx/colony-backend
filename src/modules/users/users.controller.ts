@@ -44,6 +44,7 @@ import { UserEntity } from 'src/entities/user.entity';
 import { EmailTokenSender } from 'src/mails/users/emailtoken.mailer';
 import { diskStorage } from 'multer';
 import { editFileName, imageFileFilter } from './imageupload.service';
+import { LoginUser } from 'src/decorators/user.decorator';
 
 // const idToPath = (x, data) => {
 //   return `APP/${data.orgId}/${TABLES.USERS.id}/${data.id}/${path}`;
@@ -120,10 +121,8 @@ export class UsersController {
 
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
-  async getUserProfile(
-    @GetUser() user: { userId: number },
-  ): Promise<UserEntity> {
-    return await this.userService.findOne(user.userId);
+  async getUserProfile(@LoginUser() user: UserEntity  ): Promise<UserEntity> {
+    return await this.userService.repository.findOne({ where: { id: user.id } });
   }
 
   @Get('verify/:token')

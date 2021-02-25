@@ -102,7 +102,8 @@ export class UsersService {
         
         user.password = await PasswordHashEngine.make(user.password);
         user.urlId = nanoid();
-        const newUser = await this.repository.save(user);
+        const newUser:any = await this.repository.save(user);
+        await this.updateRoles(newUser.id, { userId: newUser.id, roleId: [2] });
         await this.createEmailToken(user.email);
         await this.emailTokenSend.sendEmailVerification(user.email);
         return { user: newUser };
@@ -231,7 +232,6 @@ export class UsersService {
         HttpStatus.METHOD_NOT_ALLOWED,
       );
     } else {
-      console.log(emailVerification);
       const _emver = new EmailVerifications();
       if (!emailVerification) {
         _emver.email = email;

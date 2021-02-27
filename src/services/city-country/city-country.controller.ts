@@ -1,17 +1,23 @@
 import { BadRequestException, Controller, Get, Injectable, Param } from '@nestjs/common';
 import { CityCountryService } from './city-country.service';
+import { CityRepository } from './repos/city.repo';
+import { CountryRepository } from './repos/country.repo';
 
 @Injectable()
 @Controller('country')
 export class CityCountryController {
-  constructor(private readonly service: CityCountryService) { }
+  constructor(
+    public readonly cityRepo: CityRepository,
+    public readonly countryRepo: CountryRepository
+  ) { }
   
-  @Get('')
+  @Get()
   async getCountries() {
     try {
-      return { countries: await this.service.countryRepo.find() };
+      const countries = await this.countryRepo.find();
+      return { countries: countries };
     } catch (e) {
-      throw new BadRequestException(e);
+      throw e;
     }
   }
 
@@ -19,7 +25,7 @@ export class CityCountryController {
   async getCities(@Param('id') id: number) {
     try {
       return {
-        cities: await this.service.cityRepo.find(
+        cities: await this.cityRepo.find(
           { where: { country: id } }
         )
       };

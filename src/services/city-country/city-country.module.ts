@@ -9,8 +9,8 @@ import { CityCountryController } from './city-country.controller';
 @Module({
   
   imports: [MainMysqlModule],
+  controllers: [CityCountryController],
   providers: [CityCountryService,CityRepository,CountryRepository,TimezonesRepository],
   exports: [CityCountryService],
-  controllers: [CityCountryController]
 })
 export class CityCountryModule {}

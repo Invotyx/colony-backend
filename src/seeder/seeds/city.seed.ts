@@ -5,10 +5,9 @@ import { ISeed } from '../seeds.interface';
 
 @Injectable()
 @Seeder()
-export class CityCountrySeed implements ISeed {
+export class CitySeed implements ISeed {
   constructor(private readonly service: CityCountryService) {}
   async up() {
-    //await this.service.country();
     await this.service.city();
   }
   async down() {

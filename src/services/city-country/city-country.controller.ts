@@ -24,10 +24,10 @@ export class CityCountryController {
   @Get(':id/city')
   async getCities(@Param('id') id: number) {
     try {
+      console.log(id);
       return {
-        cities: await this.cityRepo.find(
-          { where: { country: id } }
-        )
+        cities: await this.cityRepo.createQueryBuilder('city').select().where(`city.countryId = '${id}'`).getMany()
+        
       };
     } catch (e) {
       throw new BadRequestException(e);

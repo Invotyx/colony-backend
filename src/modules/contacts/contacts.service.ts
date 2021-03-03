@@ -4,8 +4,6 @@ import { InfluencerContactRepository } from './repo/influencer-contact.repo';
 import { ContactDto } from './contact.dto';
 import { UsersService } from '../users/services/users.service';
 import { ContactsEntity } from 'src/entities/contacts.entity';
-import { UserEntity } from 'src/entities/user.entity';
-import { TABLES } from 'src/consts/tables.const';
 
 @Injectable()
 export class ContactsService {

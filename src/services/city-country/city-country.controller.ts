@@ -24,7 +24,7 @@ export class CityCountryController {
   }
   
   @Get(':id/city')
-  async getCities(@Param('id') id: number,@Query('page') page: number, @Query('limit') limit: number) {
+  async getCities(@Param('id') id: number,@Query('page') page: number, @Query('limit') limit: number, @Query('city') city: string) {
     if (!page) {
       page = 1;
     }
@@ -39,6 +39,11 @@ export class CityCountryController {
             field: 'countryId',
             operator: 'equal',
             value: id
+          },
+          {
+            field: 'name',
+            operator: 'begins_with',
+            value: city
           }
         ],
         valid: true
@@ -53,6 +58,8 @@ export class CityCountryController {
 
     return this.getAllCities(data);
   }
+
+  
 
   async getAllCities(data: any) {
     try {

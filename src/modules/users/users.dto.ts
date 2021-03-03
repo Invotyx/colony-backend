@@ -31,7 +31,7 @@ export class CreateUserDto {
   username: string;
 
   @IsEmail()
-  @MaxLength(30)
+  @MaxLength(100)
   @IsNotEmpty()
   email: string;
 
@@ -83,7 +83,7 @@ export class CreateUserDto {
 
 export class UpdateProfileDto {
   @IsOptional()
-  @Length(3, 30)
+  @Length(3, 20)
   firstName: string;
   
   @Length(3, 30)
@@ -91,7 +91,7 @@ export class UpdateProfileDto {
   country: CountryEntity;
 
   @IsOptional()
-  @Length(3, 30)
+  @Length(3, 20)
   lastName: string;
 
   @Length(3, 20)
@@ -99,7 +99,7 @@ export class UpdateProfileDto {
   username: string;
 
   @IsEmail()
-  @MaxLength(30)
+  @MaxLength(100)
   @IsOptional()
   email: string;
 

@@ -1,5 +1,5 @@
 import { oneLine } from 'common-tags';
-import { pbkdf2 } from 'crypto';
+import { createCipheriv, createDecipheriv, pbkdf2, randomBytes } from 'crypto';
 import { promisify } from 'util';
 
 // import { createHash, HexBase64Latin1Encoding } from 'crypto';
@@ -14,6 +14,9 @@ const salt = oneLine`50f82ac053aeba9d2eb12daff3f139b0cf9a251ec065721063f564
 const secret =
   'kjGVINJ7f9hBLsQa=Z6lnSFrye4YAtpwXdmcEPiqb20CDgU513uKOT/W8+xRMozvH';
 
+const ENCRYPTION_KEY = '50f82ac053aeba9d2eb12daff3f139b3'; // Must be 256 bits (32 characters)
+const IV_LENGTH = 16;
+  
 export class CustomEncryptEngine {
   static encrypt(base64: string) {
     const r = Math.floor(Math.random() * 256);
@@ -58,6 +61,29 @@ export class HashEngine {
   async check(key: string, hash: string) {
     // return await argon2.verify('$argon2i$v=19$m=4096,t=3,p=1' + hash, key);
     return (await this.genHash(key)) === CustomEncryptEngine.decrypt(hash);
+  }
+
+   
+  async eForEncrypt(text) {
+    let iv = randomBytes(IV_LENGTH);
+    let cipher = createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+    let encrypted = cipher.update(text);
+  
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+  
+    return iv.toString('hex') + ':' + encrypted.toString('hex');
+  }
+  
+  async dForDecrypt(text) {
+    let textParts = text.split(':');
+    let iv = Buffer.from(textParts.shift(), 'hex');
+    let encryptedText = Buffer.from(textParts.join(':'), 'hex');
+    let decipher = createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+    let decrypted = decipher.update(encryptedText);
+  
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+  
+    return decrypted.toString();
   }
 }
 

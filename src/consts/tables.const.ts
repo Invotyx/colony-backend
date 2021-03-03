@@ -28,7 +28,9 @@ const TablesList: any = {
   SUBSCRIPTIONS: new TableData(),
   TIMEZONES: new TableData(),
   CITY: new TableData(),
-  COUNTRY: new TableData()
+  COUNTRY: new TableData(),
+  CONTACTS: new TableData(),
+  INFLUENCER_CONTACTS: new TableData()
 };
 
 const numHash = (t: string) =>

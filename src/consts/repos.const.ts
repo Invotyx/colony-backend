@@ -17,6 +17,8 @@ import { SubscriptionsRepository } from '../modules/products/repos/subscriptions
 import { CityRepository } from '../services/city-country/repos/city.repo';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
 import { TimezonesRepository } from 'src/services/city-country/repos/timezone.repo';
+import { ContactsRepository } from 'src/modules/contacts/repo/contact.repo';
+import { InfluencerContactRepository } from 'src/modules/contacts/repo/influencer-contact.repo';
 
 export const REPOS = [
   PermissionRepository,
@@ -37,5 +39,7 @@ export const REPOS = [
   SubscriptionsRepository,
   CityRepository,
   CountryRepository,
-  TimezonesRepository 
+  TimezonesRepository,
+  InfluencerContactRepository,
+  ContactsRepository
 ];

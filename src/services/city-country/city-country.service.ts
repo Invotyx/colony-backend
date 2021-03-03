@@ -77,15 +77,14 @@ export class CityCountryService {
         }
       );
       const data = await response.json(); // Here you have the data that you need
-  
-      (data.results).forEach(async datum => {
+      
+       (data.results).forEach(async datum => {
         const _city = new CityEntity();
         _city.name = datum.name;
         _city.id = datum.objectId;
         _city.country = country;
         await this.cityRepo.save(_city);
-      });
-    
+      }); 
     });
 
     

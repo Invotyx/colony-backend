@@ -19,6 +19,8 @@ import { PaymentMethodsEntity } from '../entities/payment-methods.entity';
 import { CityEntity } from '../entities/city.entity';
 import { CountryEntity } from '../entities/country.entity';
 import { TimezonesEntity } from '../entities/timezones.entity';
+import { ContactsEntity } from '../entities/contacts.entity';
+import { InfluencerContactsEntity } from '../entities/influencer-contacts.entity';
 import { JOIN_HELPER } from './join-helper.const';
 
 export const EntitiesRegister: any = {
@@ -42,7 +44,9 @@ export const EntitiesRegister: any = {
   PaymentMethodsEntity,
   CityEntity,
   CountryEntity,
-  TimezonesEntity
+  TimezonesEntity,
+  ContactsEntity,
+  InfluencerContactsEntity,
 };
 
 export const Entities: any = Object.values(EntitiesRegister);

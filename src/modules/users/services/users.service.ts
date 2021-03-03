@@ -23,6 +23,9 @@ import { ForgotPassword } from 'src/entities/forgottenpassword.entity';
 import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer';
 import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
 import { nanoid } from 'nanoid';
+import { join } from 'path';
+import * as fs  from 'fs';
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -350,9 +353,13 @@ export class UsersService {
   }
 
   async setProfileImage(user: UserEntity, file: any) {
+    if (user.image) {
+      const filePath = join(__dirname, '../../../..', 'uploads', user.image);
+      fs.unlinkSync(filePath);
+    }
     user.image = file.filename;
     await this.repository.save(user);
-    return true;
+    return { profileImage: user.image };
   }
 
   async searchUserForAuth(username: any) {

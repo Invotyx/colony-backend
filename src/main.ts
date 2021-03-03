@@ -9,6 +9,7 @@ import { SeederService } from './seeder/seeder.service';
 async function bootstrap() {
   NestFactory.createApplicationContext(SeederModule)
     .then((appContext) => {
+
       const seeder = appContext.get(SeederService);
       seeder
         .sow({ klass: 'RolesSeed', up: true })
@@ -47,6 +48,8 @@ async function bootstrap() {
       throw error;
     });
 
+  
+  
   
   const app = await NestFactory.create(AppModule, { ...logger, cors: true });
 

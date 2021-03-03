@@ -26,7 +26,7 @@ export class CreateUserDto {
   lastName: string;
 
   //@Unique({ table: TABLES.USERS.name, column: 'username' })
-  @Length(3, 60)
+  @Length(3, 20)
   @IsNotEmpty()
   username: string;
 

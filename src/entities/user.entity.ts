@@ -14,7 +14,9 @@ import {
 } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
 import { CityEntity } from './city.entity';
+import { ContactsEntity } from './contacts.entity';
 import { CountryEntity } from './country.entity';
+import { InfluencerContactsEntity } from './influencer-contacts.entity';
 import { LanguageEntity } from './language.entity';
 import { PaymentMethodsEntity } from './payment-methods.entity';
 import { RoleEntity } from './role.entity';
@@ -92,6 +94,9 @@ export class UserEntity {
   })
   roles: RoleEntity[];
 
+  
+  @OneToMany(() => InfluencerContactsEntity, (cToI) => cToI.user)
+  public influencerContacts!: InfluencerContactsEntity[];
 
   @Column({ length: 100, nullable: false, default: 'Asia/Karachi' })
   public timezone: string;
@@ -123,6 +128,10 @@ export class UserEntity {
   @OneToOne(() => CountryEntity,{nullable:true,eager:true})
   @JoinColumn()
   country: CountryEntity;
+
+  
+  @ManyToMany(() => ContactsEntity, (contact) => contact.user)
+  public contact!: ContactsEntity[];
 
   toJSON() {
     return classToPlain(this);

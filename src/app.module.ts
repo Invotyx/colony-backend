@@ -24,6 +24,7 @@ import { ApiCallingModule } from './services/api-calling/api-calling.module';
 import { CityCountryModule } from './services/city-country/city-country.module';
 import { CityCountryService } from './services/city-country/city-country.service';
 import { CityCountryController } from './services/city-country/city-country.controller';
+import { ContactsModule } from './modules/contacts/contacts.module';
 
 @Module({
   imports: [
@@ -45,7 +46,8 @@ import { CityCountryController } from './services/city-country/city-country.cont
     ApiCallingModule,
     SmsModule,
     PhoneModule,
-    CityCountryModule
+    CityCountryModule,
+    ContactsModule
   ],
   controllers: [AppController, SeederController,CityCountryController],
   providers: [

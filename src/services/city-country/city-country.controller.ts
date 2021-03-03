@@ -41,9 +41,23 @@ export class CityCountryController {
             value: id
           },
           {
-            field: 'name',
-            operator: 'begins_with',
-            value: city
+            condition: "OR",
+            rules: [
+              {
+                field: 'name',
+                operator: 'begins_with',
+                value: city.toUpperCase(),
+                type: "string",
+                input: "text",
+              },
+              {
+                field: 'name',
+                operator: 'begins_with',
+                value: city.substr(0, 1).toUpperCase().concat(city.substring(1, city.length)),
+                type: "string",
+                input: "text",
+              }
+            ]
           }
         ],
         valid: true

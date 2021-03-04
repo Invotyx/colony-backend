@@ -85,7 +85,7 @@ export class PlansService {
     try {
       await this.stripe.plans.del(planId);
 
-      const _plan = await this.repository.delete(planId);
+      const _plan = await this.repository.softDelete(planId);
       return { plan: _plan };
     } catch (e) {
       throw e;

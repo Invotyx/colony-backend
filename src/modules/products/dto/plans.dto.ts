@@ -27,6 +27,7 @@ export class PlansDto {
 
   @IsOptional()
   @IsDecimal()
+  @Min(0)
   public amount_decimal: number;
 
   @IsNotEmpty()
@@ -58,10 +59,10 @@ export class PlansDto {
   public product: ProductsEntity;
 
   @IsNotEmpty()
-  @Min(1)
+  @Min(0)
   public phoneCount: number;
 
   @IsNotEmpty()
-  @Min(1)
+  @Min(0)
   public smsCount: number;
 }

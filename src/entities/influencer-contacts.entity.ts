@@ -1,5 +1,5 @@
 import { nanoid } from 'src/shared/random-keygen';
-import {  AfterInsert, BeforeInsert, Column, Entity,  EntitySubscriberInterface,  EventSubscriber,  InsertEvent,  ManyToOne,  PrimaryColumn } from 'typeorm';
+import {  AfterInsert, BeforeInsert, Column, CreateDateColumn, Entity,  EntitySubscriberInterface,  EventSubscriber,  InsertEvent,  ManyToOne,  PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
 import { ContactsEntity } from './contacts.entity';
 import { UserEntity } from './user.entity';
@@ -18,13 +18,13 @@ export class InfluencerContactsEntity {
   @ManyToOne(() => ContactsEntity, (contact) => contact.influencerContacts)
   public contact!: ContactsEntity;
 
-  @Column({ length: 100, nullable: true })
+  @Column({ length: 100, nullable: true, default:nanoid() })
   public urlMapper: string;
 
-  @BeforeInsert()
-  async addUrlMapper(): Promise<void>{
-    const val = nanoid();
-    this.urlMapper = val;
-  }
 
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

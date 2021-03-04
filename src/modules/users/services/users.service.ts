@@ -276,6 +276,8 @@ export class UsersService {
         updateData.username = user.username;
       } */
 
+      console.log("===========",user);
+
       if (user.password) {
         user.password = await PasswordHashEngine.make(user.password);
         updateData.password = user.password;
@@ -321,11 +323,11 @@ export class UsersService {
       if (user.timezone) {
         updateData.timezone = user.timezone;
       }
-
       
-      const updateUser = await this.repository.update(id, updateData);
-      return { user: plainToClass(UserEntity, updateUser) };
+      const updateUser = await this.repository.update(id,updateData);
+      return { message: "user details updated." };
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }

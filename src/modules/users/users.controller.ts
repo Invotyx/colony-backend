@@ -238,7 +238,7 @@ export class UsersController {
     }
   }
 
-  @Auth({ roles: [ROLES.ADMIN] })
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Post(':id/update')
   @UsePipes(ValidationPipe)
   async updateUser(

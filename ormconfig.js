@@ -13,6 +13,5 @@ module.exports = {
   migrations: [process.env.PG_DB_MIG],
   cli: {
     migrationsDir: process.env.PG_DB_MIG_CLI_DIR,
-  },
-  subscribers: ['dist/**/*.subscriber{.ts,.js}'],
+  }
 };

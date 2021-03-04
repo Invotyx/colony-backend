@@ -4,6 +4,7 @@ import { InfluencerContactRepository } from './repo/influencer-contact.repo';
 import { ContactDto } from './contact.dto';
 import { UsersService } from '../users/services/users.service';
 import { ContactsEntity } from 'src/entities/contacts.entity';
+import { nanoid } from 'src/shared/random-keygen';
 
 @Injectable()
 export class ContactsService {
@@ -26,6 +27,9 @@ export class ContactsService {
           contact.user = [user];
           
           contact = await this.repository.save(await this.repository.create(contact));
+          const rel = await this.influencerContactRepo.findOne({ where: { contactId: contact.id, userId: user.id } });
+          rel.urlMapper = nanoid();
+          await this.influencerContactRepo.save(rel);
           contact.user = null;
           return contact;
         } else {
@@ -33,6 +37,9 @@ export class ContactsService {
           if (!rel) {
             con.user.push(user);
             await this.repository.save(con);
+            const newRel = await this.influencerContactRepo.findOne({ where: { contactId: con.id, userId: user.id } });
+            newRel.urlMapper = nanoid();
+            await this.influencerContactRepo.save(newRel);
           }
           con.user = null;
           return con;
@@ -43,5 +50,59 @@ export class ContactsService {
     } catch (ex) {
       throw ex;
     }
+  }
+
+
+
+  async updateContact(data: ContactDto) {
+    let contactDetails: any;
+    let flag = 0;
+    if (!data.phoneNumber) {
+      throw new HttpException('Phone number cannot be empty', HttpStatus.BAD_REQUEST);
+    }
+    if (data.name) {
+      contactDetails.name = data.name;
+      flag++;
+    }
+    if (data.gender) {
+      contactDetails.gender = data.gender;
+      flag++;
+    }
+    if (data.dob) {
+      contactDetails.dob = data.dob;
+      flag++
+    }
+    if (data.state) {
+      contactDetails.state = data.state;
+      flag++;
+    }
+    if (data.timezone) {
+      contactDetails.timezone = data.timezone;
+      flag++;
+    }
+    if (data.country) {
+      contactDetails.country = data.country;
+      flag++;
+    }
+    if (data.city) {
+      contactDetails.city = data.city;
+      flag++;
+    }
+
+    if (flag >= 7) {
+      contactDetails.isComplete = true;
+    } else {
+      contactDetails.isComplete = false;
+    }
+
+    try {
+
+      await this.repository.update({ phoneNumber: data.phoneNumber }, contactDetails);
+
+      return { message: "Contact details updated.", data: contactDetails };
+    } catch (e) {
+      throw e;
+    }
+
   }
 }

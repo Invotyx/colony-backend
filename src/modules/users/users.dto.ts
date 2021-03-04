@@ -4,6 +4,7 @@ import {
   IsInt,
   IsNotEmpty,
   IsOptional,
+  IsString,
   Length,
   MaxLength,
 } from 'class-validator';
@@ -43,11 +44,9 @@ export class CreateUserDto {
   @IsNotEmpty()
   password: string;
 
-  @Length(3, 30)
   @IsOptional()
   city: CityEntity;
 
-  @Length(3, 30)
   @IsOptional()
   country: CountryEntity;
 
@@ -86,7 +85,7 @@ export class UpdateProfileDto {
   @Length(3, 20)
   firstName: string;
   
-  @Length(3, 30)
+  @IsString()
   @IsOptional()
   country: CountryEntity;
 
@@ -122,7 +121,7 @@ export class UpdateProfileDto {
   @IsOptional()
   meta: any;
 
-  @Length(3, 30)
+  @IsString()
   @IsOptional()
   city: CityEntity;
 

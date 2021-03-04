@@ -5,6 +5,7 @@ import { ContactDto } from './contact.dto';
 import { UsersService } from '../users/services/users.service';
 import { ContactsEntity } from 'src/entities/contacts.entity';
 import { nanoid } from 'src/shared/random-keygen';
+import { TABLES } from 'src/consts/tables.const';
 
 @Injectable()
 export class ContactsService {
@@ -25,11 +26,9 @@ export class ContactsService {
           let contact = new ContactsEntity();
           contact.phoneNumber = phoneNumber;
           contact.user = [user];
-          
+          contact.urlMapper = nanoid();
           contact = await this.repository.save(await this.repository.create(contact));
-          const rel = await this.influencerContactRepo.findOne({ where: { contactId: contact.id, userId: user.id } });
-          rel.urlMapper = nanoid();
-          await this.influencerContactRepo.save(rel);
+
           contact.user = null;
           return contact;
         } else {
@@ -37,9 +36,6 @@ export class ContactsService {
           if (!rel) {
             con.user.push(user);
             await this.repository.save(con);
-            const newRel = await this.influencerContactRepo.findOne({ where: { contactId: con.id, userId: user.id } });
-            newRel.urlMapper = nanoid();
-            await this.influencerContactRepo.save(newRel);
           }
           con.user = null;
           return con;
@@ -52,14 +48,94 @@ export class ContactsService {
     }
   }
 
+  async filterContactsByAge(ageFrom: number,ageTo: number, influencerId: number) {
+    try {
+      const contacts = await this.repository.query(`
+        SELECT c.* from ${TABLES.CONTACTS.name} c LEFT JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = $1)
+        where  date_part('year', age(c.dob)) BETWEEN $2 and $3
+      `, [influencerId, ageFrom, ageTo]);
+
+      return { contacts: contacts, count: contacts.length };
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async filterContacts() {
+    //by new contacts
+    //by age
+    //by gender
+    //by locations
+    //by joindate
+
+    let query = `SELECT * FROM ${TABLES.CONTACTS.name} c LEFT JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = $1)`;
+
+    //age
+    if (true) {
+      if (!query.includes('WHERE')) {
+        query = query + `where date_part('year', age(c.dob)) BETWEEN $2 and $3`;
+      } else {
+        query = query + `and date_part('year', age(c.dob)) BETWEEN $2 and $3`;
+      }
+    }
+
+    //new contacts
+    if (true) {
+      if (!query.includes('WHERE')) {
+        query = query + `where date_part('day', age(c.createdAt)) <= $2`;
+      } else {
+        query = query + `and date_part('day', age(c.createdAt)) <= $2`;
+      }
+    }
+
+    //gender
+    if (true) {
+      if (!query.includes('WHERE')) {
+        query = query + `where c.gender = $2`;
+      } else {
+        query = query + `and c.gender = $2`;
+      }
+    }
+
+    
+    //city
+    if (true) {
+      if (!query.includes('WHERE')) {
+        query = query + `where c.cityId = $2`;
+      } else {
+        query = query + `and c.cityId = $2`;
+      }
+    }
+
+    //country
+    if (true) {
+      if (!query.includes('WHERE')) {
+        query = query + `where c.countryId = $2`;
+      } else {
+        query = query + `and c.countryId = $2`;
+      }
+    }
 
 
-  async updateContact(data: ContactDto) {
+  }
+
+  async filterContactsByGender(gender:string, influencerId: number) {
+    try {
+      const contacts = await this.repository.query(`
+        SELECT c.* from ${TABLES.CONTACTS.name} c LEFT JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = $1)
+        where gender equals $2
+      `, [influencerId, gender]);
+
+      return { contacts: contacts, count: contacts.length };
+    } catch (e) {
+      throw e;
+    }
+  }
+
+
+  async updateContact(urlId:string,data: ContactDto) {
     let contactDetails: any;
     let flag = 0;
-    if (!data.phoneNumber) {
-      throw new HttpException('Phone number cannot be empty', HttpStatus.BAD_REQUEST);
-    }
     if (data.name) {
       contactDetails.name = data.name;
       flag++;
@@ -97,7 +173,7 @@ export class ContactsService {
 
     try {
 
-      await this.repository.update({ phoneNumber: data.phoneNumber }, contactDetails);
+      await this.repository.update({ urlMapper: urlId }, contactDetails);
 
       return { message: "Contact details updated.", data: contactDetails };
     } catch (e) {

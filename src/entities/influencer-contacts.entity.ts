@@ -17,14 +17,4 @@ export class InfluencerContactsEntity {
 
   @ManyToOne(() => ContactsEntity, (contact) => contact.influencerContacts)
   public contact!: ContactsEntity;
-
-  @Column({ length: 100, nullable: true, default:nanoid() })
-  public urlMapper: string;
-
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

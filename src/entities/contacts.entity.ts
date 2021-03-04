@@ -45,9 +45,8 @@ export class ContactsEntity {
   @Column({ length: 100, nullable: true })
   public timezone: string;
 
-  @Column({default:false,nullable:false})
-  public isVerified: boolean;
-
+  @Column({ length: 100, nullable: true })
+  public urlMapper: string;
   
   @OneToMany(() => InfluencerContactsEntity, (cToI) => cToI.contact)
   public influencerContacts!: InfluencerContactsEntity[];

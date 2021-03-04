@@ -254,7 +254,7 @@ export class UsersController {
       }
       const updateUser = await this.userService.updateUser(id, user);
 
-      res.status(HttpStatus.CREATED).send({ data: updateUser });
+      res.status(HttpStatus.CREATED).send({ updateUser });
     } catch (error) {
       if (error instanceof InValidDataError) {
         res

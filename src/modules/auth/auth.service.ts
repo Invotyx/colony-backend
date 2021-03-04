@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserEntity } from '../../entities/user.entity';
 import { UsersService } from '../users/services/users.service';
@@ -23,11 +23,11 @@ export class AuthService {
         );
 
         if (!isPwdMatch) {
-          return null;
+          throw new HttpException('Password mismatch error.', HttpStatus.BAD_REQUEST);
         }
         return user;
       } else {
-        throw 'Email not verified';
+        throw new HttpException('Email not verified.', HttpStatus.BAD_REQUEST);
       }
     } catch (error) {
       throw error;

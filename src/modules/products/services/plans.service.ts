@@ -113,7 +113,7 @@ export class PlansService {
 
       const _p = await this.repository.findOne({ where: { id: planId } });
       if (_p) {
-        _p.active = true;
+        _p.active = isActive;
       }
       const _plan = await this.repository.save(_p);
       return { plan: _plan };

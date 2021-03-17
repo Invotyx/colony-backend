@@ -83,6 +83,9 @@ export class UserEntity {
 
   @Column({ default: 0, nullable: false })
   public purchasedSmsCount: number;
+  
+  @Column({ default: 0, nullable: false })
+  public usedSmsCount: number;
 
   @CreateDateColumn()
   public createdAt: Date;

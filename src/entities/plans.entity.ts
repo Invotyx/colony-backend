@@ -66,10 +66,10 @@ export class PlansEntity {
   @Column({ nullable: false, length: 20 })
   public recurring: string;
 
-  @Column({ default: 1, nullable: false, unsigned: true })
+  @Column({ default: 0, nullable: true, unsigned: true })
   public phoneCount: number;
 
-  @Column({ default: 1, nullable: false, unsigned: true })
+  @Column({ default: 0, nullable: true, unsigned: true })
   public smsCount: number;
 
   @CreateDateColumn()

@@ -71,13 +71,13 @@ export class PlansDto {
   @IsString()
   public product: ProductsEntity;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @Min(0)
   public phoneCount: number;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @Min(0)
   public smsCount: number;
 }

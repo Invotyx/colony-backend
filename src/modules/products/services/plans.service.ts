@@ -4,6 +4,7 @@ import { PlansRepository } from '../repos/plans.repo';
 import { interval } from '../dto/plans.dto';
 import Stripe from 'stripe';
 import { env } from 'process';
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 
 @Injectable()
 export class PlansService {
@@ -16,27 +17,44 @@ export class PlansService {
 
   async createPlanInStripe(plan: PlansDto, productId: string): Promise<any> {
     try {
-      const newPlan = await this.stripe.plans.create({
-        amount_decimal: (plan.amount_decimal * 100).toString(),
-        product: productId,
-        currency: (plan.currency!=''?plan.currency.toUpperCase():'USD'),
-        interval: ((plan.interval.toString() === 'month') || plan.interval.toString()==='' ? 'month' : 'year'),
-        active: true,
-        nickname: plan.nickname,
-      });
+      if (plan.planType === 'bundle' && plan.smsCount === 0 && plan.phoneCount === 0) {
+        throw new HttpException('For bundle plan sms and phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
+      }
+      else if (plan.planType === 'phoneOnly' && plan.phoneCount === 0) {
+        throw new HttpException('For phone only plan phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
+      }
+      else if (plan.planType === 'smsOnly' && plan.smsCount === 0) {
+        throw new HttpException('For sms only plan sms credits should be greater than 0.', HttpStatus.BAD_REQUEST);
+      }
+      else {
+        if (plan.planType === 'smsOnly') {
+          plan.phoneCount = 0;
+        }
+        if (plan.planType === 'phoneOnly') {
+          plan.smsCount = 0;
+        }
+        const newPlan = await this.stripe.plans.create({
+          amount_decimal: (plan.amount_decimal * 100).toString(),
+          product: productId,
+          currency: (plan.currency != '' ? plan.currency.toUpperCase() : 'USD'),
+          interval: ((plan.interval.toString() === 'month') || plan.interval.toString() === '' ? 'month' : 'year'),
+          active: true,
+          nickname: plan.nickname,
+        });
 
-      if (newPlan) {
-        plan.id = newPlan.id;
-        plan.product = productId as any;
-        plan.active = true;
-        plan.interval = ((plan.interval.toString() === 'month') || plan.interval.toString() === '' ? interval.month : interval.year),
+        if (newPlan) {
+          plan.id = newPlan.id;
+          plan.product = productId as any;
+          plan.active = true;
+          plan.interval = ((plan.interval.toString() === 'month') || plan.interval.toString() === '' ? interval.month : interval.year),
       
-          plan.currency = (plan.currency != '' ? plan.currency.toUpperCase() : 'USD');
-        const dbPlan = await this.repository.save(plan);
+            plan.currency = (plan.currency != '' ? plan.currency.toUpperCase() : 'USD');
+          const dbPlan = await this.repository.save(plan);
 
-        return { plan: dbPlan, message: 'Plan created.' };
-      } else {
-        throw new HttpException('No such product exists', HttpStatus.BAD_REQUEST);
+          return { plan: dbPlan, message: 'Plan created.' };
+        } else {
+          throw new HttpException('No such product exists', HttpStatus.BAD_REQUEST);
+        }
       }
     } catch (e) {
       throw e;
@@ -45,22 +63,39 @@ export class PlansService {
 
   async createPriceInStripe(plan: PlansDto, productId: string): Promise<any> {
     try {
-      const newPlan = await this.stripe.prices.create({
-        product: productId,
-        unit_amount_decimal: (plan.amount_decimal * 100).toString(),
-        currency: plan.currency,
-        active: true,
-        nickname: plan.nickname,
-      });
-      if (newPlan) {
-        plan.id = newPlan.id;
-        plan.product = productId as any;
-        plan.active = true;
-        const dbPlan = await this.repository.save(plan);
+      if (plan.planType === 'bundle' && plan.smsCount === 0 && plan.phoneCount === 0) {
+        throw new HttpException('For bundle plan sms and phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
+      }
+      else if (plan.planType === 'phoneOnly' && plan.phoneCount === 0) {
+        throw new HttpException('For phone only plan phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
+      }
+      else if (plan.planType === 'smsOnly' && plan.smsCount === 0) {
+        throw new HttpException('For sms only plan sms credits should be greater than 0.', HttpStatus.BAD_REQUEST);
+      }
+      else {
+        if (plan.planType === 'smsOnly') {
+          plan.phoneCount = 0;
+        }
+        if (plan.planType === 'phoneOnly') {
+          plan.smsCount = 0;
+        }
+        const newPlan = await this.stripe.prices.create({
+          product: productId,
+          unit_amount_decimal: (plan.amount_decimal * 100).toString(),
+          currency: plan.currency,
+          active: true,
+          nickname: plan.nickname,
+        });
+        if (newPlan) {
+          plan.id = newPlan.id;
+          plan.product = productId as any;
+          plan.active = true;
+          const dbPlan = await this.repository.save(plan);
 
-        return { plan: dbPlan };
-      } else {
-        throw new HttpException('No such product exists', HttpStatus.BAD_REQUEST);
+          return { plan: dbPlan };
+        } else {
+          throw new HttpException('No such product exists', HttpStatus.BAD_REQUEST);
+        }
       }
     } catch (e) {
       throw e;

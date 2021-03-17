@@ -11,6 +11,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/decorators/auth.decorator';
+import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { PlansDto } from '../dto/plans.dto';
 import { PlansService } from '../services/plans.service';
 import { ProductsService } from '../services/products.service';
@@ -52,6 +54,7 @@ export class ProductsController {
     }
   }
 
+  @Auth({roles:[ROLES.ADMIN]})
   @Post(':pid/plan/')
   public async createPlan(@Param('pid') pid: string, @Body() data: PlansDto) {
     //createPlanInStripe
@@ -101,6 +104,7 @@ export class ProductsController {
     }
   }
 
+  @Auth({roles:[ROLES.ADMIN]})
   @Put(':pid/plan/:planId')
   public async activationTogglePlan(
     @Param('planId') planId: string,
@@ -117,6 +121,7 @@ export class ProductsController {
     }
   }
 
+  @Auth({roles:[ROLES.ADMIN]})
   @Delete(':pid/plan/:planId')
   public async deletePlan(@Param('planId') planId: string) {
     try {

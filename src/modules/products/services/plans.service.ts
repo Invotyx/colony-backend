@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PlansDto } from '../dto/plans.dto';
+import { PlansDto, planType } from '../dto/plans.dto';
 import { PlansRepository } from '../repos/plans.repo';
 import { interval } from '../dto/plans.dto';
 import Stripe from 'stripe';
@@ -19,8 +19,8 @@ export class PlansService {
       const newPlan = await this.stripe.plans.create({
         amount_decimal: (plan.amount_decimal * 100).toString(),
         product: productId,
-        currency: plan.currency,
-        interval: plan.interval.toString() === 'month' ? 'month' : 'year',
+        currency: (plan.currency!=''?plan.currency.toUpperCase():'USD'),
+        interval: ((plan.interval.toString() === 'month') || plan.interval.toString()==='' ? 'month' : 'year'),
         active: true,
         nickname: plan.nickname,
       });
@@ -28,11 +28,12 @@ export class PlansService {
       plan.id = newPlan.id;
       plan.product = productId as any;
       plan.active = true;
-      plan.interval =
-        plan.interval.toString() === 'month' ? interval.month : interval.year;
+      plan.interval = ((plan.interval.toString() === 'month') || plan.interval.toString()==='' ? interval.month : interval.year),
+      
+      plan.currency = (plan.currency != '' ? plan.currency.toUpperCase() : 'USD');
       const dbPlan = await this.repository.save(plan);
 
-      return { plan: dbPlan };
+      return { plan: dbPlan, message:'Plan created.' };
     } catch (e) {
       throw e;
     }

@@ -10,12 +10,14 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { PlansDto } from '../dto/plans.dto';
 import { PlansService } from '../services/plans.service';
 import { ProductsService } from '../services/products.service';
 
 @Injectable()
 @Controller('products')
+@ApiTags('products')
 export class ProductsController {
   constructor(
     public readonly planService: PlansService,

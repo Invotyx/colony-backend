@@ -9,6 +9,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entities/user.entity';
@@ -18,6 +19,7 @@ import { SubscriptionsService } from '../services/subscriptions.service';
 
 @Injectable()
 @Controller('subscriptions')
+@ApiTags('subscriptions')
 export class SubscriptionsController {
   constructor(
     public readonly subscriptionService: SubscriptionsService,

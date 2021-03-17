@@ -7,10 +7,14 @@ import { TimezonesRepository } from './repos/timezone.repo';
 import { CityCountryController } from './city-country.controller';
 
 @Module({
-  
   imports: [MainMysqlModule],
   controllers: [CityCountryController],
-  providers: [CityCountryService,CityRepository,CountryRepository,TimezonesRepository],
+  providers: [
+    CityCountryService,
+    CityRepository,
+    CountryRepository,
+    TimezonesRepository,
+  ],
   exports: [CityCountryService],
 })
 export class CityCountryModule {}

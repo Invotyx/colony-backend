@@ -17,7 +17,7 @@ import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TABLES } from '../../consts/tables.const';
 import { Auth } from '../../decorators/auth.decorator';
-import { PasswordHashEngine } from '../auth/hash.service';
+import { PasswordHashEngine } from '../../shared/hash.service';
 import { CompressJSON } from '../../services/common/compression/compression.interceptor';
 import { RolesService } from './services/roles.service';
 import { InValidDataError, UserNotExistError } from './errors/users.error';
@@ -39,17 +39,18 @@ import {
 } from './users.dto';
 import { ROLES } from '../../services/access-control/consts/roles.const';
 import { AuthGuard } from '@nestjs/passport';
-import { GetUser } from './get-user.decorator';
 import { UserEntity } from 'src/entities/user.entity';
 import { EmailTokenSender } from 'src/mails/users/emailtoken.mailer';
 import { diskStorage } from 'multer';
 import { editFileName, imageFileFilter } from './imageupload.service';
 import { LoginUser } from 'src/decorators/user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
 // const idToPath = (x, data) => {
 //   return `APP/${data.orgId}/${TABLES.USERS.id}/${data.id}/${path}`;
 // };
 @Controller('users')
+@ApiTags('users')
 export class UsersController {
   constructor(
     private readonly userService: UsersService,
@@ -121,14 +122,16 @@ export class UsersController {
 
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
-  async getUserProfile(@LoginUser() user: UserEntity  ): Promise<UserEntity> {
-    return await this.userService.repository.findOne({ where: { id: user.id } });
+  async getUserProfile(@LoginUser() user: UserEntity): Promise<UserEntity> {
+    return await this.userService.repository.findOne({
+      where: { id: user.id },
+    });
   }
 
   @Get('verify/:token')
   async verifyEmail(@Param('token') token: any, @Res() res: Response) {
     try {
-      const isEmailVerified =await this.userService.verifyEmail(token);
+      const isEmailVerified = await this.userService.verifyEmail(token);
       if (isEmailVerified) res.status(HttpStatus.OK).send(isEmailVerified);
       else res.status(HttpStatus.NOT_FOUND).send('LOGIN_EMAIL_NOT_VERIFIED');
     } catch (error) {
@@ -232,8 +235,7 @@ export class UsersController {
       const newUser = await this.userService.createUser(user);
       res.status(HttpStatus.CREATED).send({ data: newUser });
     } catch (error) {
-      
-      console.log(error)
+      console.log(error);
       res.status(HttpStatus.BAD_REQUEST).send({ message: error.message });
     }
   }
@@ -297,9 +299,11 @@ export class UsersController {
         res.status(HttpStatus.BAD_REQUEST).send(UserNotExistError);
       }
       user.password = await PasswordHashEngine.make(data.password);
-      
+
       await this.userService.repository.save(user);
-      res.status(HttpStatus.CREATED).send({ message: "Password updated successfully." });
+      res
+        .status(HttpStatus.CREATED)
+        .send({ message: 'Password updated successfully.' });
     } catch (error) {
       if (error instanceof InValidDataError) {
         res

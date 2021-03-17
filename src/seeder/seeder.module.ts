@@ -10,7 +10,7 @@ import { SEEDS } from './seeds.const';
 export const SeederProviders: any = [SeederService, ...Object.values(SEEDS)];
 
 @Module({
-  imports: [MainMysqlModule, UsersModule, ProductsModule,CityCountryModule],
+  imports: [MainMysqlModule, UsersModule, ProductsModule, CityCountryModule],
   providers: [
     SeederService,
     PermissionsService,

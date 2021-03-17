@@ -30,7 +30,15 @@ const TablesList: any = {
   CITY: new TableData(),
   COUNTRY: new TableData(),
   CONTACTS: new TableData(),
-  INFLUENCER_CONTACTS: new TableData()
+  INFLUENCER_CONTACTS: new TableData(),
+  INFLUENCER_LINKS: new TableData(),
+  INFLUENCER_LINKS_TRACKING: new TableData(),
+
+  SMS_TEMPLATES: new TableData(),
+  BROADCASTS: new TableData(),
+  BROADCASTS_CONTACTS: new TableData(),
+  PRESET_MESSAGES: new TableData(),
+  PHONES: new TableData()
 };
 
 const numHash = (t: string) =>

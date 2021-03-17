@@ -1,18 +1,25 @@
-import { BadRequestException, Controller, Get, Injectable, Param, Query } from '@nestjs/common';
+import { Controller, Get, Injectable, Param, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { TABLES } from 'src/consts/tables.const';
-import { dataViewer, mapColumns, paginateQuery, PaginatorError, PaginatorErrorHandler } from 'src/shared/paginator';
-import { CityCountryService } from './city-country.service';
+import {
+  dataViewer,
+  mapColumns,
+  paginateQuery,
+  PaginatorError,
+  PaginatorErrorHandler,
+} from 'src/shared/paginator';
 import { CityRepository } from './repos/city.repo';
 import { CountryRepository } from './repos/country.repo';
 
 @Injectable()
 @Controller('country')
+@ApiTags('country')
 export class CityCountryController {
   constructor(
     public readonly cityRepo: CityRepository,
-    public readonly countryRepo: CountryRepository
-  ) { }
-  
+    public readonly countryRepo: CountryRepository,
+  ) {}
+
   @Get()
   async getCountries() {
     try {
@@ -22,9 +29,14 @@ export class CityCountryController {
       throw e;
     }
   }
-  
+
   @Get(':id/city')
-  async getCities(@Param('id') id: number,@Query('page') page: number, @Query('limit') limit: number, @Query('city') city: string) {
+  async getCities(
+    @Param('id') id: number,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('city') city: string,
+  ) {
     if (!page) {
       page = 1;
     }
@@ -33,47 +45,48 @@ export class CityCountryController {
     }
     const data: any = {
       filter: {
-        condition: "AND",
+        condition: 'AND',
         rules: [
           {
             field: 'countryId',
             operator: 'equal',
-            value: id
+            value: id,
           },
           {
-            condition: "OR",
+            condition: 'OR',
             rules: [
               {
                 field: 'name',
                 operator: 'begins_with',
                 value: city.toUpperCase(),
-                type: "string",
-                input: "text",
+                type: 'string',
+                input: 'text',
               },
               {
                 field: 'name',
                 operator: 'begins_with',
-                value: city.substr(0, 1).toUpperCase().concat(city.substring(1, city.length)),
-                type: "string",
-                input: "text",
-              }
-            ]
-          }
+                value: city
+                  .substr(0, 1)
+                  .toUpperCase()
+                  .concat(city.substring(1, city.length)),
+                type: 'string',
+                input: 'text',
+              },
+            ],
+          },
         ],
-        valid: true
+        valid: true,
       },
       config: {
         sort: 'name',
         order: 'ASC',
         page: page,
-        limit: limit
-      }
+        limit: limit,
+      },
     };
 
     return this.getAllCities(data);
   }
-
-  
 
   async getAllCities(data: any) {
     try {
@@ -117,5 +130,4 @@ export class CityCountryController {
       throw error;
     }
   }
-
 }

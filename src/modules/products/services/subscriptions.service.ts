@@ -95,10 +95,13 @@ export class SubscriptionsService {
             : 'send_invoice',
       });
 
-      current_period_end = this.timestampToDate(subscription.current_period_end);
-      current_period_start = this.timestampToDate(subscription.current_period_start);
+      current_period_end = this.timestampToDate(
+        subscription.current_period_end,
+      );
+      current_period_start = this.timestampToDate(
+        subscription.current_period_start,
+      );
     }
-
 
     await this.repository.save({
       stripeId: subscription.id,
@@ -111,7 +114,8 @@ export class SubscriptionsService {
       currentStartDate: current_period_start,
       currentEndDate: current_period_end,
     });
-    customer.purchasedPhoneCount = customer.purchasedPhoneCount + _plan.phoneCount;
+    customer.purchasedPhoneNumberCredits =
+      customer.purchasedPhoneNumberCredits + _plan.phoneCount;
     customer.purchasedSmsCount = customer.purchasedSmsCount + _plan.smsCount;
     await this.userService.repository.update(customer.id, customer);
     return { message: 'Subscribed to selected plan successfully.' };
@@ -138,8 +142,6 @@ export class SubscriptionsService {
     planId: string,
   ) {
     try {
-      
-      
       const sub = await this.repository.findOne({
         where: { stripeId: subId, cancelled: false },
       });
@@ -161,9 +163,12 @@ export class SubscriptionsService {
         });
 
         if (_upSub) {
-          
-          const current_period_end = this.timestampToDate(_upSub.current_period_end);
-          const current_period_start = this.timestampToDate(_upSub.current_period_start);
+          const current_period_end = this.timestampToDate(
+            _upSub.current_period_end,
+          );
+          const current_period_start = this.timestampToDate(
+            _upSub.current_period_start,
+          );
           const _p = await this.planService.repository.findOne({
             where: { id: planId },
           });
@@ -212,7 +217,6 @@ export class SubscriptionsService {
       throw e;
     }
   }
-
 
   private timestampToDate(timestamp: number) {
     const milliseconds = timestamp * 1000;

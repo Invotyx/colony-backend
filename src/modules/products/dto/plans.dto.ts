@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsDecimal,
@@ -22,46 +23,60 @@ export enum planType {
 }
 
 export class PlansDto {
+  @ApiPropertyOptional()
   @IsOptional()
   public id: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsDecimal()
   @Min(0)
   public amount_decimal: number;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   @Length(2, 5)
   public currency: string;
 
+  @ApiPropertyOptional({ enum: interval, enumName: 'interval' })
   @IsOptional()
   public interval: interval;
 
+  @ApiPropertyOptional({
+    enum: ['one_time', 'recurring'],
+    enumName: 'recurring',
+  })
   @IsOptional()
   @IsIn(['one_time', 'recurring'])
   public recurring: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
   public active: boolean;
 
+  @ApiProperty({ enum: planType, enumName: 'planType' })
   @IsNotEmpty()
   public planType: planType;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @Length(2, 60)
   public nickname: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   public product: ProductsEntity;
 
+  @ApiProperty()
   @IsNotEmpty()
   @Min(0)
   public phoneCount: number;
 
+  @ApiProperty()
   @IsNotEmpty()
   @Min(0)
   public smsCount: number;

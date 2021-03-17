@@ -4,13 +4,12 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
 import { UserEntity } from '../../../entities/user.entity';
 import { CreateUserDto, UpdateProfileDto, UpdateRole } from '../users.dto';
 import { RoleRepository } from '../../../repos/roles.repo';
 import { UserRepository } from '../repos/user.repo';
 import { isExist } from '../../../shared/repo.fun';
-import { PasswordHashEngine } from '../../auth/hash.service';
+import { PasswordHashEngine } from '../../../shared/hash.service';
 import {
   EmailAlreadyExistError,
   PhoneAlreadyExistError,
@@ -24,7 +23,7 @@ import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer
 import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
 import { nanoid } from 'nanoid';
 import { join } from 'path';
-import * as fs  from 'fs';
+import * as fs from 'fs';
 
 @Injectable()
 export class UsersService {
@@ -88,24 +87,28 @@ export class UsersService {
   async createUser(user: CreateUserDto) {
     try {
       if (this.isValidEmail(user.email)) {
-        let count = await this.repository.count({ where: { email: user.email } });
-        
-        if (count>0) {
+        let count = await this.repository.count({
+          where: { email: user.email },
+        });
+
+        if (count > 0) {
           throw EmailAlreadyExistError;
         }
 
-        count =  await this.repository.count({ where: { username: user.username } });
-        if (count>0) {
+        count = await this.repository.count({
+          where: { username: user.username },
+        });
+        if (count > 0) {
           throw UserNameAlreadyExistError;
         }
         count = await this.repository.count({ where: { mobile: user.mobile } });
-        if (count> 0) {
+        if (count > 0) {
           throw PhoneAlreadyExistError;
         }
-        
+
         user.password = await PasswordHashEngine.make(user.password);
         user.urlId = nanoid();
-        const newUser:any = await this.repository.save(user);
+        const newUser: any = await this.repository.save(user);
         await this.updateRoles(newUser.id, { userId: newUser.id, roleId: [2] });
         await this.createEmailToken(user.email);
         await this.emailTokenSend.sendEmailVerification(user.email);
@@ -128,10 +131,9 @@ export class UsersService {
       });
       userFromDb.isActive = true;
       userFromDb.isApproved = true;
-      const savedUser = await this.repository.save(userFromDb);
+      await this.repository.save(userFromDb);
       await this.emailVerfications.delete(emailVerif);
-      return { message: "Email verified." };
-      
+      return { message: 'Email verified.' };
     } else {
       throw new HttpException(
         'LOGIN_EMAIL_CODE_NOT_VALID',
@@ -257,7 +259,7 @@ export class UsersService {
 
   async updateUser(id: string | number | any, user: UpdateProfileDto) {
     const updateData: any = {};
-    let isAlreadyExist: any;
+    // let isAlreadyExist: any;
     try {
       /* if (user.email && this.isValidEmail(user.email)) {
         
@@ -276,7 +278,7 @@ export class UsersService {
         updateData.username = user.username;
       } */
 
-      console.log("===========",user);
+      console.log('===========', user);
 
       if (user.password) {
         user.password = await PasswordHashEngine.make(user.password);
@@ -323,9 +325,9 @@ export class UsersService {
       if (user.timezone) {
         updateData.timezone = user.timezone;
       }
-      
-      const updateUser = await this.repository.update(id,updateData);
-      return { message: "user details updated." };
+
+      await this.repository.update(id, updateData);
+      return { message: 'user details updated.' };
     } catch (error) {
       console.log(error);
       throw error;

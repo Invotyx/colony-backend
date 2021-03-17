@@ -15,10 +15,14 @@ import { PlansRepository } from '../modules/products/repos/plans.repo';
 import { PaymentMethodsRepository } from '../modules/products/repos/payment-methods.repo';
 import { SubscriptionsRepository } from '../modules/products/repos/subscriptions.repo';
 import { CityRepository } from '../services/city-country/repos/city.repo';
-import { CountryRepository } from 'src/services/city-country/repos/country.repo';
-import { TimezonesRepository } from 'src/services/city-country/repos/timezone.repo';
-import { ContactsRepository } from 'src/modules/contacts/repo/contact.repo';
-import { InfluencerContactRepository } from 'src/modules/contacts/repo/influencer-contact.repo';
+import { CountryRepository } from '../services/city-country/repos/country.repo';
+import { TimezonesRepository } from '../services/city-country/repos/timezone.repo';
+import { ContactsRepository } from '../modules/contacts/repo/contact.repo';
+import { InfluencerContactRepository } from '../modules/contacts/repo/influencer-contact.repo';
+import { InfluencerLinksRepository } from '../modules/influencer-links/repo/influencer-links.repo';
+import { InfluencerLinksTrackingRepository } from '../modules/influencer-links/repo/influencer-links-tracking.repo';
+import { SMSTemplatesRepository } from '../modules/sms/repo/sms-templates.repo';
+import { PhonesRepository } from '../modules/phone/phone.repo';
 
 export const REPOS = [
   PermissionRepository,
@@ -41,5 +45,9 @@ export const REPOS = [
   CountryRepository,
   TimezonesRepository,
   InfluencerContactRepository,
-  ContactsRepository
+  ContactsRepository,
+  InfluencerLinksRepository,
+  InfluencerLinksTrackingRepository,
+  SMSTemplatesRepository,
+  PhonesRepository
 ];

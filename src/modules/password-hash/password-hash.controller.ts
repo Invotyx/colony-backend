@@ -1,7 +1,9 @@
 import { Body, Controller, Get, HttpStatus, Injectable } from '@nestjs/common';
-import { PasswordHashEngine } from '../auth/hash.service';
+import { ApiTags } from '@nestjs/swagger';
+import { PasswordHashEngine } from '../../shared/hash.service';
 
 @Controller('password-hash')
+@ApiTags('password-hash')
 @Injectable()
 export class PasswordHashController {
   @Get()

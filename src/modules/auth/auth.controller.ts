@@ -16,11 +16,14 @@ import { LoginUser } from '../../decorators/user.decorator';
 import { UserEntity } from '../../entities/user.entity';
 import { AuthMailer } from '../../mails/users/auth.mailer';
 import { AuthService } from './auth.service';
-import { PasswordHashEngine } from './hash.service';
+import { PasswordHashEngine } from '../../shared/hash.service';
 import { AppLogger } from '../../services/logs/log.service';
 import { UsersService } from '../users/services/users.service';
 import { UpdateProfileDto } from '../users/users.dto';
+import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
+
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
   constructor(
     private readonly authMailer: AuthMailer,
@@ -31,6 +34,7 @@ export class AuthController {
     this.logger.setContext('AuthController');
   }
 
+  @ApiBody({required:true})
   @Post('login')
   async login(@Request() req: any) {
     try {
@@ -63,7 +67,9 @@ export class AuthController {
     @Param('id') id: number,
   ) {
     try {
-      const allData = await this.userService.repository.findOne({where:{id:id}});
+      const allData = await this.userService.repository.findOne({
+        where: { id: id },
+      });
       const oldPassword = await PasswordHashEngine.check(
         user.oldPassword,
         allData.password,
@@ -83,8 +89,6 @@ export class AuthController {
   @UsePipes(ValidationPipe)
   async updateProfile(@Body() user: UpdateProfileDto, @Param('id') id: number) {
     try {
-      const allData = await this.userService.repository.findOne({ where: { id: id } });
-
       const updateUser = await this.userService.updateUser(id, user);
       return { data: updateUser };
     } catch (error) {

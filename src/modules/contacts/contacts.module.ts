@@ -5,9 +5,9 @@ import { ContactsController } from './contacts.controller';
 import { ContactsService } from './contacts.service';
 
 @Module({
-  imports:[MainMysqlModule,UsersModule],
+  imports: [MainMysqlModule, UsersModule],
   controllers: [ContactsController],
   providers: [ContactsService],
-  exports: [ContactsService]
+  exports: [ContactsService],
 })
 export class ContactsModule {}

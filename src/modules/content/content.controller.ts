@@ -14,11 +14,11 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { TABLES } from 'src/consts/tables.const';
 import { Auth } from 'src/decorators/auth.decorator';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
-import { CompressJSON } from 'src/services/common/compression/compression.interceptor';
 import {
   dataViewer,
   mapColumns,
@@ -35,6 +35,7 @@ import { FaqsRepository } from './repos/faqs.repo';
 
 @Injectable()
 @Controller('content')
+@ApiTags('content')
 export class ContentController {
   constructor(
     private readonly contentService: ContentService,
@@ -231,9 +232,8 @@ export class ContentController {
     }
   }
 
-
   @Get('faqs')
-  async getFaqs(@Query('page') page: number, @Query('limit') limit: number,) {
+  async getFaqs(@Query('page') page: number, @Query('limit') limit: number) {
     if (!page) {
       page = 1;
     }
@@ -242,16 +242,16 @@ export class ContentController {
     }
     const data: any = {
       filter: {
-        condition: "AND",
+        condition: 'AND',
         rules: [],
-        valid: true
+        valid: true,
       },
       config: {
         sort: 'id',
         order: 'ASC',
         page: page,
-        limit: limit
-      }
+        limit: limit,
+      },
     };
 
     return this.getAllFaqs(data);

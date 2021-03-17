@@ -24,11 +24,13 @@ import {
 import { inValidDataRes } from '../../shared/res.fun';
 import { LanguageService } from './language.service';
 import { LanguageDto } from './language.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 // const idToPath = (x, data) => {
 //   return `APP/${data.orgId}/${TABLES.USERS.id}/${data.id}/${path}`;
 // };
-@Controller('Language')
+@Controller('language')
+@ApiTags('language')
 export class LanguageController {
   constructor(private readonly languageService: LanguageService) {}
   @Get('')

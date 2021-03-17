@@ -38,14 +38,11 @@ export class EmailTokenSender {
           html: htmlContent,
           text: markdownContent,
         });
-        console.log("Mail sent");
+        console.log('Mail sent');
         return mail;
       }
     } catch (ex) {
-      throw new HttpException(
-        ex,
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
+      throw new HttpException(ex, HttpStatus.SERVICE_UNAVAILABLE);
     }
   }
 }

@@ -14,7 +14,7 @@ export class SeederController {
   @Get()
   public async seed(@Query() data: any) {
     try {
-      console.log(data)
+      console.log(data);
       const crop = { klass: data.klass, up: !!Number(data.up) };
       console.log(crop);
       return await this.seederService.sow(crop);

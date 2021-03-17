@@ -13,13 +13,18 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
+import { BroadcastsEntity } from './broadcast.entity';
 import { CityEntity } from './city.entity';
 import { ContactsEntity } from './contacts.entity';
 import { CountryEntity } from './country.entity';
 import { InfluencerContactsEntity } from './influencer-contacts.entity';
+import { InfluencerLinksEntity } from './influencer-links.entity';
 import { LanguageEntity } from './language.entity';
 import { PaymentMethodsEntity } from './payment-methods.entity';
+import { PhonesEntity } from './phone.entity';
+import { PresetMessagesEntity } from './preset-message.entity';
 import { RoleEntity } from './role.entity';
+import { SMSTemplatesEntity } from './sms-templates.entity';
 import { UserToRoleEntity } from './user-to-role.entity';
 
 enum gender {
@@ -70,13 +75,15 @@ export class UserEntity {
   @Column({ default: false })
   public isApproved: boolean;
 
-  
+  @Column({ default: 0, nullable: false })
+  public purchasedPhoneNumberCredits: number;
+
   @Column({ default: 0, nullable: false })
   public purchasedPhoneCount: number;
 
   @Column({ default: 0, nullable: false })
   public purchasedSmsCount: number;
-  
+
   @CreateDateColumn()
   public createdAt: Date;
 
@@ -86,7 +93,10 @@ export class UserEntity {
   @OneToMany(() => UserToRoleEntity, (roles) => roles.user)
   public userToRole!: UserToRoleEntity[];
 
-  @ManyToMany(() => RoleEntity, (roles) => roles.users,{eager:true})
+  @OneToMany(() => PhonesEntity, (phone) => phone.user)
+  public numbers!: PhonesEntity[];
+
+  @ManyToMany(() => RoleEntity, (roles) => roles.users, { eager: true })
   @JoinTable({
     name: TABLES.USER_ROLE.name,
     joinColumn: { name: 'userId', referencedColumnName: 'id' },
@@ -94,7 +104,6 @@ export class UserEntity {
   })
   roles: RoleEntity[];
 
-  
   @OneToMany(() => InfluencerContactsEntity, (cToI) => cToI.user)
   public influencerContacts!: InfluencerContactsEntity[];
 
@@ -111,25 +120,47 @@ export class UserEntity {
   @Column({ type: 'json', nullable: true })
   public meta: string;
 
-  @Column({ length:100, nullable: false, unique:true })
+  @Column({ length: 100, nullable: false, unique: true })
   public urlId: string;
 
   @OneToMany(() => PaymentMethodsEntity, (pm) => pm.user, {
     eager: true,
-    cascade: false,
+    cascade: true,
   })
   public paymentMethod!: PaymentMethodsEntity[];
 
-  @OneToOne(() => CityEntity,{nullable:true,eager:true})
+  @OneToMany(() => InfluencerLinksEntity, (il) => il.user, {
+    eager: false,
+    cascade: true,
+  })
+  public links!: InfluencerLinksEntity[];
+
+  @OneToMany(() => SMSTemplatesEntity, (tmp) => tmp.user, {
+    eager: false,
+    cascade: true,
+  })
+  public smsTemplates!: SMSTemplatesEntity;
+
+  @OneToMany(() => PresetMessagesEntity, (tmp) => tmp.user, {
+    eager: false,
+    cascade: true,
+  })
+  public presetMessages!: PresetMessagesEntity;
+
+  @OneToMany(() => BroadcastsEntity, (tmp) => tmp.user, {
+    eager: false,
+    cascade: true,
+  })
+  public broadcasts!: BroadcastsEntity;
+
+  @OneToOne(() => CityEntity, { nullable: true, eager: true })
   @JoinColumn()
   city: CityEntity;
 
-  
-  @OneToOne(() => CountryEntity,{nullable:true,eager:true})
+  @OneToOne(() => CountryEntity, { nullable: true, eager: true })
   @JoinColumn()
   country: CountryEntity;
 
-  
   @ManyToMany(() => ContactsEntity, (contact) => contact.user)
   public contact!: ContactsEntity[];
 

@@ -11,5 +11,5 @@ export const SEEDS: any = {
   CreateAdminSeed,
   AddProductsSeed,
   CountrySeed,
-  CitySeed
+  CitySeed,
 };

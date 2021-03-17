@@ -4,7 +4,7 @@ import { ISeed } from '../seeds.interface';
 import { UsersService } from 'src/modules/users/services/users.service';
 import { UserEntity } from 'src/entities/user.entity';
 import { UpdateRole } from 'src/modules/users/users.dto';
-import { PasswordHashEngine } from 'src/modules/auth/hash.service';
+import { PasswordHashEngine } from 'src/shared/hash.service';
 import { nanoid } from 'nanoid';
 
 @Seeder()

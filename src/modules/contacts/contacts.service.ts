@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ContactsRepository } from './repo/contact.repo';
 import { InfluencerContactRepository } from './repo/influencer-contact.repo';
-import { ContactDto } from './contact.dto';
+import { ContactDto, ContactFilter } from './contact.dto';
 import { UsersService } from '../users/services/users.service';
 import { ContactsEntity } from 'src/entities/contacts.entity';
 import { nanoid } from 'src/shared/random-keygen';
@@ -12,27 +12,36 @@ export class ContactsService {
   constructor(
     public readonly repository: ContactsRepository,
     public readonly influencerContactRepo: InfluencerContactRepository,
-    public readonly users: UsersService
-  ) { }
-  
-  async addContact(phoneNumber: string, userId: number): Promise<any>{
+    public readonly users: UsersService,
+  ) {}
+
+  async addContact(phoneNumber: string, userId: number): Promise<any> {
     try {
-      const user = await this.users.repository.findOne({ where: { id: userId, isActive: true, isApproved: true } });
+      const user = await this.users.repository.findOne({
+        where: { id: userId, isActive: true, isApproved: true },
+      });
       if (user) {
-        
-        let con = await this.repository.findOne({ where: { phoneNumber: phoneNumber } });
-        
+        const con = await this.repository.findOne({
+          where: { phoneNumber: phoneNumber },
+        });
+
         if (!con) {
           let contact = new ContactsEntity();
           contact.phoneNumber = phoneNumber;
           contact.user = [user];
           contact.urlMapper = nanoid();
-          contact = await this.repository.save(await this.repository.create(contact));
+          contact = await this.repository.save(
+            await this.repository.create(contact),
+          );
+
+          //send on-boarding sms here
 
           contact.user = null;
           return contact;
         } else {
-          const rel = await this.influencerContactRepo.findOne({ where: { contactId: con.id, userId: user.id } });
+          const rel = await this.influencerContactRepo.findOne({
+            where: { contactId: con.id, userId: user.id },
+          });
           if (!rel) {
             con.user.push(user);
             await this.repository.save(con);
@@ -41,99 +50,90 @@ export class ContactsService {
           return con;
         }
       } else {
-        throw new HttpException('Influencer does not exist or has not activated his/her profile yet.', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'Influencer does not exist or has not activated his/her profile yet.',
+          HttpStatus.BAD_REQUEST,
+        );
       }
     } catch (ex) {
       throw ex;
     }
   }
 
-  async filterContactsByAge(ageFrom: number,ageTo: number, influencerId: number) {
-    try {
-      const contacts = await this.repository.query(`
-        SELECT c.* from ${TABLES.CONTACTS.name} c LEFT JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = $1)
-        where  date_part('year', age(c.dob)) BETWEEN $2 and $3
-      `, [influencerId, ageFrom, ageTo]);
-
-      return { contacts: contacts, count: contacts.length };
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  async filterContacts() {
-    //by new contacts
-    //by age
-    //by gender
-    //by locations
-    //by joindate
-
-    let query = `SELECT * FROM ${TABLES.CONTACTS.name} c LEFT JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = $1)`;
+  async filterContacts(influencerId: number, data: ContactFilter) {
+    let query = `SELECT * FROM ${TABLES.CONTACTS.name} c Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
 
     //age
-    if (true) {
+    if (data.ageFrom && data.ageTo) {
       if (!query.includes('WHERE')) {
-        query = query + `where date_part('year', age(c.dob)) BETWEEN $2 and $3`;
+        query =
+          query +
+          ` WHERE date_part('year', age(c."dob")) BETWEEN ${data.ageFrom} and ${data.ageTo}`;
       } else {
-        query = query + `and date_part('year', age(c.dob)) BETWEEN $2 and $3`;
+        query =
+          query +
+          ` and date_part('year', age(c."dob")) BETWEEN ${data.ageFrom} and ${data.ageTo}`;
       }
     }
 
     //new contacts
-    if (true) {
+    if (data.newContacts) {
       if (!query.includes('WHERE')) {
-        query = query + `where date_part('day', age(c.createdAt)) <= $2`;
+        query = query + ` WHERE date_part('day', age(c."createdAt"::date)) < 2`;
       } else {
-        query = query + `and date_part('day', age(c.createdAt)) <= $2`;
+        query = query + ` and date_part('day', age(c."createdAt"::date)) < 2`;
       }
     }
 
     //gender
-    if (true) {
+    if (data.gender) {
       if (!query.includes('WHERE')) {
-        query = query + `where c.gender = $2`;
+        query = query + ` WHERE c."gender" = '${data.gender}'`;
       } else {
-        query = query + `and c.gender = $2`;
+        query = query + ` and c."gender" = '${data.gender}'`;
       }
     }
 
-    
     //city
-    if (true) {
+    if (data.city) {
       if (!query.includes('WHERE')) {
-        query = query + `where c.cityId = $2`;
+        query = query + ` WHERE c."cityId" = '${data.city}'`;
       } else {
-        query = query + `and c.cityId = $2`;
+        query = query + ` and c."cityId" = '${data.city}'`;
       }
     }
 
     //country
-    if (true) {
+    if (data.country) {
       if (!query.includes('WHERE')) {
-        query = query + `where c.countryId = $2`;
+        query = query + ` WHERE c."countryId" = '${data.country}'`;
       } else {
-        query = query + `and c.countryId = $2`;
+        query = query + ` and c."countryId" = '${data.country}'`;
       }
     }
 
-
-  }
-
-  async filterContactsByGender(gender:string, influencerId: number) {
-    try {
-      const contacts = await this.repository.query(`
-        SELECT c.* from ${TABLES.CONTACTS.name} c LEFT JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = $1)
-        where gender equals $2
-      `, [influencerId, gender]);
-
-      return { contacts: contacts, count: contacts.length };
-    } catch (e) {
-      throw e;
+    //join date
+    if (data.joinDate) {
+      if (!query.includes('WHERE')) {
+        query = query + ` WHERE c."createdAt"::date = '${data.joinDate}'`;
+      } else {
+        query = query + ` and c."createdAt"::date = '${data.joinDate}'`;
+      }
     }
+
+    //timezone
+    if (data.timezone) {
+      if (!query.includes('WHERE')) {
+        query = query + ` WHERE c."timezone" = '${data.timezone}'`;
+      } else {
+        query = query + ` and c."timezone" = '${data.timezone}'`;
+      }
+    }
+    const contacts = await this.repository.query(query);
+    return { contacts: contacts, count: contacts.length };
   }
 
-
-  async updateContact(urlId:string,data: ContactDto) {
+  async updateContact(urlId: string, data: ContactDto) {
     let contactDetails: any;
     let flag = 0;
     if (data.name) {
@@ -146,7 +146,7 @@ export class ContactsService {
     }
     if (data.dob) {
       contactDetails.dob = data.dob;
-      flag++
+      flag++;
     }
     if (data.state) {
       contactDetails.state = data.state;
@@ -172,13 +172,11 @@ export class ContactsService {
     }
 
     try {
-
       await this.repository.update({ urlMapper: urlId }, contactDetails);
 
-      return { message: "Contact details updated.", data: contactDetails };
+      return { message: 'Contact details updated.', data: contactDetails };
     } catch (e) {
       throw e;
     }
-
   }
 }

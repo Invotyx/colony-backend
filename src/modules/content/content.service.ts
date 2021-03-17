@@ -212,9 +212,11 @@ export class ContentService {
               });
             }
 
-            const buttons = await this.buttonsRepo.find({ where: { section: section.id } });
+            const buttons = await this.buttonsRepo.find({
+              where: { section: section.id },
+            });
             if (buttons) {
-              buttons.forEach(async button => {
+              buttons.forEach(async (button) => {
                 await this.buttonsRepo.delete(button.id);
               });
             }

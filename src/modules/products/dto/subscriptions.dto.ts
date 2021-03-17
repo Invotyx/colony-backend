@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export enum collection_method {
@@ -6,18 +7,23 @@ export enum collection_method {
 }
 
 export class SubscriptionsDto {
+  @ApiPropertyOptional()
   @IsOptional()
   public id: number;
 
+  @ApiPropertyOptional()
   @IsOptional()
   public stripeId: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   public planId: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   public collection_method: collection_method;
 
+  @ApiPropertyOptional()
   @IsOptional()
   public cancelled: boolean;
 }

@@ -1,14 +1,28 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { TABLES } from '../consts/tables.const';
+import { BroadcastsContactsEntity } from './broadcast-contacts.entity';
 import { CityEntity } from './city.entity';
 import { CountryEntity } from './country.entity';
 import { InfluencerContactsEntity } from './influencer-contacts.entity';
+import { InfluencerLinksTrackingEntity } from './influencer-links-tracking.entity';
 import { UserEntity } from './user.entity';
 
-enum gender{
-  male = "male",
-  female = "female",
-  non_binary="non_binary"
+enum gender {
+  male = 'male',
+  female = 'female',
+  non_binary = 'non_binary',
 }
 
 @Entity({ name: TABLES.CONTACTS.name })
@@ -31,11 +45,11 @@ export class ContactsEntity {
   @Column({ nullable: true })
   public dob: Date;
 
-  @ManyToOne(() => CountryEntity,{nullable:true})
+  @ManyToOne(() => CountryEntity, { nullable: true })
   @JoinColumn({ name: 'countryId' })
   public country: CountryEntity;
 
-  @ManyToOne(() => CityEntity,{nullable:true})
+  @ManyToOne(() => CityEntity, { nullable: true })
   @JoinColumn({ name: 'cityId' })
   public city: CityEntity;
 
@@ -47,11 +61,17 @@ export class ContactsEntity {
 
   @Column({ length: 100, nullable: true })
   public urlMapper: string;
-  
+
   @OneToMany(() => InfluencerContactsEntity, (cToI) => cToI.contact)
   public influencerContacts!: InfluencerContactsEntity[];
 
-  @ManyToMany(() => UserEntity, (user) => user.contact,{eager:true})
+  @OneToMany(() => InfluencerLinksTrackingEntity, (track) => track.contact)
+  public links!: InfluencerLinksTrackingEntity[];
+
+  @OneToMany(() => BroadcastsContactsEntity, (b) => b.contact)
+  public broadcast!: [];
+
+  @ManyToMany(() => UserEntity, (user) => user.contact, { eager: true })
   @JoinTable({
     name: TABLES.INFLUENCER_CONTACTS.name,
     joinColumn: { name: 'contactId', referencedColumnName: 'id' },

@@ -25,6 +25,7 @@ import { CityCountryModule } from './services/city-country/city-country.module';
 import { CityCountryService } from './services/city-country/city-country.service';
 import { CityCountryController } from './services/city-country/city-country.controller';
 import { ContactsModule } from './modules/contacts/contacts.module';
+import { InfluencerLinksModule } from './modules/influencer-links/influencer-links.module';
 
 @Module({
   imports: [
@@ -47,9 +48,10 @@ import { ContactsModule } from './modules/contacts/contacts.module';
     SmsModule,
     PhoneModule,
     CityCountryModule,
-    ContactsModule
+    ContactsModule,
+    InfluencerLinksModule,
   ],
-  controllers: [AppController, SeederController,CityCountryController],
+  controllers: [AppController, SeederController, CityCountryController],
   providers: [
     ...SeederProviders,
     AccessControlService,
@@ -57,7 +59,7 @@ import { ContactsModule } from './modules/contacts/contacts.module';
     AppService,
     CompressionInterceptor,
     PermissionsService,
-    CityCountryService
+    CityCountryService,
   ],
 })
 export class AppModule {}

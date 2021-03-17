@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserEntity } from '../../entities/user.entity';
 import { UsersService } from '../users/services/users.service';
-import { PasswordHashEngine } from './hash.service';
+import { PasswordHashEngine } from '../../shared/hash.service';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +23,10 @@ export class AuthService {
         );
 
         if (!isPwdMatch) {
-          throw new HttpException('Password mismatch error.', HttpStatus.BAD_REQUEST);
+          throw new HttpException(
+            'Password mismatch error.',
+            HttpStatus.BAD_REQUEST,
+          );
         }
         return user;
       } else {

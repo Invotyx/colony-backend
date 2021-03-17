@@ -21,6 +21,9 @@ import { CountryEntity } from '../entities/country.entity';
 import { TimezonesEntity } from '../entities/timezones.entity';
 import { ContactsEntity } from '../entities/contacts.entity';
 import { InfluencerContactsEntity } from '../entities/influencer-contacts.entity';
+import { InfluencerLinksEntity } from '../entities/influencer-links.entity';
+import { SMSTemplatesEntity } from '../entities/sms-templates.entity';
+import { PhonesEntity } from '../entities/phone.entity';
 import { JOIN_HELPER } from './join-helper.const';
 
 export const EntitiesRegister: any = {
@@ -47,6 +50,9 @@ export const EntitiesRegister: any = {
   TimezonesEntity,
   ContactsEntity,
   InfluencerContactsEntity,
+  InfluencerLinksEntity,
+  SMSTemplatesEntity,
+  PhonesEntity
 };
 
 export const Entities: any = Object.values(EntitiesRegister);

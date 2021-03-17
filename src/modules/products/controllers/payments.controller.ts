@@ -6,6 +6,7 @@ import {
   Injectable,
   Post,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { env } from 'process';
 import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
@@ -17,6 +18,7 @@ import { PaymentMethodsService } from '../services/payment-methods.service';
 
 @Injectable()
 @Controller('payment-methods')
+@ApiTags('payment-methods')
 export class PaymentsController {
   private stripe: Stripe;
   constructor(

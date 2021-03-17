@@ -57,7 +57,7 @@ export class SubscriptionsEntity {
 
   @Column({ nullable: true })
   public currentStartDate: Date;
-  
+
   @Column({ nullable: true })
   public currentEndDate: Date;
 

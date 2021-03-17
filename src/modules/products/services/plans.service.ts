@@ -1,10 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PlansDto, planType } from '../dto/plans.dto';
 import { PlansRepository } from '../repos/plans.repo';
 import { interval } from '../dto/plans.dto';
 import Stripe from 'stripe';
 import { env } from 'process';
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
+import { isatty } from 'tty';
 
 @Injectable()
 export class PlansService {
@@ -17,14 +17,13 @@ export class PlansService {
 
   async createPlanInStripe(plan: PlansDto, productId: string): Promise<any> {
     try {
-      
-      if (plan.planType === 'bundle' && (plan.smsCount && plan.smsCount < 1) || (plan.phoneCount && plan.phoneCount < 1)) {
+      if (plan.planType === 'bundle' && (plan.smsCount < 1 ||  plan.phoneCount < 1)) {
         throw new HttpException('For bundle plan sms and phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
       }
-      else if ( plan.planType === 'phoneOnly' &&  plan.phoneCount < 1) {
+      else if (plan.planType === 'phoneOnly' && (!(plan.phoneCount) ||  plan.phoneCount < 1)) {
         throw new HttpException('For phone only plan phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
       }
-      else if (plan.planType === 'smsOnly' &&  plan.smsCount < 1) {
+      else if (plan.planType === 'smsOnly' && (!(plan.smsCount) ||  plan.smsCount < 1)) {
         throw new HttpException('For sms only plan sms credits should be greater than 0.', HttpStatus.BAD_REQUEST);
       }
       else {
@@ -64,16 +63,17 @@ export class PlansService {
 
   async createPriceInStripe(plan: PlansDto, productId: string): Promise<any> {
     try {
-      if (plan.planType === 'bundle' && (plan.smsCount && plan.smsCount < 1) || (plan.phoneCount && plan.phoneCount < 1)) {
+      if (plan.planType === 'bundle' && (plan.smsCount < 1 ||  plan.phoneCount < 1)) {
         throw new HttpException('For bundle plan sms and phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
       }
-      else if ( plan.planType === 'phoneOnly' &&  plan.phoneCount < 1) {
+      else if (plan.planType === 'phoneOnly' && (!(plan.phoneCount) ||  plan.phoneCount < 1)) {
         throw new HttpException('For phone only plan phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
       }
-      else if (plan.planType === 'smsOnly' &&  plan.smsCount < 1) {
+      else if (plan.planType === 'smsOnly' && (!(plan.smsCount) ||  plan.smsCount < 1)) {
         throw new HttpException('For sms only plan sms credits should be greater than 0.', HttpStatus.BAD_REQUEST);
       }
       else {
+        console.log("here 3 === === === ===");
         if (plan.planType === 'smsOnly') {
           plan.phoneCount = 0;
         }
@@ -108,22 +108,25 @@ export class PlansService {
     isActive: boolean,
   ): Promise<any> {
     try {
-
-      if (planId.includes('plan_')) {
-        await this.stripe.plans.update(planId, {
-          active: isActive,
-        });
-      } else {
-        await this.stripe.prices.update(planId, {
-          active: isActive
-        });
-      }
-      const _p = await this.repository.findOne({ where: { id: planId } });
-      if (_p) {
+      if (isActive === true || isActive === false) {
+        if (planId.includes('plan_')) {
+          await this.stripe.plans.update(planId, {
+            active: isActive,
+          });
+        } else {
+          await this.stripe.prices.update(planId, {
+            active: isActive
+          });
+        }
+        const _p = await this.repository.findOne({ where: { id: planId } });
         _p.active = isActive;
+        const _plan = await this.repository.save(_p);
+        
+        return { plan: _plan };
+      } else {
+        throw new BadRequestException('Value must be boolean.');
       }
-      const _plan = await this.repository.save(_p);
-      return { plan: _plan };
+      
     } catch (e) {
       throw e;
     }

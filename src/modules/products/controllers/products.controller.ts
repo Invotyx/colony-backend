@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Injectable,
   Param,
+  ParseBoolPipe,
   Post,
   Put,
   Query,
@@ -61,7 +62,11 @@ export class ProductsController {
   public async createPlan(@Param('pid') pid: string, @Body() data: PlansDto) {
     //createPlanInStripe
     try {
-      if (pid && pid !=='undefined') {
+      if (pid && pid !== 'undefined') {
+        console.log("here === === === ===");
+        if (data.planType === 'smsOnly') {
+          data.recurring == 'one_time'
+        } 
         if (data.recurring == 'recurring') {
           const plan = await this.planService.createPlanInStripe(data, pid);
           return plan;
@@ -114,7 +119,7 @@ export class ProductsController {
   @Put(':pid/plan/:planId')
   public async activationTogglePlan(
     @Param('planId') planId: string,
-    @Query('active') active: boolean,
+    @Body('active') active: boolean,
   ) {
     try {
       const plan = await this.planService.activateDeactivatePlan(

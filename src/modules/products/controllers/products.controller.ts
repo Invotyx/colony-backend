@@ -4,6 +4,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Injectable,
   Param,
   Post,
@@ -36,7 +38,7 @@ export class ProductsController {
         return 'No records found.';
       }
     } catch (e) {
-      return new BadRequestException(e, 'An Exception Occurred');
+      throw new BadRequestException(e, 'An Exception Occurred');
     }
   }
 
@@ -50,7 +52,7 @@ export class ProductsController {
         return 'No record found.';
       }
     } catch (e) {
-      return new BadRequestException(e, 'An Exception Occurred');
+      throw new BadRequestException(e, 'An Exception Occurred');
     }
   }
 
@@ -59,15 +61,19 @@ export class ProductsController {
   public async createPlan(@Param('pid') pid: string, @Body() data: PlansDto) {
     //createPlanInStripe
     try {
-      if (data.recurring == 'recurring') {
-        const plan = await this.planService.createPlanInStripe(data, pid);
-        return plan;
+      if (pid && pid !=='undefined') {
+        if (data.recurring == 'recurring') {
+          const plan = await this.planService.createPlanInStripe(data, pid);
+          return plan;
+        } else {
+          const plan = await this.planService.createPriceInStripe(data, pid);
+          return plan;
+        }
       } else {
-        const plan = await this.planService.createPriceInStripe(data, pid);
-        return plan;
+        throw new HttpException('Invalid product. ', HttpStatus.BAD_REQUEST);
       }
     } catch (e) {
-      return new BadRequestException(e, 'An Exception Occurred');
+      throw new BadRequestException(e, 'An Exception Occurred');
     }
   }
 
@@ -84,7 +90,7 @@ export class ProductsController {
         return 'No records found.';
       }
     } catch (e) {
-      return new BadRequestException(e, 'An Exception Occurred');
+      throw new BadRequestException(e, 'An Exception Occurred');
     }
   }
 
@@ -100,7 +106,7 @@ export class ProductsController {
         return 'No record found.';
       }
     } catch (e) {
-      return new BadRequestException(e, 'An Exception Occurred');
+      throw new BadRequestException(e, 'An Exception Occurred');
     }
   }
 
@@ -117,7 +123,7 @@ export class ProductsController {
       );
       return plan;
     } catch (e) {
-      return new BadRequestException(e, 'An Exception Occurred');
+      throw new BadRequestException(e, 'An Exception Occurred');
     }
   }
 
@@ -128,7 +134,7 @@ export class ProductsController {
       const plan = await this.planService.deletePlan(planId);
       return plan;
     } catch (e) {
-      return new BadRequestException(e, 'An Exception Occurred');
+      throw new BadRequestException(e, 'An Exception Occurred');
     }
   }
 }

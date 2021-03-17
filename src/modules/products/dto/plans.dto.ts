@@ -33,8 +33,8 @@ export class PlansDto {
   @Min(0)
   public amount_decimal: number;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   @Length(2, 5)
   public currency: string;

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PlansDto, planType } from '../dto/plans.dto';
 import { PlansRepository } from '../repos/plans.repo';
 import { interval } from '../dto/plans.dto';
@@ -25,15 +25,19 @@ export class PlansService {
         nickname: plan.nickname,
       });
 
-      plan.id = newPlan.id;
-      plan.product = productId as any;
-      plan.active = true;
-      plan.interval = ((plan.interval.toString() === 'month') || plan.interval.toString()==='' ? interval.month : interval.year),
+      if (newPlan) {
+        plan.id = newPlan.id;
+        plan.product = productId as any;
+        plan.active = true;
+        plan.interval = ((plan.interval.toString() === 'month') || plan.interval.toString() === '' ? interval.month : interval.year),
       
-      plan.currency = (plan.currency != '' ? plan.currency.toUpperCase() : 'USD');
-      const dbPlan = await this.repository.save(plan);
+          plan.currency = (plan.currency != '' ? plan.currency.toUpperCase() : 'USD');
+        const dbPlan = await this.repository.save(plan);
 
-      return { plan: dbPlan, message:'Plan created.' };
+        return { plan: dbPlan, message: 'Plan created.' };
+      } else {
+        throw new HttpException('No such product exists', HttpStatus.BAD_REQUEST);
+      }
     } catch (e) {
       throw e;
     }
@@ -48,13 +52,16 @@ export class PlansService {
         active: true,
         nickname: plan.nickname,
       });
+      if (newPlan) {
+        plan.id = newPlan.id;
+        plan.product = productId as any;
+        plan.active = true;
+        const dbPlan = await this.repository.save(plan);
 
-      plan.id = newPlan.id;
-      plan.product = productId as any;
-      plan.active = true;
-      const dbPlan = await this.repository.save(plan);
-
-      return { plan: dbPlan };
+        return { plan: dbPlan };
+      } else {
+        throw new HttpException('No such product exists', HttpStatus.BAD_REQUEST);
+      }
     } catch (e) {
       throw e;
     }
@@ -65,8 +72,6 @@ export class PlansService {
     isActive: boolean,
   ): Promise<any> {
     try {
-      console.log(isActive);
-
       await this.stripe.plans.update(planId, {
         active: isActive,
       });

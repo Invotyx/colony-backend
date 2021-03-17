@@ -55,7 +55,7 @@ export class PaymentsController {
         return pm;
       }
     } catch (e) {
-      return new BadRequestException(e, 'An Exception Occurred');
+      throw new BadRequestException(e, 'An Exception Occurred');
     }
   }
 
@@ -72,7 +72,7 @@ export class PaymentsController {
         return { message: 'No records found' };
       }
     } catch (e) {
-      return new BadRequestException(e, 'An Exception Occurred');
+      throw new BadRequestException(e, 'An Exception Occurred');
     }
   }
 }

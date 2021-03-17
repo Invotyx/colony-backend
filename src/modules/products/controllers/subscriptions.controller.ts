@@ -57,7 +57,7 @@ export class SubscriptionsController {
 
       return result;
     } catch (e) {
-      return new BadRequestException(e, 'An exception occurred');
+      throw new BadRequestException(e, 'An exception occurred');
     }
   }
 
@@ -77,7 +77,7 @@ export class SubscriptionsController {
 
       return result;
     } catch (e) {
-      return new BadRequestException(e, 'An exception occurred');
+      throw new BadRequestException(e, 'An exception occurred');
     }
   }
 
@@ -92,7 +92,7 @@ export class SubscriptionsController {
 
       return result;
     } catch (e) {
-      return new BadRequestException(e, 'An exception occurred');
+      throw new BadRequestException(e, 'An exception occurred');
     }
   }
 }

@@ -17,13 +17,14 @@ export class PlansService {
 
   async createPlanInStripe(plan: PlansDto, productId: string): Promise<any> {
     try {
-      if (plan.planType === 'bundle' && plan.smsCount === 0 && plan.phoneCount === 0) {
+      
+      if (plan.planType === 'bundle' && (plan.smsCount && plan.smsCount < 1) || (plan.phoneCount && plan.phoneCount < 1)) {
         throw new HttpException('For bundle plan sms and phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
       }
-      else if (plan.planType === 'phoneOnly' && plan.phoneCount === 0) {
+      else if ( plan.planType === 'phoneOnly' &&  plan.phoneCount < 1) {
         throw new HttpException('For phone only plan phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
       }
-      else if (plan.planType === 'smsOnly' && plan.smsCount === 0) {
+      else if (plan.planType === 'smsOnly' &&  plan.smsCount < 1) {
         throw new HttpException('For sms only plan sms credits should be greater than 0.', HttpStatus.BAD_REQUEST);
       }
       else {
@@ -63,13 +64,13 @@ export class PlansService {
 
   async createPriceInStripe(plan: PlansDto, productId: string): Promise<any> {
     try {
-      if (plan.planType === 'bundle' && plan.smsCount === 0 && plan.phoneCount === 0) {
+      if (plan.planType === 'bundle' && (plan.smsCount && plan.smsCount < 1) || (plan.phoneCount && plan.phoneCount < 1)) {
         throw new HttpException('For bundle plan sms and phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
       }
-      else if (plan.planType === 'phoneOnly' && plan.phoneCount === 0) {
+      else if ( plan.planType === 'phoneOnly' &&  plan.phoneCount < 1) {
         throw new HttpException('For phone only plan phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
       }
-      else if (plan.planType === 'smsOnly' && plan.smsCount === 0) {
+      else if (plan.planType === 'smsOnly' &&  plan.smsCount < 1) {
         throw new HttpException('For sms only plan sms credits should be greater than 0.', HttpStatus.BAD_REQUEST);
       }
       else {
@@ -107,10 +108,16 @@ export class PlansService {
     isActive: boolean,
   ): Promise<any> {
     try {
-      await this.stripe.plans.update(planId, {
-        active: isActive,
-      });
 
+      if (planId.includes('plan_')) {
+        await this.stripe.plans.update(planId, {
+          active: isActive,
+        });
+      } else {
+        await this.stripe.prices.update(planId, {
+          active: isActive
+        });
+      }
       const _p = await this.repository.findOne({ where: { id: planId } });
       if (_p) {
         _p.active = isActive;
@@ -124,8 +131,9 @@ export class PlansService {
 
   async deletePlan(planId: string): Promise<any> {
     try {
-      await this.stripe.plans.del(planId);
-
+      if (planId.includes('plan_')) {
+        await this.stripe.plans.del(planId);
+      } 
       const _plan = await this.repository.softDelete(planId);
       return { plan: _plan };
     } catch (e) {

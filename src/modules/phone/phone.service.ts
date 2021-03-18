@@ -49,41 +49,40 @@ export class PhoneService {
   public async purchasePhoneNumber(cc: string, num: string, user: UserEntity) {
     try {
       if (user.purchasedPhoneNumberCredits > 0) {
-        if ((user.purchasedPhoneNumberCredits - user.purchasedPhoneCount) > 0) {
+        if (user.purchasedPhoneNumberCredits - user.purchasedPhoneCount > 0) {
           const data: any = {
             number: num,
             countryCode: cc.toUpperCase(),
             billingIntervalMonths: 1,
           };
           if (env.NODE_ENV !== 'development') {
-            let number = await this.apiCaller.apiCaller(
+            const number = await this.apiCaller.apiCaller(
               'GET',
               'https://numbers.messagebird.com/v1/phone-numbers/' +
-              this.serialize(data),
+                this.serialize(data),
               { key: 'AccessKey', value: this.key },
             );
             // save to database;
             return { number };
-          }
-          else {
-            let countryCode: any = await this.apiCaller.apiCaller('GET', 'https://restcountries.eu/rest/v2/alpha/' + cc.toLowerCase(), { key: 'AccessKey', value: 'dummy' });
+          } else {
+            let countryCode: any = await this.apiCaller.apiCaller(
+              'GET',
+              'https://restcountries.eu/rest/v2/alpha/' + cc.toLowerCase(),
+              { key: 'AccessKey', value: 'dummy' },
+            );
             countryCode = countryCode.callingCodes;
-            let dummy = {
+            const dummy = {
               number: faker.phone.phoneNumber(countryCode + '##########'),
               country: cc.toUpperCase(),
-              region: "Haarlem",
-              locality: "Haarlem",
-              features: [
-                "sms",
-                "mms",
-                "voice"
-              ],
+              region: 'Haarlem',
+              locality: 'Haarlem',
+              features: ['sms', 'mms', 'voice'],
               tags: [],
-              type: "landline_or_mobile",
-              status: "active",
-              createdAt: "2019-04-25T14:04:04Z",
-              renewalAt: "2019-05-25T00:00:00Z"
-            }
+              type: 'landline_or_mobile',
+              status: 'active',
+              createdAt: '2019-04-25T14:04:04Z',
+              renewalAt: '2019-05-25T00:00:00Z',
+            };
             await this.repo.save({
               country: dummy.country,
               features: dummy.features.join(','),
@@ -91,18 +90,28 @@ export class PhoneService {
               renewalDate: dummy.renewalAt,
               status: dummy.status,
               type: dummy.type,
-              user: user
-            })
+              user: user,
+            });
             user.purchasedPhoneCount = user.purchasedPhoneCount + 1;
             await this.userService.repository.save(user);
             // save to database;
-            return { number: dummy, message:'Number purchased and linked to your account successfully.' };
+            return {
+              number: dummy,
+              message:
+                'Number purchased and linked to your account successfully.',
+            };
           }
         } else {
-          throw new HttpException('You have already consumed your phone number credits.', HttpStatus.BAD_REQUEST);
+          throw new HttpException(
+            'You have already consumed your phone number credits.',
+            HttpStatus.BAD_REQUEST,
+          );
         }
       } else {
-        throw new HttpException('You have to purchase subscription to buy phone numbers.', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'You have to purchase subscription to buy phone numbers.',
+          HttpStatus.BAD_REQUEST,
+        );
       }
     } catch (e) {
       throw e;
@@ -112,10 +121,11 @@ export class PhoneService {
   public async cancelPhoneNumber(num: string, user: UserEntity) {
     try {
       if (env.NODE_ENV !== 'development') {
-
-        const numb = await this.repo.findOne({ where: { user: user, number: num, status:'active' } });
+        const numb = await this.repo.findOne({
+          where: { user: user, number: num, status: 'active' },
+        });
         if (numb) {
-          let number = await this.apiCaller.apiCaller(
+          const number = await this.apiCaller.apiCaller(
             'DELETE',
             'https://numbers.messagebird.com/v1/phone-numbers/' + num,
             { key: 'AccessKey', value: this.key },
@@ -125,18 +135,31 @@ export class PhoneService {
           await this.repo.save(numb);
 
           // save to database;
-          return { number, message: 'Phone number is cancelled and can no longer be useable.' };
+          return {
+            number,
+            message: 'Phone number is cancelled and can no longer be useable.',
+          };
         } else {
-          throw new HttpException('Phone number not found', HttpStatus.NOT_FOUND);
+          throw new HttpException(
+            'Phone number not found',
+            HttpStatus.NOT_FOUND,
+          );
         }
       } else {
-        const numb = await this.repo.findOne({ where: { user: user, number: num, status:'active' } });
+        const numb = await this.repo.findOne({
+          where: { user: user, number: num, status: 'active' },
+        });
         if (numb) {
           numb.status = 'canceled';
           await this.repo.save(numb);
-          return { message: 'Phone number is cancelled and can no longer be useable.' };
-        }else {
-          throw new HttpException('Phone number not found', HttpStatus.NOT_FOUND);
+          return {
+            message: 'Phone number is cancelled and can no longer be useable.',
+          };
+        } else {
+          throw new HttpException(
+            'Phone number not found',
+            HttpStatus.NOT_FOUND,
+          );
         }
       }
     } catch (e) {

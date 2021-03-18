@@ -52,7 +52,7 @@ export const EntitiesRegister: any = {
   InfluencerContactsEntity,
   InfluencerLinksEntity,
   SMSTemplatesEntity,
-  PhonesEntity
+  PhonesEntity,
 };
 
 export const Entities: any = Object.values(EntitiesRegister);

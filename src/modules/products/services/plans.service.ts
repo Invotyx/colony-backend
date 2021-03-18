@@ -1,10 +1,14 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { PlansDto, planType } from '../dto/plans.dto';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
+import { PlansDto } from '../dto/plans.dto';
 import { PlansRepository } from '../repos/plans.repo';
 import { interval } from '../dto/plans.dto';
 import Stripe from 'stripe';
 import { env } from 'process';
-import { isatty } from 'tty';
 
 @Injectable()
 export class PlansService {
@@ -17,16 +21,31 @@ export class PlansService {
 
   async createPlanInStripe(plan: PlansDto, productId: string): Promise<any> {
     try {
-      if (plan.planType === 'bundle' && (plan.smsCount < 1 ||  plan.phoneCount < 1)) {
-        throw new HttpException('For bundle plan sms and phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
-      }
-      else if (plan.planType === 'phoneOnly' && (!(plan.phoneCount) ||  plan.phoneCount < 1)) {
-        throw new HttpException('For phone only plan phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
-      }
-      else if (plan.planType === 'smsOnly' && (!(plan.smsCount) ||  plan.smsCount < 1)) {
-        throw new HttpException('For sms only plan sms credits should be greater than 0.', HttpStatus.BAD_REQUEST);
-      }
-      else {
+      if (
+        plan.planType === 'bundle' &&
+        (plan.smsCount < 1 || plan.phoneCount < 1)
+      ) {
+        throw new HttpException(
+          'For bundle plan sms and phone credits should be greater than 0.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else if (
+        plan.planType === 'phoneOnly' &&
+        (!plan.phoneCount || plan.phoneCount < 1)
+      ) {
+        throw new HttpException(
+          'For phone only plan phone credits should be greater than 0.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else if (
+        plan.planType === 'smsOnly' &&
+        (!plan.smsCount || plan.smsCount < 1)
+      ) {
+        throw new HttpException(
+          'For sms only plan sms credits should be greater than 0.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else {
         if (plan.planType === 'smsOnly') {
           plan.phoneCount = 0;
         }
@@ -36,8 +55,12 @@ export class PlansService {
         const newPlan = await this.stripe.plans.create({
           amount_decimal: (plan.amount_decimal * 100).toString(),
           product: productId,
-          currency: (plan.currency != '' ? plan.currency.toUpperCase() : 'USD'),
-          interval: ((plan.interval.toString() === 'month') || plan.interval.toString() === '' ? 'month' : 'year'),
+          currency: plan.currency != '' ? plan.currency.toUpperCase() : 'USD',
+          interval:
+            plan.interval.toString() === 'month' ||
+            plan.interval.toString() === ''
+              ? 'month'
+              : 'year',
           active: true,
           nickname: plan.nickname,
         });
@@ -46,14 +69,21 @@ export class PlansService {
           plan.id = newPlan.id;
           plan.product = productId as any;
           plan.active = true;
-          plan.interval = ((plan.interval.toString() === 'month') || plan.interval.toString() === '' ? interval.month : interval.year),
-      
-            plan.currency = (plan.currency != '' ? plan.currency.toUpperCase() : 'USD');
+          (plan.interval =
+            plan.interval.toString() === 'month' ||
+            plan.interval.toString() === ''
+              ? interval.month
+              : interval.year),
+            (plan.currency =
+              plan.currency != '' ? plan.currency.toUpperCase() : 'USD');
           const dbPlan = await this.repository.save(plan);
 
           return { plan: dbPlan, message: 'Plan created.' };
         } else {
-          throw new HttpException('No such product exists', HttpStatus.BAD_REQUEST);
+          throw new HttpException(
+            'No such product exists',
+            HttpStatus.BAD_REQUEST,
+          );
         }
       }
     } catch (e) {
@@ -63,17 +93,32 @@ export class PlansService {
 
   async createPriceInStripe(plan: PlansDto, productId: string): Promise<any> {
     try {
-      if (plan.planType === 'bundle' && (plan.smsCount < 1 ||  plan.phoneCount < 1)) {
-        throw new HttpException('For bundle plan sms and phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
-      }
-      else if (plan.planType === 'phoneOnly' && (!(plan.phoneCount) ||  plan.phoneCount < 1)) {
-        throw new HttpException('For phone only plan phone credits should be greater than 0.', HttpStatus.BAD_REQUEST);
-      }
-      else if (plan.planType === 'smsOnly' && (!(plan.smsCount) ||  plan.smsCount < 1)) {
-        throw new HttpException('For sms only plan sms credits should be greater than 0.', HttpStatus.BAD_REQUEST);
-      }
-      else {
-        console.log("here 3 === === === ===");
+      if (
+        plan.planType === 'bundle' &&
+        (plan.smsCount < 1 || plan.phoneCount < 1)
+      ) {
+        throw new HttpException(
+          'For bundle plan sms and phone credits should be greater than 0.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else if (
+        plan.planType === 'phoneOnly' &&
+        (!plan.phoneCount || plan.phoneCount < 1)
+      ) {
+        throw new HttpException(
+          'For phone only plan phone credits should be greater than 0.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else if (
+        plan.planType === 'smsOnly' &&
+        (!plan.smsCount || plan.smsCount < 1)
+      ) {
+        throw new HttpException(
+          'For sms only plan sms credits should be greater than 0.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else {
+        console.log('here 3 === === === ===');
         if (plan.planType === 'smsOnly') {
           plan.phoneCount = 0;
         }
@@ -95,7 +140,10 @@ export class PlansService {
 
           return { plan: dbPlan };
         } else {
-          throw new HttpException('No such product exists', HttpStatus.BAD_REQUEST);
+          throw new HttpException(
+            'No such product exists',
+            HttpStatus.BAD_REQUEST,
+          );
         }
       }
     } catch (e) {
@@ -115,18 +163,17 @@ export class PlansService {
           });
         } else {
           await this.stripe.prices.update(planId, {
-            active: isActive
+            active: isActive,
           });
         }
         const _p = await this.repository.findOne({ where: { id: planId } });
         _p.active = isActive;
         const _plan = await this.repository.save(_p);
-        
+
         return { plan: _plan };
       } else {
         throw new BadRequestException('Value must be boolean.');
       }
-      
     } catch (e) {
       throw e;
     }
@@ -136,7 +183,7 @@ export class PlansService {
     try {
       if (planId.includes('plan_')) {
         await this.stripe.plans.del(planId);
-      } 
+      }
       const _plan = await this.repository.softDelete(planId);
       return { plan: _plan };
     } catch (e) {

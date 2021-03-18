@@ -6,8 +6,8 @@ export class PaymentMethodDto {
   @IsOptional()
   public id: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @Length(16)
   card_number: string;
 
@@ -18,16 +18,21 @@ export class PaymentMethodDto {
 
   @ApiProperty()
   @IsNotEmpty()
+  @Length(3, 150)
+  token: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNumber()
   exp_month: number;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNumber()
   exp_year: number;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNumber()
   cvc: number;
 }

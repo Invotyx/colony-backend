@@ -20,7 +20,7 @@ import { PasswordHashEngine } from '../../shared/hash.service';
 import { AppLogger } from '../../services/logs/log.service';
 import { UsersService } from '../users/services/users.service';
 import { UpdateProfileDto } from '../users/users.dto';
-import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -34,7 +34,7 @@ export class AuthController {
     this.logger.setContext('AuthController');
   }
 
-  @ApiBody({required:true})
+  @ApiBody({ required: true })
   @Post('login')
   async login(@Request() req: any) {
     try {

@@ -20,11 +20,9 @@ export class PaymentMethodsService {
     try {
       const pm = await this.stripe.paymentMethods.create({
         type: 'card',
+        
         card: {
-          exp_month: methodDetails.exp_month,
-          exp_year: methodDetails.exp_year,
-          number: methodDetails.card_number,
-          cvc: methodDetails.cvc.toString(),
+          token: methodDetails.token
         },
       });
 

@@ -8,10 +8,8 @@ import {
   HttpStatus,
   Injectable,
   Param,
-  ParseBoolPipe,
   Post,
   Put,
-  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/auth.decorator';
@@ -57,16 +55,16 @@ export class ProductsController {
     }
   }
 
-  @Auth({roles:[ROLES.ADMIN]})
+  @Auth({ roles: [ROLES.ADMIN] })
   @Post(':pid/plan/')
   public async createPlan(@Param('pid') pid: string, @Body() data: PlansDto) {
     //createPlanInStripe
     try {
       if (pid && pid !== 'undefined') {
-        console.log("here === === === ===");
+        console.log('here === === === ===');
         if (data.planType === 'smsOnly') {
-          data.recurring == 'one_time'
-        } 
+          data.recurring == 'one_time';
+        }
         if (data.recurring == 'recurring') {
           const plan = await this.planService.createPlanInStripe(data, pid);
           return plan;
@@ -115,7 +113,7 @@ export class ProductsController {
     }
   }
 
-  @Auth({roles:[ROLES.ADMIN]})
+  @Auth({ roles: [ROLES.ADMIN] })
   @Put(':pid/plan/:planId')
   public async activationTogglePlan(
     @Param('planId') planId: string,
@@ -132,7 +130,7 @@ export class ProductsController {
     }
   }
 
-  @Auth({roles:[ROLES.ADMIN]})
+  @Auth({ roles: [ROLES.ADMIN] })
   @Delete(':pid/plan/:planId')
   public async deletePlan(@Param('planId') planId: string) {
     try {

@@ -7,7 +7,7 @@ import { PhoneController } from './phone.controller';
 import { PhoneService } from './phone.service';
 
 @Module({
-  imports: [MainMysqlModule,ApiCallingModule,UsersModule],
+  imports: [MainMysqlModule, ApiCallingModule, UsersModule],
   controllers: [PhoneController],
   providers: [PhoneService, ApiCallingService],
 })

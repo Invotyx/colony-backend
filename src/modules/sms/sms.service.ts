@@ -1,13 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { MessageBird } from 'messagebird';
 import { env } from 'process';
+import { PresetMessagesEntity } from 'src/entities/preset-message.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { PresetsDto } from './preset.dto';
+import { PresetMessagesRepository } from './repo/sms-presets.repo';
 import { SMSTemplatesRepository } from './repo/sms-templates.repo';
 
 @Injectable()
 export class SmsService {
   private mb: MessageBird;
-  constructor(public readonly smsTemplateRepo: SMSTemplatesRepository) {
+  constructor(
+    public readonly smsTemplateRepo: SMSTemplatesRepository,
+    public readonly presetRepo: PresetMessagesRepository
+  ) {
     console.log(env.MESSAGEBIRD_KEY);
     this.mb = require('messagebird')(env.MESSAGEBIRD_KEY);
   }
@@ -83,4 +89,32 @@ export class SmsService {
       throw e;
     }
   }
+
+  async setPresetMessage(preset:PresetsDto,user:UserEntity) {
+    try {
+      const _preset:any = await this.presetRepo.save({
+        name: preset.name,
+        body: preset.body,
+        trigger: preset.trigger,
+        user: user
+      });
+      _preset.user = _preset.user.id as any;
+      return { preset: _preset };
+    } catch (e) {
+      throw e;
+    }
+    
+  }
+
+  async getPresetMessage(user:UserEntity) {
+    try {
+      const _preset = await this.presetRepo.find({ where: { user: user } });
+      return { preset: _preset };
+    } catch (e) {
+      throw e;
+    }
+    
+  }
+
+
 }

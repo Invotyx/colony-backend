@@ -46,7 +46,7 @@ export class SubscriptionsService {
         console.log("here false")
         return await this.createSubscriptionInStripe(customer, sub, _plan);
       } else {
-        return { message: 'You can only have one BUNDLE subscription.' };
+        throw new BadRequestException('You can only have one BUNDLE subscription.');
       }
     } catch (e) {
       throw e;

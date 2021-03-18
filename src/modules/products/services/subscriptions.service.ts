@@ -31,7 +31,6 @@ export class SubscriptionsService {
       // Check for existing subscriptions
       // Allow one bundled subscription
       // Allow multiple phone only subscriptions
-
       const check = await this.repository
         .createQueryBuilder('s')
         .leftJoinAndSelect(TABLES.PLANS.name, 'p', 's.planId = p.id')
@@ -90,7 +89,7 @@ export class SubscriptionsService {
           },
         ],
         collection_method:
-          sub.collection_method.toString() == 'charge_automatically'
+          sub.collectionMethod.toString() == 'charge_automatically'
             ? 'charge_automatically'
             : 'send_invoice',
       });
@@ -108,7 +107,7 @@ export class SubscriptionsService {
       plan: _plan,
       user: customer,
       cancelled: false,
-      collection_method: sub.collection_method,
+      collection_method: sub.collectionMethod,
       paymentType: _plan.recurring,
       stripeSubscriptionItem: subscription.items.data[0].id,
       currentStartDate: current_period_start,

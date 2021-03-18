@@ -21,7 +21,7 @@ export class SubscriptionsDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  public collection_method: collection_method;
+  public collectionMethod: collection_method;
 
   @ApiPropertyOptional()
   @IsOptional()

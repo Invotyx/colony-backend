@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 
 export enum collection_method {
   charge_automatically = 'charge_automatically',
@@ -21,6 +21,7 @@ export class SubscriptionsDto {
 
   @ApiProperty()
   @IsNotEmpty()
+  @IsEnum(collection_method)
   public collectionMethod: collection_method;
 
   @ApiPropertyOptional()

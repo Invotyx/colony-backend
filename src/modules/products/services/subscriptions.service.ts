@@ -43,6 +43,7 @@ export class SubscriptionsService {
       if (check == 0) {
         return await this.createSubscriptionInStripe(customer, sub, _plan);
       } else if (check > 0 && _plan.planType != planType.bundle) {
+        console.log("here false")
         return await this.createSubscriptionInStripe(customer, sub, _plan);
       } else {
         return { message: 'You can only have one BUNDLE subscription.' };
@@ -60,6 +61,7 @@ export class SubscriptionsService {
     let subscription: any;
     let current_period_end: any = null;
     let current_period_start: any = null;
+    let subOrIntent: any = null;
     if (sub.planId.includes('price_')) {
       const customer_payments: any = await this.paymentService.repository
         .createQueryBuilder('pm')
@@ -76,6 +78,8 @@ export class SubscriptionsService {
           customer: customer.customerId,
           payment_method: customer_payments.id,
         });
+
+        subOrIntent = subscription.id;
       } else {
         return { message: 'Please add payment method first.' };
       }
@@ -100,24 +104,30 @@ export class SubscriptionsService {
       current_period_start = this.timestampToDate(
         subscription.current_period_start,
       );
+
+      subOrIntent = subscription.items.data[0].id;
     }
 
-    await this.repository.save({
-      stripeId: subscription.id,
-      plan: _plan,
-      user: customer,
-      cancelled: false,
-      collection_method: sub.collectionMethod,
-      paymentType: _plan.recurring,
-      stripeSubscriptionItem: subscription.items.data[0].id,
-      currentStartDate: current_period_start,
-      currentEndDate: current_period_end,
-    });
-    customer.purchasedPhoneNumberCredits =
-      customer.purchasedPhoneNumberCredits + _plan.phoneCount;
-    customer.purchasedSmsCount = customer.purchasedSmsCount + _plan.smsCount;
-    await this.userService.repository.update(customer.id, customer);
-    return { message: 'Subscribed to selected plan successfully.' };
+    try {
+      const res = await this.repository.save({
+        stripeId: subscription.id,
+        plan: _plan,
+        user: customer,
+        cancelled: false,
+        collection_method: sub.collectionMethod,
+        paymentType: _plan.recurring,
+        stripeSubscriptionItem: subOrIntent,
+        currentStartDate: current_period_start,
+        currentEndDate: current_period_end,
+      });
+      customer.purchasedPhoneNumberCredits =
+        customer.purchasedPhoneNumberCredits + _plan.phoneCount;
+      customer.purchasedSmsCount = customer.purchasedSmsCount + _plan.smsCount;
+      await this.userService.repository.save(customer);
+      return { message: 'Subscribed to selected plan successfully.' };
+    } catch (e) {
+      throw e;
+    }
   }
 
   public async getSubscriptions(customer: UserEntity) {

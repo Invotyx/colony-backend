@@ -61,16 +61,20 @@ export class ProductsController {
     //createPlanInStripe
     try {
       if (pid && pid !== 'undefined') {
-        console.log('here === === === ===');
-        if (data.planType === 'smsOnly') {
-          data.recurring == 'one_time';
-        }
-        if (data.recurring == 'recurring') {
-          const plan = await this.planService.createPlanInStripe(data, pid);
-          return plan;
+        const check = await this.planService.repository.findOne({ where: { nickname: data.nickname } });
+        if (!check) {
+          if (data.planType === 'smsOnly') {
+            data.recurring == 'one_time';
+          }
+          if (data.recurring == 'recurring') {
+            const plan = await this.planService.createPlanInStripe(data, pid);
+            return plan;
+          } else {
+            const plan = await this.planService.createPriceInStripe(data, pid);
+            return plan;
+          }
         } else {
-          const plan = await this.planService.createPriceInStripe(data, pid);
-          return plan;
+          throw new BadRequestException('Plan with this name already exists.');
         }
       } else {
         throw new HttpException('Invalid product. ', HttpStatus.BAD_REQUEST);

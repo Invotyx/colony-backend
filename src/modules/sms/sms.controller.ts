@@ -12,7 +12,7 @@ import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entities/user.entity';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
-import { PresetsDto } from './preset.dto';
+import { PresetsDto, PresetsUpdateDto } from './preset.dto';
 import { SmsService } from './sms.service';
 
 @Controller('sms')
@@ -83,6 +83,30 @@ export class SmsController {
     try {
       const templates = await this.service.getPresetMessage(influencer);
       return templates;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Put('preset/:id')
+  async updatePreset(@LoginUser() influencer: UserEntity, @Param('id') id:number, @Body() data:PresetsUpdateDto) {
+    try {
+      const template = await this.service.updatePresetMessage(id,data,influencer);
+      return template;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Delete('preset/:id')
+  async deletePreset(@LoginUser() influencer: UserEntity, @Param('id') id:number) {
+    try {
+      const template = await this.service.deletePresetMessage(id,influencer);
+      return template;
     } catch (e) {
       throw e;
     }

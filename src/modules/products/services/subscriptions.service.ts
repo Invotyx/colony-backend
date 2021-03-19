@@ -154,57 +154,60 @@ export class SubscriptionsService {
       const sub = await this.repository.findOne({
         where: { stripeId: subId, cancelled: false },
       });
-      if (sub.paymentType != 'recurring') {
-        return { message: 'You cannot update one time payment subscriptions.' };
-      }
-      if (planId.includes('price_')) {
-        return { message: 'You cannot add one time pricing to subscription.' };
-      }
-      if (sub.plan.id == planId && sub.cancelled == false) {
-        const _upSub = await this.stripe.subscriptions.update(subId, {
-          items: [
-            {
-              id: sub.stripeSubscriptionItem,
-              plan: planId,
-            },
-          ],
-          collection_method: 'charge_automatically',
-        });
-
-        if (_upSub) {
-          const current_period_end = this.timestampToDate(
-            _upSub.current_period_end,
-          );
-          const current_period_start = this.timestampToDate(
-            _upSub.current_period_start,
-          );
-          const _p = await this.planService.repository.findOne({
-            where: { id: planId },
+      if (sub) {
+        if (sub.paymentType != 'recurring') {
+          throw new BadRequestException('You cannot update one time purchaseable items.');
+        }
+        if (planId.includes('price_')) {
+          throw new BadRequestException('You cannot add one time purchaseable items to subscription.');
+        }
+        if (sub.plan.id == planId && sub.cancelled == false) {
+          const _upSub = await this.stripe.subscriptions.update(subId, {
+            items: [
+              {
+                id: sub.stripeSubscriptionItem,
+                plan: planId,
+              },
+            ],
+            collection_method: 'charge_automatically',
           });
-          sub.cancelled = true;
-          await this.repository.save(sub);
-          const newSub = new SubscriptionsEntity();
-          newSub.user = customer;
-          newSub.cancelled = false;
-          newSub.plan = _p;
-          newSub.stripeId = _upSub.items.data[0].subscription;
-          newSub.stripeSubscriptionItem = _upSub.items.data[0].id;
-          newSub.collection_method = collection_method.charge_automatically;
-          newSub.paymentType = 'recurring';
-          newSub.currentStartDate = current_period_start;
-          newSub.currentEndDate = current_period_end;
-          await this.repository.save(newSub);
-          return { message: 'Subscription updated successfully.' };
+
+          if (_upSub) {
+            const current_period_end = this.timestampToDate(
+              _upSub.current_period_end,
+            );
+            const current_period_start = this.timestampToDate(
+              _upSub.current_period_start,
+            );
+            const _p = await this.planService.repository.findOne({
+              where: { id: planId },
+            });
+            sub.cancelled = true;
+            await this.repository.save(sub);
+            const newSub = new SubscriptionsEntity();
+            newSub.user = customer;
+            newSub.cancelled = false;
+            newSub.plan = _p;
+            newSub.stripeId = _upSub.items.data[0].subscription;
+            newSub.stripeSubscriptionItem = _upSub.items.data[0].id;
+            newSub.collection_method = collection_method.charge_automatically;
+            newSub.paymentType = 'recurring';
+            newSub.currentStartDate = current_period_start;
+            newSub.currentEndDate = current_period_end;
+            await this.repository.save(newSub);
+            return { message: 'Subscription updated successfully.' };
+          } else {
+            throw new BadRequestException(
+              'Unable to change subscription right now, try again later',
+            );
+          }
         } else {
           throw new BadRequestException(
-            'Unable to change subscription right now, try again later',
+            'Unable to change subscription, try again later',
           );
         }
       } else {
-        return {
-          message:
-            'You are already subscribed to same plan. You cannot subscribe to same plan unless you unsubscribe it first.',
-        };
+        throw new BadRequestException('You are already subscribed to same plan. You cannot subscribe to same plan unless you unsubscribe it first.');
       }
     } catch (e) {
       throw e;
@@ -216,11 +219,13 @@ export class SubscriptionsService {
       where: { stripeId: subId, cancelled: false },
     });
     try {
-      if (sub) {
+      if (sub && sub.stripeSubscriptionItem.includes('si_')) {
         sub.cancelled = true;
         await this.repository.save(sub);
         await this.stripe.subscriptions.del(sub.stripeId);
         return { message: 'Unsubscribed successfully.' };
+      } else {
+        throw new BadRequestException('One time payments cannot be canceled.');
       }
     } catch (e) {
       throw e;

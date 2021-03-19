@@ -31,3 +31,20 @@ export class PresetsDto {
 
   
 }
+
+
+export class PresetsUpdateDto {
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Length(3, 100)
+  public name: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public body: string;
+
+  
+
+  
+}

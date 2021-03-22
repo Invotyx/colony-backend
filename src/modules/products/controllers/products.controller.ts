@@ -91,8 +91,14 @@ export class ProductsController {
       const plan = await this.planService.repository.find({
         where: { product: pid },
       });
+
       if (plan) {
-        return plan;
+
+        const bundle = plan.find(p => p.planType === 'bundle');
+        const smsOnly = plan.find(p => p.planType === 'smsOnly');
+        const phoneOnly = plan.find(p => p.planType === 'phoneOnly');
+        
+        return { bundledPlan: bundle, smsOnlyPlans: smsOnly, phoneOnlyPlans: phoneOnly };
       } else {
         return 'No records found.';
       }

@@ -94,9 +94,9 @@ export class ProductsController {
 
       if (plan) {
 
-        const bundle = plan.find(p => p.planType === 'bundle');
-        const smsOnly = plan.find(p => p.planType === 'smsOnly');
-        const phoneOnly = plan.find(p => p.planType === 'phoneOnly');
+        const bundle = plan.filter(p => p.planType === 'bundle');
+        const smsOnly = plan.filter(p => p.planType === 'smsOnly');
+        const phoneOnly = plan.filter(p => p.planType === 'phoneOnly');
         
         return { bundledPlan: bundle, smsOnlyPlans: smsOnly, phoneOnlyPlans: phoneOnly };
       } else {

@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Injectable,
+  Param,
   Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -37,22 +38,26 @@ export class PaymentsController {
     @Body() data: PaymentMethodDto,
   ) {
     try {
-      let _user = await this.userService.findOne(user.id);
+      if (data.name && data.token) {
+        let _user = await this.userService.findOne(user.id);
 
-      if (_user.customerId) {
-        const pm = await this.paymentService.createPaymentMethod(_user, data);
-        return pm;
+        if (_user.customerId) {
+          const pm = await this.paymentService.createPaymentMethod(_user, data);
+          return pm;
+        } else {
+          const stripe_user = await this.stripe.customers.create({
+            email: _user.email,
+            name: _user.firstName + ' ' + _user.lastName,
+            phone: _user.mobile,
+          });
+
+          _user.customerId = stripe_user.id;
+          _user = await this.userService.repository.save(_user);
+          const pm = await this.paymentService.createPaymentMethod(_user, data);
+          return pm;
+        }
       } else {
-        const stripe_user = await this.stripe.customers.create({
-          email: _user.email,
-          name: _user.firstName + ' ' + _user.lastName,
-          phone: _user.mobile,
-        });
-
-        _user.customerId = stripe_user.id;
-        _user = await this.userService.repository.save(_user);
-        const pm = await this.paymentService.createPaymentMethod(_user, data);
-        return pm;
+        throw new BadRequestException('Incomplete data provided.');
       }
     } catch (e) {
       throw new BadRequestException(e, 'An Exception Occurred');
@@ -71,6 +76,19 @@ export class PaymentsController {
       } else {
         return { message: 'No records found' };
       }
+    } catch (e) {
+      throw new BadRequestException(e, 'An Exception Occurred');
+    }
+  }
+
+  @Auth({})
+  @Post('set-default/:id')
+  async setDefaultPaymentMethod(@LoginUser() user: UserEntity,@Param('id') id: string) {
+    try {
+      const _user = await this.userService.findOne(user.id);
+
+      const result = await this.paymentService.setDefaultPaymentMethod(_user, id);
+      return result;
     } catch (e) {
       throw new BadRequestException(e, 'An Exception Occurred');
     }

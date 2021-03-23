@@ -30,6 +30,9 @@ export class PaymentMethodsEntity {
   @Column({ length: 15, nullable: false })
   public name: string;
 
+  @Column({ default:false, nullable: false })
+  public default: boolean;
+
   @Column({ length: 50, nullable: true })
   public fingerprint: string;
 

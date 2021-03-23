@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { env } from 'process';
+import { UserEntity } from 'src/entities/user.entity';
 import Stripe from 'stripe';
 import { PaymentMethodDto } from '../dto/payment-methods.dto';
 import { PaymentMethodsRepository } from '../repos/payment-methods.repo';
@@ -42,6 +43,7 @@ export class PaymentMethodsService {
           check.type = pm.card.brand;
           check.user = customer;
           check.fingerprint = pm.card.fingerprint;
+          check.default = true;
           await this.repository.delete(check.id);
           check.id = pm.id;
           await this.repository.save(check);
@@ -50,6 +52,9 @@ export class PaymentMethodsService {
           });
           return { message: 'Payment method added' };
         } else {
+          const def = await this.repository.findOne({ where: { default: true } });
+          def.default = false;
+          await this.repository.save(def);
           await this.repository.save({
             id: pm.id,
             last4_card: pm.card.last4,
@@ -57,6 +62,7 @@ export class PaymentMethodsService {
             user: customer,
             fingerprint: pm.card.fingerprint,
             name: methodDetails.name,
+            default: true
           });
           await this.stripe.customers.update(customer.customerId, {
             invoice_settings: { default_payment_method: pm.id },
@@ -71,12 +77,39 @@ export class PaymentMethodsService {
     }
   }
 
+  public async setDefaultPaymentMethod(
+    customer: UserEntity,
+    paymentId:string
+  ) {
+    try {
+      const exist = await this.repository.findOne({ where: { id: paymentId } });
+      
+      if (exist) {
+        const exDef = await this.repository.findOne({ where: { default: true } });
+        if (exDef) {
+          exDef.default = false;
+          await this.repository.save(exDef);
+        }
+        await this.stripe.customers.update(customer.customerId, {
+          invoice_settings: { default_payment_method: exist.id },
+        });
+        exist.default = true;
+        await this.repository.save(exist);
+        return { message: 'Payment method is set as default.' };
+      } else {
+        throw new BadRequestException('Payment method does not exist.');
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
   public async getPaymentMethods(customer: any): Promise<any> {
     try {
-      const paymentMethods: any = await this.repository.findOne({
+      const paymentMethods: any = await this.repository.find({
         where: { user: customer.id },
       });
-      return paymentMethods;
+      return { paymentMethods };
     } catch (e) {
       throw e;
     }

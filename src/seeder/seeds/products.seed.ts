@@ -14,13 +14,13 @@ export class AddProductsSeed implements ISeed {
     prod.description = 'Colony service package for phone number and sms bundle';
     prod.type = 'service';
     products.push(prod);
-    /*
+    
 
     const product2 = new ProductsDto();
     product2.name = 'Colony Add-on';
     product2.description = 'Colony service package for sms bundle';
     product2.type = 'service';
-    products.push(product2); */
+    products.push(product2); 
 
     products.forEach(async (prod) => {
       await this.productService.createProduct(prod);

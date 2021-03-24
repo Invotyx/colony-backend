@@ -13,6 +13,9 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/auth.decorator';
+import { LoginUser } from 'src/decorators/user.decorator';
+import { PlansEntity } from 'src/entities/plans.entity';
+import { UserEntity } from 'src/entities/user.entity';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { PlansDto } from '../dto/plans.dto';
 import { PlansService } from '../services/plans.service';
@@ -84,13 +87,21 @@ export class ProductsController {
     }
   }
 
+  @Auth({})
   @Get(':pid/plan/')
-  public async getPlans(@Param('pid') pid: string) {
-    //createPlanInStripe
+  public async getPlans(@LoginUser() user:UserEntity, @Param('pid') pid: string) {
     try {
-      const plan = await this.planService.repository.find({
-        where: { product: pid },
-      });
+      let plan: PlansEntity[];
+      
+      if (user.roles[0].role === ROLES.ADMIN) {
+        plan = await this.planService.repository.find({
+          where: { product: pid },
+        });
+      } else {
+        plan = await this.planService.repository.find({
+          where: { product: pid, active: true }
+        });
+      }
 
       if (plan) {
 

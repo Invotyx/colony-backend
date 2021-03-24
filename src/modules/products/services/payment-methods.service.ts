@@ -104,6 +104,26 @@ export class PaymentMethodsService {
     }
   }
 
+  public async removePaymentMethod(inf:UserEntity,pid:string) {
+    try {
+      const paymentMethod = await this.repository.findOne({
+        where: { user: inf, id: pid },
+      });
+
+      if (paymentMethod) {
+        await this.stripe.paymentMethods.detach(pid);
+        await this.repository.delete(pid);
+        return { message: 'Payment method deleted.' };
+      } else {
+        throw new BadRequestException('Payment method does not exist.');
+      }
+
+    } catch (e) {
+      throw e;
+    }
+
+  }
+
   public async getPaymentMethods(customer: any): Promise<any> {
     try {
       const paymentMethods: any = await this.repository.find({

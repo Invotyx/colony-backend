@@ -57,13 +57,29 @@ export class PhoneService {
           };
           if (env.NODE_ENV !== 'development') {
             const number = await this.apiCaller.apiCaller(
-              'GET',
+              'POST',
               'https://numbers.messagebird.com/v1/phone-numbers/' +
                 this.serialize(data),
               { key: 'AccessKey', value: this.key },
             );
             // save to database;
-            return { number };
+            
+            await this.repo.save({
+              country: number.country,
+              features: number.features.join(','),
+              number: number.number,
+              renewalDate: number.renewalAt,
+              status: number.status,
+              type: number.type,
+              user: user,
+            });
+            user.purchasedPhoneCount = user.purchasedPhoneCount + 1;
+            await this.userService.repository.save(user);
+            return {
+              number,
+              message:
+                'Number purchased and linked to your account successfully.',
+            };
           } else {
             let countryCode: any = await this.apiCaller.apiCaller(
               'GET',
@@ -72,7 +88,7 @@ export class PhoneService {
             );
             countryCode = countryCode.callingCodes;
             const dummy = {
-              number: faker.phone.phoneNumber(countryCode + '##########'),
+              number: num,
               country: cc.toUpperCase(),
               region: 'Haarlem',
               locality: 'Haarlem',

@@ -24,6 +24,8 @@ import { InfluencerContactsEntity } from '../entities/influencer-contacts.entity
 import { InfluencerLinksEntity } from '../entities/influencer-links.entity';
 import { SMSTemplatesEntity } from '../entities/sms-templates.entity';
 import { PhonesEntity } from '../entities/phone.entity';
+import { BroadcastsEntity } from '../entities/broadcast.entity';
+import { BroadcastsContactsEntity } from '../entities/broadcast-contacts.entity';
 import { JOIN_HELPER } from './join-helper.const';
 
 export const EntitiesRegister: any = {
@@ -53,6 +55,8 @@ export const EntitiesRegister: any = {
   InfluencerLinksEntity,
   SMSTemplatesEntity,
   PhonesEntity,
+  BroadcastsEntity,
+  BroadcastsContactsEntity
 };
 
 export const Entities: any = Object.values(EntitiesRegister);

@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { MessageBird } from 'messagebird';
 import { env } from 'process';
-import { PresetMessagesEntity } from 'src/entities/preset-message.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { PresetsDto, PresetsUpdateDto } from './preset.dto';
 import { PresetMessagesRepository } from './repo/sms-presets.repo';

@@ -161,50 +161,55 @@ export class SubscriptionsService {
         if (planId.includes('price_')) {
           throw new BadRequestException('You cannot add one time purchaseable items to subscription.');
         }
-        if (sub.plan.id == planId && sub.cancelled == false) {
-          const _upSub = await this.stripe.subscriptions.update(subId, {
-            items: [
-              {
-                id: sub.stripeSubscriptionItem,
-                plan: planId,
-              },
-            ],
-            collection_method: 'charge_automatically',
-          });
-
-          if (_upSub) {
-            const current_period_end = this.timestampToDate(
-              _upSub.current_period_end,
-            );
-            const current_period_start = this.timestampToDate(
-              _upSub.current_period_start,
-            );
-            const _p = await this.planService.repository.findOne({
-              where: { id: planId },
+        const _tempPlan = await this.planService.repository.findOne({ where: { id: planId } });
+        if (sub.plan.planType !== _tempPlan.planType) {
+          throw new BadRequestException(`You cannot upgrade or downgrade between phoneOnly and bundled plans. Plan of same type can be used to update subscription.`);
+        } else {
+          if (sub.plan.id == planId && sub.cancelled == false) {
+            const _upSub = await this.stripe.subscriptions.update(subId, {
+              items: [
+                {
+                  id: sub.stripeSubscriptionItem,
+                  plan: planId,
+                },
+              ],
+              collection_method: 'charge_automatically',
             });
-            sub.cancelled = true;
-            await this.repository.save(sub);
-            const newSub = new SubscriptionsEntity();
-            newSub.user = customer;
-            newSub.cancelled = false;
-            newSub.plan = _p;
-            newSub.stripeId = _upSub.items.data[0].subscription;
-            newSub.stripeSubscriptionItem = _upSub.items.data[0].id;
-            newSub.collection_method = collection_method.charge_automatically;
-            newSub.paymentType = 'recurring';
-            newSub.currentStartDate = current_period_start;
-            newSub.currentEndDate = current_period_end;
-            await this.repository.save(newSub);
-            return { message: 'Subscription updated successfully.' };
+
+            if (_upSub) {
+              const current_period_end = this.timestampToDate(
+                _upSub.current_period_end,
+              );
+              const current_period_start = this.timestampToDate(
+                _upSub.current_period_start,
+              );
+              const _p = await this.planService.repository.findOne({
+                where: { id: planId },
+              });
+              sub.cancelled = true;
+              await this.repository.save(sub);
+              const newSub = new SubscriptionsEntity();
+              newSub.user = customer;
+              newSub.cancelled = false;
+              newSub.plan = _p;
+              newSub.stripeId = _upSub.items.data[0].subscription;
+              newSub.stripeSubscriptionItem = _upSub.items.data[0].id;
+              newSub.collection_method = collection_method.charge_automatically;
+              newSub.paymentType = 'recurring';
+              newSub.currentStartDate = current_period_start;
+              newSub.currentEndDate = current_period_end;
+              await this.repository.save(newSub);
+              return { message: 'Subscription updated successfully.' };
+            } else {
+              throw new BadRequestException(
+                'Unable to change subscription right now, try again later',
+              );
+            }
           } else {
             throw new BadRequestException(
-              'Unable to change subscription right now, try again later',
+              'Unable to change subscription, try again later',
             );
           }
-        } else {
-          throw new BadRequestException(
-            'Unable to change subscription, try again later',
-          );
         }
       } else {
         throw new BadRequestException('You are already subscribed to same plan. You cannot subscribe to same plan unless you unsubscribe it first.');

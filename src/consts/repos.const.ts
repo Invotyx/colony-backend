@@ -24,6 +24,8 @@ import { InfluencerLinksTrackingRepository } from '../modules/influencer-links/r
 import { SMSTemplatesRepository } from '../modules/sms/repo/sms-templates.repo';
 import { PhonesRepository } from '../modules/phone/phone.repo';
 import { PresetMessagesRepository } from '../modules/sms/repo/sms-presets.repo';
+import { BroadcastContactsRepository } from '../modules/sms/repo/broadcast-contact.repo';
+import { BroadcastsRepository } from '../modules/sms/repo/broadcast.repo';
 
 export const REPOS = [
   PermissionRepository,
@@ -51,5 +53,7 @@ export const REPOS = [
   InfluencerLinksTrackingRepository,
   SMSTemplatesRepository,
   PhonesRepository,
-  PresetMessagesRepository
+  PresetMessagesRepository,
+  BroadcastContactsRepository,
+  BroadcastsRepository
 ];

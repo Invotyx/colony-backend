@@ -93,4 +93,16 @@ export class PaymentsController {
       throw new BadRequestException(e, 'An Exception Occurred');
     }
   }
+
+  @Auth({})
+  @Post(':id/remove')
+  async removePaymentMethod(@LoginUser() user: UserEntity, @Param('id') id: string) {
+    try {
+      const _user = await this.userService.findOne(user.id);
+      const result = await this.paymentService.removePaymentMethod(_user, id);
+      return result;
+    } catch (e) {
+      throw e;
+    }
+  }
 }

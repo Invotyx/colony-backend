@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { env } from 'process';
+import { env, exit } from 'process';
 import { UserEntity } from 'src/entities/user.entity';
 import Stripe from 'stripe';
+import { MoreThan } from 'typeorm';
 import { PaymentMethodDto } from '../dto/payment-methods.dto';
 import { PaymentMethodsRepository } from '../repos/payment-methods.repo';
 
@@ -111,6 +112,9 @@ export class PaymentMethodsService {
       });
 
       if (paymentMethod) {
+        if (paymentMethod.default == true) {
+          await this.repository.query(`UPDATE payment_methods SET "default"=TRUE WHERE "createdAt"=(SELECT MAX(pm."createdAt") as "createdAt" FROM payment_methods pm WHERE ( "pm"."default"=FALSE AND "pm"."userId"=$1 )) AND "userId"=$1`, [inf.id]);
+        }
         await this.stripe.paymentMethods.detach(pid);
         await this.repository.delete(pid);
         return { message: 'Payment method deleted.' };

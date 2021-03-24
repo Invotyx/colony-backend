@@ -36,14 +36,15 @@ export class SubscriptionsService {
         .leftJoinAndSelect(TABLES.PLANS.name, 'p', 's.planId = p.id')
         .where('p.planType = :planType', { planType: 'bundle' })
         .getCount();
+      
+      console.log(check);
       const _plan = await this.planService.repository.findOne({
         where: { id: sub.planId },
       });
-
       if (check == 0) {
         return await this.createSubscriptionInStripe(customer, sub, _plan);
-      } else if (check > 0 && _plan.planType != planType.bundle) {
-        console.log("here false")
+      } 
+      if (check > 0 && _plan.planType !== 'bundle') {
         return await this.createSubscriptionInStripe(customer, sub, _plan);
       } else {
         throw new BadRequestException('You can only have one BUNDLE subscription.');

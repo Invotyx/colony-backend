@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Injectable,
   Param,
@@ -95,7 +96,7 @@ export class PaymentsController {
   }
 
   @Auth({})
-  @Post(':id/remove')
+  @Delete(':id/remove')
   async removePaymentMethod(@LoginUser() user: UserEntity, @Param('id') id: string) {
     try {
       const _user = await this.userService.findOne(user.id);

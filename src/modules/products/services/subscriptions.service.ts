@@ -65,12 +65,7 @@ export class SubscriptionsService {
     let current_period_start: any = null;
     let subOrIntent: any = null;
     if (sub.planId.includes('price_')) {
-      const customer_payments: any = await this.paymentService.repository
-        .createQueryBuilder('pm')
-        .leftJoin(TABLES.USERS.name, 'u', 'pm.userId = u.id')
-        .orderBy('pm.createdAt', 'DESC')
-        .getOne();
-
+      const customer_payments = await this.paymentService.repository.findOne({ where: { user: customer, default:true } });
       if (customer_payments) {
         subscription = await this.stripe.paymentIntents.create({
           amount: _plan.amount_decimal * 100,
@@ -83,7 +78,7 @@ export class SubscriptionsService {
 
         subOrIntent = subscription.id;
       } else {
-        return { message: 'Please add payment method first.' };
+        throw new BadRequestException('Please add payment method first.');
       }
     } else {
       subscription = await this.stripe.subscriptions.create({

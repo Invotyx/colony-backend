@@ -83,10 +83,10 @@ export class PaymentMethodsService {
     paymentId:string
   ) {
     try {
-      const exist = await this.repository.findOne({ where: { id: paymentId } });
+      const exist = await this.repository.findOne({ where: { id: paymentId, user: customer } });
       
       if (exist) {
-        const exDef = await this.repository.findOne({ where: { default: true } });
+        const exDef = await this.repository.findOne({ where: { default: true, user: customer} });
         if (exDef) {
           exDef.default = false;
           await this.repository.save(exDef);

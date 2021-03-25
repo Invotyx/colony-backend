@@ -4,6 +4,7 @@ import {
   IsIn,
   IsInt,
   IsNotEmpty,
+  IsNotIn,
   IsOptional,
   IsString,
   Length,
@@ -33,6 +34,7 @@ export class CreateUserDto {
   @ApiProperty()
   @Length(3, 20)
   @IsNotEmpty()
+  @IsNotIn(['admin', 'user','info','superadmin'])
   username: string;
 
   @ApiProperty()

@@ -228,7 +228,7 @@ export class UsersController {
       return { data: newUser };
     } catch (error) {
       
-      throw (error.message);
+      throw error;
     }
   }
 
@@ -268,7 +268,7 @@ export class UsersController {
       if (error instanceof InValidDataError) {
         throw new BadRequestException(inValidDataRes([error.message]));
       }
-      throw error.message;
+      throw error;
     }
   }
 

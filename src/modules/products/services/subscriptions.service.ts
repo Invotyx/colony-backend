@@ -35,6 +35,7 @@ export class SubscriptionsService {
         .createQueryBuilder('s')
         .leftJoinAndSelect(TABLES.PLANS.name, 'p', 's.planId = p.id')
         .where('p.planType = :planType', { planType: 'bundle' })
+        .andWhere('s.userId=:userId',{userId:customer.id})
         .getCount();
       
       console.log(check);

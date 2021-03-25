@@ -189,7 +189,7 @@ export class UsersService {
     ) {
       throw new HttpException(
         'Please check your email for instructions, duplicate request within 15 minutes!',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.BAD_REQUEST,
       );
     } else {
       const _emver = new ForgotPassword();
@@ -213,7 +213,7 @@ export class UsersService {
           return this.password.findOne({ where: { email } });
         } else {
           throw new HttpException(
-            'LOGIN_GENERIC_ERROR',
+            'Invalid data, try again.',
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         }
@@ -233,7 +233,7 @@ export class UsersService {
         15
     ) {
       throw new HttpException(
-        'LOGIN_EMAIL_SENT_RECENTLY',
+        'Login email sent recently.',
         HttpStatus.METHOD_NOT_ALLOWED,
       );
     } else {
@@ -327,7 +327,7 @@ export class UsersService {
       }
 
       await this.repository.update(id, updateData);
-      return { message: 'user details updated.' };
+      return { message: 'User details updated.' };
     } catch (error) {
       console.log(error);
       throw error;

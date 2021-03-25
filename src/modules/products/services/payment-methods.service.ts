@@ -34,7 +34,7 @@ export class PaymentMethodsService {
         });
 
         const check = await this.repository.findOne({
-          where: { fingerprint: pm.card.fingerprint },
+          where: { fingerprint: pm.card.fingerprint, user:customer },
         });
 
         if (check) {

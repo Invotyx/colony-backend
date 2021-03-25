@@ -12,6 +12,7 @@ import {
   HttpStatus,
   UseGuards,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -109,14 +110,12 @@ export class UsersController {
           mapColumns(paginatedData.data[0], columnList),
         );
       }
-      res
-        .status(HttpStatus.OK)
-        .send({ data: paginatedData.data, meta: paginatedData.meta });
+      return { data: paginatedData.data, meta: paginatedData.meta };
     } catch (error) {
       if (error instanceof PaginatorError) {
-        res.status(HttpStatus.BAD_REQUEST).send(PaginatorErrorHandler(error));
+        throw PaginatorErrorHandler(error);
       }
-      res.status(HttpStatus.BAD_REQUEST).send(error);
+      throw error;
     }
   }
 
@@ -132,10 +131,10 @@ export class UsersController {
   async verifyEmail(@Param('token') token: any, @Res() res: Response) {
     try {
       const isEmailVerified = await this.userService.verifyEmail(token);
-      if (isEmailVerified) res.status(HttpStatus.OK).send(isEmailVerified);
-      else res.status(HttpStatus.NOT_FOUND).send('LOGIN_EMAIL_NOT_VERIFIED');
+      if (isEmailVerified) return isEmailVerified;
+      else throw new BadRequestException('LOGIN_EMAIL_NOT_VERIFIED');
     } catch (error) {
-      res.status(HttpStatus.BAD_REQUEST).send(error);
+      throw error;
     }
   }
 
@@ -148,12 +147,12 @@ export class UsersController {
         params.email,
       );
       if (isEmailSent) {
-        res.status(HttpStatus.OK).send('EMAIL_SENT');
+        return { message: 'EMAIL_SENT' };
       } else {
-        res.status(HttpStatus.NOT_FOUND).send('MAIL_NOT_SENT');
+        throw new BadRequestException('MAIL_NOT_SENT');
       }
     } catch (error) {
-      res.status(HttpStatus.NOT_FOUND).send('ERROR_SEND_EMAIL');
+      throw error;
     }
   }
 
@@ -165,46 +164,41 @@ export class UsersController {
       );
 
       if (isEmailSent) {
-        res.status(HttpStatus.OK).send({ status: 200, message: 'Email sent' });
+        return { message:'Email sent' };
       } else {
         console.error('Mail server down, try again later!');
-        res
-          .status(HttpStatus.BAD_REQUEST)
-          .send({ status: 400, message: 'Mail server down, try again later!' });
+        throw new BadRequestException('Mail server down, try again later!');
       }
     } catch (error) {
-      console.error(error);
-      res
-        .status(HttpStatus.BAD_REQUEST)
-        .send({ status: 400, message: error.response });
+      throw error;
     }
   }
 
   @Get('verify-forgot-password')
-  async verfiyResetPasswordToken(@Query() param: any, @Res() res: Response) {
+  async verfiyResetPasswordToken(@Query() param: any) {
     try {
       const isEmailVerified = await this.userService.verifyResetPasswordToken(
         param.token,
         param.email,
       );
       if (isEmailVerified)
-        res.status(HttpStatus.ACCEPTED).send(isEmailVerified);
-      else res.status(HttpStatus.FORBIDDEN).send('PASSWORD_NOT_VERIFIED');
+        return isEmailVerified;
+      else throw new BadRequestException('PASSWORD_NOT_VERIFIED');
     } catch (error) {
-      res.status(HttpStatus.FORBIDDEN).send(error);
+      throw error;
     }
   }
   //@Auth({ roles: [ROLES.ADMIN] })
   @Get(':id')
-  async getUser(@Param('id') id: number, @Res() res: Response) {
+  async getUser(@Param('id') id: number) {
     try {
       const user = await this.userService.repository.findOne(id);
-      res.status(HttpStatus.OK).send({ data: user });
+      return { data: user };
     } catch (error) {
       if (error instanceof PaginatorError) {
-        res.status(HttpStatus.BAD_REQUEST).send(PaginatorErrorHandler(error));
+        throw PaginatorErrorHandler(error);
       }
-      res.status(HttpStatus.BAD_REQUEST).send(error);
+      throw (error);
     }
   }
 
@@ -225,18 +219,16 @@ export class UsersController {
   // @Auth({})
   @Post()
   @UsePipes(ValidationPipe)
-  async createUser(@Body() user: CreateUserDto, @Res() res: Response) {
+  async createUser(@Body() user: CreateUserDto) {
     try {
       if (user.username == 'admin') {
-        res
-          .status(HttpStatus.BAD_REQUEST)
-          .send({ message: 'You cannot create user with username admin' });
+        throw new BadRequestException('You cannot create user with username admin');
       }
       const newUser = await this.userService.createUser(user);
-      res.status(HttpStatus.CREATED).send({ data: newUser });
+      return { data: newUser };
     } catch (error) {
-      console.log(error);
-      res.status(HttpStatus.BAD_REQUEST).send({ message: error.message });
+      
+      throw (error.message);
     }
   }
 
@@ -245,25 +237,20 @@ export class UsersController {
   @UsePipes(ValidationPipe)
   async updateUser(
     @Body() user: UpdateProfileDto,
-    @Param('id') id: string,
-    @Res() res: Response,
+    @Param('id') id: string
   ) {
     try {
       if (user.username == 'admin') {
-        res
-          .status(HttpStatus.BAD_REQUEST)
-          .send({ message: 'You cannot change username to admin' });
+        throw new BadRequestException('You cannot change username to admin');
       }
       const updateUser = await this.userService.updateUser(id, user);
 
-      res.status(HttpStatus.CREATED).send({ updateUser });
+      return { updateUser };
     } catch (error) {
       if (error instanceof InValidDataError) {
-        res
-          .status(HttpStatus.BAD_REQUEST)
-          .send(inValidDataRes([error.message]));
+        throw new BadRequestException(inValidDataRes([error.message]));
       }
-      res.status(HttpStatus.BAD_REQUEST).send(error.message);
+      throw (error);
     }
   }
 
@@ -273,18 +260,15 @@ export class UsersController {
   async updateRole(
     @Body() user: UpdateRole,
     @Param('id') id: string,
-    @Res() res: Response,
   ) {
     try {
       const updateUser = await this.userService.updateRoles(id, user);
-      res.status(HttpStatus.CREATED).send({ data: updateUser });
+      return { data: updateUser };
     } catch (error) {
       if (error instanceof InValidDataError) {
-        res
-          .status(HttpStatus.BAD_REQUEST)
-          .send(inValidDataRes([error.message]));
+        throw new BadRequestException(inValidDataRes([error.message]));
       }
-      res.status(HttpStatus.BAD_REQUEST).send(error.message);
+      throw error.message;
     }
   }
 
@@ -296,21 +280,17 @@ export class UsersController {
         where: { email: data.email },
       });
       if (!user) {
-        res.status(HttpStatus.BAD_REQUEST).send(UserNotExistError);
+        throw new BadRequestException(UserNotExistError);
       }
       user.password = await PasswordHashEngine.make(data.password);
 
       await this.userService.repository.save(user);
-      res
-        .status(HttpStatus.CREATED)
-        .send({ message: 'Password updated successfully.' });
+      return { message: 'Password updated successfully.' };
     } catch (error) {
       if (error instanceof InValidDataError) {
-        res
-          .status(HttpStatus.BAD_REQUEST)
-          .send(inValidDataRes([error.message]));
+        throw new BadRequestException(inValidDataRes([error.message]));
       }
-      res.status(HttpStatus.BAD_REQUEST).send({ message: error.message });
+      throw error;
     }
   }
 

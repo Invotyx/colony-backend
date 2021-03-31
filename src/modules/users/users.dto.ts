@@ -34,7 +34,7 @@ export class CreateUserDto {
   @ApiProperty()
   @Length(3, 20)
   @IsNotEmpty()
-  @IsNotIn(['admin', 'user','info','superadmin'])
+  @IsNotIn(['admin', 'user', 'info', 'superadmin'])
   username: string;
 
   @ApiProperty()

@@ -9,6 +9,7 @@ import {
   Length,
   Min,
 } from 'class-validator';
+import { CountryEntity } from 'src/entities/country.entity';
 import { ProductsEntity } from 'src/entities/products.entity';
 
 export enum interval {
@@ -56,6 +57,10 @@ export class PlansDto {
   @IsBoolean()
   public active: boolean;
 
+  @ApiProperty()
+  @IsNotEmpty()
+  public country: CountryEntity;
+
   @ApiProperty({ enum: planType, enumName: 'planType' })
   @IsNotEmpty()
   public planType: planType;
@@ -71,10 +76,10 @@ export class PlansDto {
   @IsString()
   public product: ProductsEntity;
 
-  @ApiPropertyOptional()
+  /*   @ApiPropertyOptional()
   @IsOptional()
   @Min(0)
-  public phoneCount: number;
+  public phoneCount: number; */
 
   @ApiPropertyOptional()
   @IsOptional()

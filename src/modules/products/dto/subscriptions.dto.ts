@@ -21,6 +21,14 @@ export class SubscriptionsDto {
 
   @ApiProperty()
   @IsNotEmpty()
+  public country: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  public number: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
   @IsEnum(collection_method)
   public collectionMethod: collection_method;
 

@@ -55,5 +55,5 @@ export const REPOS = [
   PhonesRepository,
   PresetMessagesRepository,
   BroadcastContactsRepository,
-  BroadcastsRepository
+  BroadcastsRepository,
 ];

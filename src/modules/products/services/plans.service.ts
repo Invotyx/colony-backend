@@ -21,15 +21,13 @@ export class PlansService {
 
   async createPlanInStripe(plan: PlansDto, productId: string): Promise<any> {
     try {
-      if (
-        plan.planType === 'bundle' &&
-        (plan.smsCount < 1 || plan.phoneCount < 1)
-      ) {
+      if (plan.planType === 'bundle' && plan.smsCount < 1) {
         throw new HttpException(
-          'For bundle plan sms and phone credits should be greater than 0.',
+          'For bundle plan sms count should be greater than 0.',
           HttpStatus.BAD_REQUEST,
         );
-      } else if (
+      } else {
+      /*  else if (
         plan.planType === 'phoneOnly' &&
         (!plan.phoneCount || plan.phoneCount < 1)
       ) {
@@ -45,13 +43,15 @@ export class PlansService {
           'For sms only plan sms credits should be greater than 0.',
           HttpStatus.BAD_REQUEST,
         );
-      } else {
-        if (plan.planType === 'smsOnly') {
+      } */
+        /* if (plan.planType === 'smsOnly') {
           plan.phoneCount = 0;
         }
         if (plan.planType === 'phoneOnly') {
           plan.smsCount = 0;
-        }
+        } */
+
+
         const newPlan = await this.stripe.plans.create({
           amount_decimal: (plan.amount_decimal * 100).toString(),
           product: productId,
@@ -69,6 +69,7 @@ export class PlansService {
           plan.id = newPlan.id;
           plan.product = productId as any;
           plan.active = true;
+
           (plan.interval =
             plan.interval.toString() === 'month' ||
             plan.interval.toString() === ''
@@ -90,7 +91,7 @@ export class PlansService {
       throw e;
     }
   }
-
+  /* 
   async createPriceInStripe(plan: PlansDto, productId: string): Promise<any> {
     try {
       if (
@@ -150,7 +151,7 @@ export class PlansService {
       throw e;
     }
   }
-
+ */
   async activateDeactivatePlan(
     planId: string,
     isActive: boolean,
@@ -161,11 +162,11 @@ export class PlansService {
           await this.stripe.plans.update(planId, {
             active: isActive,
           });
-        } else {
+        } /*  else {
           await this.stripe.prices.update(planId, {
             active: isActive,
           });
-        }
+        } */
         const _p = await this.repository.findOne({ where: { id: planId } });
         _p.active = isActive;
         const _plan = await this.repository.save(_p);

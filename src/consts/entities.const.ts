@@ -56,7 +56,7 @@ export const EntitiesRegister: any = {
   SMSTemplatesEntity,
   PhonesEntity,
   BroadcastsEntity,
-  BroadcastsContactsEntity
+  BroadcastsContactsEntity,
 };
 
 export const Entities: any = Object.values(EntitiesRegister);

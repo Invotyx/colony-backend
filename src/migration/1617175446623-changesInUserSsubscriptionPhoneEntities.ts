@@ -1,8 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class changesInPaymentMethods1616496327601
+export class changesInUserSsubscriptionPhoneEntities1617175446623
   implements MigrationInterface {
-  name = 'changesInPaymentMethods1616496327601';
+  name = 'changesInUserSsubscriptionPhoneEntities1617175446623';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -35,6 +35,9 @@ export class changesInPaymentMethods1616496327601
     );
     await queryRunner.query(`ALTER TABLE "user_role" DROP COLUMN "meta"`);
     await queryRunner.query(
+      `ALTER TABLE "plans" ADD "countryId" character varying(100)`,
+    );
+    await queryRunner.query(
       `ALTER TABLE "influencer_contacts" ADD "id" SERIAL NOT NULL`,
     );
     await queryRunner.query(
@@ -51,9 +54,6 @@ export class changesInPaymentMethods1616496327601
     );
     await queryRunner.query(
       `ALTER TABLE "influencer_contacts" ADD "deletedAt" TIMESTAMP`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "payment_methods" ADD "default" boolean NOT NULL DEFAULT false`,
     );
     await queryRunner.query(`ALTER TABLE "user_role" ADD "meta" json`);
     await queryRunner.query(
@@ -73,6 +73,9 @@ export class changesInPaymentMethods1616496327601
     );
     await queryRunner.query(
       `CREATE INDEX "IDX_dba55ed826ef26b5b22bd39409" ON "user_role" ("roleId") `,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "plans" ADD CONSTRAINT "FK_30418359ff3650915468668650c" FOREIGN KEY ("countryId") REFERENCES "country"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "influencer_contacts" ADD CONSTRAINT "FK_8ed56ad1ba2bd0dacfd6ba93166" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -101,6 +104,9 @@ export class changesInPaymentMethods1616496327601
     await queryRunner.query(
       `ALTER TABLE "influencer_contacts" DROP CONSTRAINT "FK_8ed56ad1ba2bd0dacfd6ba93166"`,
     );
+    await queryRunner.query(
+      `ALTER TABLE "plans" DROP CONSTRAINT "FK_30418359ff3650915468668650c"`,
+    );
     await queryRunner.query(`DROP INDEX "IDX_dba55ed826ef26b5b22bd39409"`);
     await queryRunner.query(`DROP INDEX "IDX_ab40a6f0cd7d3ebfcce082131f"`);
     await queryRunner.query(`DROP INDEX "IDX_8ed56ad1ba2bd0dacfd6ba9316"`);
@@ -112,9 +118,6 @@ export class changesInPaymentMethods1616496327601
       `ALTER TABLE "influencer_contacts" ADD CONSTRAINT "PK_3a91f61fd35430b525cea602d3c" PRIMARY KEY ("userId", "contactId", "id")`,
     );
     await queryRunner.query(`ALTER TABLE "user_role" DROP COLUMN "meta"`);
-    await queryRunner.query(
-      `ALTER TABLE "payment_methods" DROP COLUMN "default"`,
-    );
     await queryRunner.query(
       `ALTER TABLE "influencer_contacts" DROP COLUMN "deletedAt"`,
     );
@@ -133,6 +136,7 @@ export class changesInPaymentMethods1616496327601
     await queryRunner.query(
       `ALTER TABLE "influencer_contacts" DROP COLUMN "id"`,
     );
+    await queryRunner.query(`ALTER TABLE "plans" DROP COLUMN "countryId"`);
     await queryRunner.query(`ALTER TABLE "user_role" ADD "meta" json`);
     await queryRunner.query(
       `ALTER TABLE "influencer_contacts" ADD "deletedAt" TIMESTAMP`,

@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
+import { PhonesEntity } from './phone.entity';
 import { PlansEntity } from './plans.entity';
 import { UserEntity } from './user.entity';
 
@@ -60,6 +61,14 @@ export class SubscriptionsEntity {
 
   @Column({ nullable: true })
   public currentEndDate: Date;
+
+  @Column({ default: 0, nullable: true, unsigned: true })
+  public smsCount: number;
+
+  @ManyToOne(() => PhonesEntity, (phone) => phone.subscription, {
+    eager: false,
+  })
+  public number: PhonesEntity;
 
   @CreateDateColumn()
   public createdAt: Date;

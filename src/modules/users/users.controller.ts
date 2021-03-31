@@ -8,13 +8,10 @@ import {
   UseInterceptors,
   UsePipes,
   ValidationPipe,
-  Res,
-  HttpStatus,
   UseGuards,
   Query,
   BadRequestException,
 } from '@nestjs/common';
-import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TABLES } from '../../consts/tables.const';
 import { Auth } from '../../decorators/auth.decorator';
@@ -62,7 +59,7 @@ export class UsersController {
   @Auth({ roles: [ROLES.ADMIN] })
   @Get('')
   @CompressJSON()
-  async getAllUsers(@Body('jData') data: any, @Res() res: Response) {
+  async getAllUsers(@Body('jData') data: any) {
     try {
       const userTable = TABLES.USERS.name;
       const columnList: any = {
@@ -128,7 +125,7 @@ export class UsersController {
   }
 
   @Get('verify/:token')
-  async verifyEmail(@Param('token') token: any, @Res() res: Response) {
+  async verifyEmail(@Param('token') token: any) {
     try {
       const isEmailVerified = await this.userService.verifyEmail(token);
       if (isEmailVerified) return isEmailVerified;
@@ -139,7 +136,7 @@ export class UsersController {
   }
 
   @Get('resend-verification/:email')
-  async sendEmailVerification(@Param() params: any, @Res() res: Response) {
+  async sendEmailVerification(@Param() params: any) {
     try {
       await this.userService.createEmailToken(params.email);
 
@@ -157,14 +154,14 @@ export class UsersController {
   }
 
   @Get('forgot-password/:email')
-  async sendPasswordResetToken(@Param() params: any, @Res() res: Response) {
+  async sendPasswordResetToken(@Param() params: any) {
     try {
       const isEmailSent = await this.userService.sendResetPasswordVerification(
         params.email,
       );
 
       if (isEmailSent) {
-        return { message:'Email sent' };
+        return { message: 'Email sent' };
       } else {
         console.error('Mail server down, try again later!');
         throw new BadRequestException('Mail server down, try again later!');
@@ -181,8 +178,7 @@ export class UsersController {
         param.token,
         param.email,
       );
-      if (isEmailVerified)
-        return isEmailVerified;
+      if (isEmailVerified) return isEmailVerified;
       else throw new BadRequestException('PASSWORD_NOT_VERIFIED');
     } catch (error) {
       throw error;
@@ -198,7 +194,7 @@ export class UsersController {
       if (error instanceof PaginatorError) {
         throw PaginatorErrorHandler(error);
       }
-      throw (error);
+      throw error;
     }
   }
 
@@ -222,12 +218,19 @@ export class UsersController {
   async createUser(@Body() user: CreateUserDto) {
     try {
       if (user.username == 'admin') {
-        throw new BadRequestException('You cannot create user with username admin');
+        throw new BadRequestException(
+          'You cannot create user with username admin',
+        );
       }
+      user.mobile = user.mobile
+        .replace(' ', '')
+        .replace('(', '')
+        .replace(')', '')
+        .replace('-', '');
+      console.log(user);
       const newUser = await this.userService.createUser(user);
       return { data: newUser };
     } catch (error) {
-      
       throw error;
     }
   }
@@ -235,10 +238,7 @@ export class UsersController {
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Post(':id/update')
   @UsePipes(ValidationPipe)
-  async updateUser(
-    @Body() user: UpdateProfileDto,
-    @Param('id') id: string
-  ) {
+  async updateUser(@Body() user: UpdateProfileDto, @Param('id') id: string) {
     try {
       if (user.username == 'admin') {
         throw new BadRequestException('You cannot change username to admin');
@@ -250,17 +250,14 @@ export class UsersController {
       if (error instanceof InValidDataError) {
         throw new BadRequestException(inValidDataRes([error.message]));
       }
-      throw (error);
+      throw error;
     }
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Post(':id/updateRole')
   @UsePipes(ValidationPipe)
-  async updateRole(
-    @Body() user: UpdateRole,
-    @Param('id') id: string,
-  ) {
+  async updateRole(@Body() user: UpdateRole, @Param('id') id: string) {
     try {
       const updateUser = await this.userService.updateRoles(id, user);
       return { data: updateUser };
@@ -274,7 +271,7 @@ export class UsersController {
 
   @Post('update-password')
   @UsePipes(ValidationPipe)
-  async updatePwd(@Body() data: PasswordChange, @Res() res: Response) {
+  async updatePwd(@Body() data: PasswordChange) {
     try {
       const user = await this.userService.repository.findOne({
         where: { email: data.email },

@@ -6,7 +6,6 @@ enum presetTrigger {
   noResponse = 'noResponse',
 }
 
-
 export class PresetsDto {
   @ApiPropertyOptional()
   @IsOptional()
@@ -22,19 +21,12 @@ export class PresetsDto {
   @IsEnum(presetTrigger)
   public trigger: presetTrigger;
 
-
   @ApiProperty()
   @IsNotEmpty()
   public body: string;
-
-  
-
-  
 }
 
-
 export class PresetsUpdateDto {
-
   @ApiPropertyOptional()
   @IsOptional()
   @Length(3, 100)
@@ -43,8 +35,4 @@ export class PresetsUpdateDto {
   @ApiPropertyOptional()
   @IsOptional()
   public body: string;
-
-  
-
-  
 }

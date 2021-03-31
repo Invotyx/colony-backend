@@ -1,8 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { env, exit } from 'process';
+import { env } from 'process';
 import { UserEntity } from 'src/entities/user.entity';
 import Stripe from 'stripe';
-import { MoreThan } from 'typeorm';
 import { PaymentMethodDto } from '../dto/payment-methods.dto';
 import { PaymentMethodsRepository } from '../repos/payment-methods.repo';
 
@@ -23,9 +22,9 @@ export class PaymentMethodsService {
       if (methodDetails.name && methodDetails.token) {
         const pm = await this.stripe.paymentMethods.create({
           type: 'card',
-        
+
           card: {
-            token: methodDetails.token
+            token: methodDetails.token,
           },
         });
 
@@ -34,7 +33,7 @@ export class PaymentMethodsService {
         });
 
         const check = await this.repository.findOne({
-          where: { fingerprint: pm.card.fingerprint, user:customer },
+          where: { fingerprint: pm.card.fingerprint, user: customer },
         });
 
         if (check) {
@@ -53,7 +52,9 @@ export class PaymentMethodsService {
           });
           return { message: 'Payment method added' };
         } else {
-          const def = await this.repository.findOne({ where: { default: true } });
+          const def = await this.repository.findOne({
+            where: { default: true },
+          });
           def.default = false;
           await this.repository.save(def);
           await this.repository.save({
@@ -63,7 +64,7 @@ export class PaymentMethodsService {
             user: customer,
             fingerprint: pm.card.fingerprint,
             name: methodDetails.name,
-            default: true
+            default: true,
           });
           await this.stripe.customers.update(customer.customerId, {
             invoice_settings: { default_payment_method: pm.id },
@@ -71,7 +72,7 @@ export class PaymentMethodsService {
           return { message: 'Payment method added' };
         }
       } else {
-        throw new BadRequestException("Invalid Data entered");
+        throw new BadRequestException('Invalid Data entered');
       }
     } catch (e) {
       throw e;
@@ -80,13 +81,17 @@ export class PaymentMethodsService {
 
   public async setDefaultPaymentMethod(
     customer: UserEntity,
-    paymentId:string
+    paymentId: string,
   ) {
     try {
-      const exist = await this.repository.findOne({ where: { id: paymentId, user: customer } });
-      
+      const exist = await this.repository.findOne({
+        where: { id: paymentId, user: customer },
+      });
+
       if (exist) {
-        const exDef = await this.repository.findOne({ where: { default: true, user: customer} });
+        const exDef = await this.repository.findOne({
+          where: { default: true, user: customer },
+        });
         if (exDef) {
           exDef.default = false;
           await this.repository.save(exDef);
@@ -105,7 +110,7 @@ export class PaymentMethodsService {
     }
   }
 
-  public async removePaymentMethod(inf:UserEntity,pid:string) {
+  public async removePaymentMethod(inf: UserEntity, pid: string) {
     try {
       const paymentMethod = await this.repository.findOne({
         where: { user: inf, id: pid },
@@ -113,7 +118,10 @@ export class PaymentMethodsService {
 
       if (paymentMethod) {
         if (paymentMethod.default == true) {
-          await this.repository.query(`UPDATE payment_methods SET "default"=TRUE WHERE "createdAt"=(SELECT MAX(pm."createdAt") as "createdAt" FROM payment_methods pm WHERE ( "pm"."default"=FALSE AND "pm"."userId"=$1 )) AND "userId"=$1`, [inf.id]);
+          await this.repository.query(
+            `UPDATE payment_methods SET "default"=TRUE WHERE "createdAt"=(SELECT MAX(pm."createdAt") as "createdAt" FROM payment_methods pm WHERE ( "pm"."default"=FALSE AND "pm"."userId"=$1 )) AND "userId"=$1`,
+            [inf.id],
+          );
         }
         await this.stripe.paymentMethods.detach(pid);
         await this.repository.delete(pid);
@@ -121,11 +129,9 @@ export class PaymentMethodsService {
       } else {
         throw new BadRequestException('Payment method does not exist.');
       }
-
     } catch (e) {
       throw e;
     }
-
   }
 
   public async getPaymentMethods(customer: any): Promise<any> {

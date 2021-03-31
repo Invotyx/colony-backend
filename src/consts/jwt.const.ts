@@ -1,3 +1,5 @@
+import { nanoid } from 'nanoid';
+
 export const jwtConstants = {
-  secret: 'secretKey',
+  secret: nanoid(),
 };

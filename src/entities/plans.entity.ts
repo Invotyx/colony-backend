@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
+import { CountryEntity } from './country.entity';
 import { ProductsEntity } from './products.entity';
 import { SubscriptionsEntity } from './subscriptions.entity';
 enum interval {
@@ -65,12 +66,15 @@ export class PlansEntity {
 
   @Column({ nullable: false, length: 20 })
   public recurring: string;
-
+  /* 
   @Column({ default: 0, nullable: true, unsigned: true })
-  public phoneCount: number;
+  public phoneCount: number; */
 
   @Column({ default: 0, nullable: true, unsigned: true })
   public smsCount: number;
+
+  @ManyToOne(() => CountryEntity, (country) => country.plan, { eager: false })
+  public country: CountryEntity;
 
   @CreateDateColumn()
   public createdAt: Date;

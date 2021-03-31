@@ -75,18 +75,6 @@ export class UserEntity {
   @Column({ default: false })
   public isApproved: boolean;
 
-  @Column({ default: 0, nullable: false })
-  public purchasedPhoneNumberCredits: number;
-
-  @Column({ default: 0, nullable: false })
-  public purchasedPhoneCount: number;
-
-  @Column({ default: 0, nullable: false })
-  public purchasedSmsCount: number;
-
-  @Column({ default: 0, nullable: false })
-  public usedSmsCount: number;
-
   @CreateDateColumn()
   public createdAt: Date;
 

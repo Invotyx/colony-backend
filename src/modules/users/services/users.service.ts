@@ -92,18 +92,18 @@ export class UsersService {
         });
 
         if (count > 0) {
-          throw EmailAlreadyExistError;
+          throw new BadRequestException(EmailAlreadyExistError);
         }
 
         count = await this.repository.count({
           where: { username: user.username },
         });
         if (count > 0) {
-          throw UserNameAlreadyExistError;
+          throw new BadRequestException(UserNameAlreadyExistError);
         }
         count = await this.repository.count({ where: { mobile: user.mobile } });
         if (count > 0) {
-          throw PhoneAlreadyExistError;
+          throw new BadRequestException(PhoneAlreadyExistError);
         }
 
         user.password = await PasswordHashEngine.make(user.password);

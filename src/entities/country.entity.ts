@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
 import { CityEntity } from './city.entity';
+import { PlansEntity } from './plans.entity';
 
 @Entity({ name: TABLES.COUNTRY.name })
 export class CountryEntity {
@@ -21,4 +22,10 @@ export class CountryEntity {
     cascade: true,
   })
   public city!: CityEntity[];
+
+  @OneToMany(() => PlansEntity, (plan) => plan.country, {
+    eager: false,
+    cascade: true,
+  })
+  public plan!: PlansEntity[];
 }

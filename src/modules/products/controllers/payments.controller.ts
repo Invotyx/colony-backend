@@ -84,11 +84,17 @@ export class PaymentsController {
 
   @Auth({})
   @Post('set-default/:id')
-  async setDefaultPaymentMethod(@LoginUser() user: UserEntity,@Param('id') id: string) {
+  async setDefaultPaymentMethod(
+    @LoginUser() user: UserEntity,
+    @Param('id') id: string,
+  ) {
     try {
       const _user = await this.userService.findOne(user.id);
 
-      const result = await this.paymentService.setDefaultPaymentMethod(_user, id);
+      const result = await this.paymentService.setDefaultPaymentMethod(
+        _user,
+        id,
+      );
       return result;
     } catch (e) {
       throw new BadRequestException(e, 'An Exception Occurred');
@@ -97,7 +103,10 @@ export class PaymentsController {
 
   @Auth({})
   @Delete(':id/remove')
-  async removePaymentMethod(@LoginUser() user: UserEntity, @Param('id') id: string) {
+  async removePaymentMethod(
+    @LoginUser() user: UserEntity,
+    @Param('id') id: string,
+  ) {
     try {
       const _user = await this.userService.findOne(user.id);
       const result = await this.paymentService.removePaymentMethod(_user, id);

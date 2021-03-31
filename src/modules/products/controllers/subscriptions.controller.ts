@@ -14,6 +14,7 @@ import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entities/user.entity';
 import { UsersService } from 'src/modules/users/services/users.service';
+import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { SubscriptionsDto } from '../dto/subscriptions.dto';
 import { SubscriptionsService } from '../services/subscriptions.service';
 
@@ -26,7 +27,7 @@ export class SubscriptionsController {
     public readonly userService: UsersService,
   ) {}
 
-  @Auth({})
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Post('')
   public async createSubscription(
     @LoginUser() customer: UserEntity,
@@ -48,7 +49,7 @@ export class SubscriptionsController {
     }
   }
 
-  @Auth({})
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Get('')
   public async getSubscriptions(@LoginUser() customer: UserEntity) {
     try {
@@ -61,7 +62,7 @@ export class SubscriptionsController {
     }
   }
 
-  @Auth({})
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Put(':subId')
   public async updateSubscriptions(
     @LoginUser() customer: UserEntity,
@@ -81,7 +82,7 @@ export class SubscriptionsController {
     }
   }
 
-  @Auth({})
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Delete(':subId')
   public async cancelSubscriptions(
     @LoginUser() customer: UserEntity,

@@ -11,7 +11,7 @@ export class SmsService {
   private mb: MessageBird;
   constructor(
     public readonly smsTemplateRepo: SMSTemplatesRepository,
-    public readonly presetRepo: PresetMessagesRepository
+    public readonly presetRepo: PresetMessagesRepository,
   ) {
     console.log(env.MESSAGEBIRD_KEY);
     this.mb = require('messagebird')(env.MESSAGEBIRD_KEY);
@@ -89,29 +89,39 @@ export class SmsService {
     }
   }
 
-  async setPresetMessage(preset:PresetsDto,user:UserEntity) {
+  async setPresetMessage(preset: PresetsDto, user: UserEntity) {
     try {
-      const existing = await this.presetRepo.findOne({ where: { user: user, trigger: preset.trigger } });
+      const existing = await this.presetRepo.findOne({
+        where: { user: user, trigger: preset.trigger },
+      });
       if (!existing) {
         const _preset: any = await this.presetRepo.save({
           name: preset.name,
           body: preset.body,
           trigger: preset.trigger,
-          user: user
+          user: user,
         });
         _preset.user = _preset.user.id as any;
         return { preset: _preset };
       } else {
-        throw new BadRequestException('Preset message for this trigger already exists.');
+        throw new BadRequestException(
+          'Preset message for this trigger already exists.',
+        );
       }
     } catch (e) {
       throw e;
     }
   }
 
-  async updatePresetMessage(id:number,preset:PresetsUpdateDto,user:UserEntity) {
+  async updatePresetMessage(
+    id: number,
+    preset: PresetsUpdateDto,
+    user: UserEntity,
+  ) {
     try {
-      const existing = await this.presetRepo.findOne({ where: { id: id, user: user } });
+      const existing = await this.presetRepo.findOne({
+        where: { id: id, user: user },
+      });
       if (existing) {
         if (preset.body) {
           existing.body = preset.body;
@@ -122,7 +132,7 @@ export class SmsService {
 
         const _preset: any = await this.presetRepo.save(existing);
         _preset.user = user.id as any;
-        return { preset: _preset, message:'Message Updated.' };
+        return { preset: _preset, message: 'Message Updated.' };
       } else {
         throw new BadRequestException('Not found.');
       }
@@ -131,23 +141,24 @@ export class SmsService {
     }
   }
 
-  async getPresetMessage(user:UserEntity) {
+  async getPresetMessage(user: UserEntity) {
     try {
       const _preset = await this.presetRepo.find({ where: { user: user } });
       return { preset: _preset };
     } catch (e) {
       throw e;
-    }    
+    }
   }
 
-  async deletePresetMessage(id:number,user:UserEntity) {
+  async deletePresetMessage(id: number, user: UserEntity) {
     try {
-      const _preset = await this.presetRepo.findOne({ where: { id: id, user: user } });
+      const _preset = await this.presetRepo.findOne({
+        where: { id: id, user: user },
+      });
       await this.presetRepo.delete(_preset);
       return { preset: _preset, message: 'Preset message deleted.' };
     } catch (e) {
       throw e;
-    }    
+    }
   }
-
 }

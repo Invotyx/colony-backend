@@ -8,6 +8,6 @@ import { SmsService } from './sms.service';
 @Module({
   imports: [MainMysqlModule, UsersModule],
   controllers: [SmsController],
-  providers: [SmsService,BroadcastService],
+  providers: [SmsService, BroadcastService],
 })
 export class SmsModule {}

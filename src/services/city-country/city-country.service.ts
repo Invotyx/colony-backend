@@ -5,7 +5,6 @@ import { CountryEntity } from 'src/entities/country.entity';
 import { CityEntity } from 'src/entities/city.entity';
 import { CountryRepository } from './repos/country.repo';
 import { TimezonesRepository } from './repos/timezone.repo';
-import { logger } from '../logs/log.storage';
 
 @Injectable()
 export class CityCountryService {

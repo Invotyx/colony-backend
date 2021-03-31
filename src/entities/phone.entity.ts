@@ -4,10 +4,12 @@ import {
   DeleteDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
+import { SubscriptionsEntity } from './subscriptions.entity';
 import { UserEntity } from './user.entity';
 
 @Entity({ name: TABLES.PHONES.name })
@@ -32,6 +34,9 @@ export class PhonesEntity {
 
   @ManyToOne(() => UserEntity, (user) => user.numbers, { eager: false })
   public user: UserEntity;
+
+  @OneToMany(() => SubscriptionsEntity, (sub) => sub.number)
+  public subscription!: SubscriptionsEntity[];
 
   @Column()
   public renewalDate: Date;

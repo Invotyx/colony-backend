@@ -1,8 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class changesInPaymentMethods1616496327601
+export class changesInUserSsubscriptionPhoneEntities1617174328759
   implements MigrationInterface {
-  name = 'changesInPaymentMethods1616496327601';
+  name = 'changesInUserSsubscriptionPhoneEntities1617174328759';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -21,6 +21,16 @@ export class changesInPaymentMethods1616496327601
     await queryRunner.query(`DROP INDEX "IDX_8ed56ad1ba2bd0dacfd6ba9316"`);
     await queryRunner.query(`DROP INDEX "IDX_ab40a6f0cd7d3ebfcce082131f"`);
     await queryRunner.query(`DROP INDEX "IDX_dba55ed826ef26b5b22bd39409"`);
+    await queryRunner.query(
+      `ALTER TABLE "users" DROP COLUMN "purchasedPhoneCount"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "users" DROP COLUMN "purchasedSmsCount"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "users" DROP COLUMN "purchasedPhoneNumberCredits"`,
+    );
+    await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "usedSmsCount"`);
     await queryRunner.query(
       `ALTER TABLE "influencer_contacts" DROP COLUMN "id"`,
     );
@@ -53,7 +63,10 @@ export class changesInPaymentMethods1616496327601
       `ALTER TABLE "influencer_contacts" ADD "deletedAt" TIMESTAMP`,
     );
     await queryRunner.query(
-      `ALTER TABLE "payment_methods" ADD "default" boolean NOT NULL DEFAULT false`,
+      `ALTER TABLE "subscriptions" ADD "smsCount" integer DEFAULT '0'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "subscriptions" ADD "numberId" integer`,
     );
     await queryRunner.query(`ALTER TABLE "user_role" ADD "meta" json`);
     await queryRunner.query(
@@ -81,6 +94,9 @@ export class changesInPaymentMethods1616496327601
       `ALTER TABLE "influencer_contacts" ADD CONSTRAINT "FK_eb6c00d59daf65d0bef9df3f823" FOREIGN KEY ("contactId") REFERENCES "contacts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
+      `ALTER TABLE "subscriptions" ADD CONSTRAINT "FK_e57b7860c2acc80051eae981cdf" FOREIGN KEY ("numberId") REFERENCES "phones"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
       `ALTER TABLE "user_role" ADD CONSTRAINT "FK_ab40a6f0cd7d3ebfcce082131fd" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
@@ -94,6 +110,9 @@ export class changesInPaymentMethods1616496327601
     );
     await queryRunner.query(
       `ALTER TABLE "user_role" DROP CONSTRAINT "FK_ab40a6f0cd7d3ebfcce082131fd"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "subscriptions" DROP CONSTRAINT "FK_e57b7860c2acc80051eae981cdf"`,
     );
     await queryRunner.query(
       `ALTER TABLE "influencer_contacts" DROP CONSTRAINT "FK_eb6c00d59daf65d0bef9df3f823"`,
@@ -113,7 +132,10 @@ export class changesInPaymentMethods1616496327601
     );
     await queryRunner.query(`ALTER TABLE "user_role" DROP COLUMN "meta"`);
     await queryRunner.query(
-      `ALTER TABLE "payment_methods" DROP COLUMN "default"`,
+      `ALTER TABLE "subscriptions" DROP COLUMN "numberId"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "subscriptions" DROP COLUMN "smsCount"`,
     );
     await queryRunner.query(
       `ALTER TABLE "influencer_contacts" DROP COLUMN "deletedAt"`,
@@ -145,6 +167,18 @@ export class changesInPaymentMethods1616496327601
     );
     await queryRunner.query(
       `ALTER TABLE "influencer_contacts" ADD "id" SERIAL NOT NULL`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "users" ADD "usedSmsCount" integer NOT NULL DEFAULT '0'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "users" ADD "purchasedPhoneNumberCredits" integer NOT NULL DEFAULT '0'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "users" ADD "purchasedSmsCount" integer NOT NULL DEFAULT '0'`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "users" ADD "purchasedPhoneCount" integer NOT NULL DEFAULT '0'`,
     );
     await queryRunner.query(
       `CREATE INDEX "IDX_dba55ed826ef26b5b22bd39409" ON "user_role" ("roleId") `,

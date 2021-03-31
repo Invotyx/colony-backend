@@ -88,36 +88,47 @@ export class SmsController {
     }
   }
 
-  
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Put('preset/:id')
-  async updatePreset(@LoginUser() influencer: UserEntity, @Param('id') id:number, @Body() data:PresetsUpdateDto) {
+  async updatePreset(
+    @LoginUser() influencer: UserEntity,
+    @Param('id') id: number,
+    @Body() data: PresetsUpdateDto,
+  ) {
     try {
-      const template = await this.service.updatePresetMessage(id,data,influencer);
+      const template = await this.service.updatePresetMessage(
+        id,
+        data,
+        influencer,
+      );
       return template;
     } catch (e) {
       throw e;
     }
   }
 
-  
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Delete('preset/:id')
-  async deletePreset(@LoginUser() influencer: UserEntity, @Param('id') id:number) {
+  async deletePreset(
+    @LoginUser() influencer: UserEntity,
+    @Param('id') id: number,
+  ) {
     try {
-      const template = await this.service.deletePresetMessage(id,influencer);
+      const template = await this.service.deletePresetMessage(id, influencer);
       return template;
     } catch (e) {
       throw e;
     }
   }
 
-  
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Post('preset')
-  async setPreset(@LoginUser() influencer: UserEntity,@Body() _preset:PresetsDto) {
+  async setPreset(
+    @LoginUser() influencer: UserEntity,
+    @Body() _preset: PresetsDto,
+  ) {
     try {
-      const preset = await this.service.setPresetMessage(_preset,influencer);
+      const preset = await this.service.setPresetMessage(_preset, influencer);
       return preset;
     } catch (e) {
       throw e;

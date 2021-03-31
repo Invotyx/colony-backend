@@ -10,6 +10,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/auth.decorator';
@@ -64,20 +65,46 @@ export class ProductsController {
     //createPlanInStripe
     try {
       if (pid && pid !== 'undefined') {
-        const check = await this.planService.repository.findOne({ where: { nickname: data.nickname } });
-        if (!check) {
-          if (data.planType === 'smsOnly') {
-            data.recurring == 'one_time';
-          }
-          if (data.recurring == 'recurring') {
+        if (data.planType === 'bundle') {
+          const check = await this.planService.repository.findOne({
+            where: { nickname: data.nickname },
+          });
+          if (!check) {
+            /* if (data.planType === 'smsOnly') {
+              data.recurring == 'one_time';
+            } */
+            const checkSamePricePlans = await this.planService.repository.findOne({ where: { amount_decimal: data.amount_decimal, country: data.country } });
+            if (checkSamePricePlans)
+            {
+              throw new BadRequestException('Plan with same price for this country already exists.');
+            }
+
+            const checkSameSmsPlans = await this.planService.repository.findOne({ where: { smsCount: data.smsCount, country: data.country } });
+            if (checkSameSmsPlans)
+            {
+              throw new BadRequestException('Plan with same sms count for this country already exists.');
+            }
             const plan = await this.planService.createPlanInStripe(data, pid);
             return plan;
+            /*if (data.recurring == 'recurring') {
+              
+            }  else {
+              const plan = await this.planService.createPriceInStripe(
+                data,
+                pid,
+              );
+              return plan;
+            } */
           } else {
-            const plan = await this.planService.createPriceInStripe(data, pid);
-            return plan;
+            throw new BadRequestException(
+              'Plan with this name already exists.',
+            );
           }
         } else {
-          throw new BadRequestException('Plan with this name already exists.');
+          throw new HttpException(
+            'Invalid plan type. ',
+            HttpStatus.BAD_REQUEST,
+          );
         }
       } else {
         throw new HttpException('Invalid product. ', HttpStatus.BAD_REQUEST);
@@ -88,28 +115,35 @@ export class ProductsController {
   }
 
   @Auth({})
-  @Get(':pid/plan/')
-  public async getPlans(@LoginUser() user:UserEntity, @Param('pid') pid: string) {
+  @Get(':pid/plan')
+  public async getPlans(
+    @LoginUser() user: UserEntity,
+    @Param('pid') pid: string,
+    @Query('countryId') countryId: string,
+  ) {
     try {
       let plan: PlansEntity[];
-      
+
       if (user.roles[0].role === ROLES.ADMIN) {
         plan = await this.planService.repository.find({
           where: { product: pid },
         });
       } else {
         plan = await this.planService.repository.find({
-          where: { product: pid, active: true }
+          where: { product: pid, active: true, country: countryId },
         });
       }
 
       if (plan) {
+        const bundle = plan.filter((p) => p.planType === 'bundle');
+        /* const smsOnly = plan.filter((p) => p.planType === 'smsOnly');
+        const phoneOnly = plan.filter((p) => p.planType === 'phoneOnly'); */
 
-        const bundle = plan.filter(p => p.planType === 'bundle');
-        const smsOnly = plan.filter(p => p.planType === 'smsOnly');
-        const phoneOnly = plan.filter(p => p.planType === 'phoneOnly');
-        
-        return { bundledPlan: bundle, smsOnlyPlans: smsOnly, phoneOnlyPlans: phoneOnly };
+        return {
+          bundledPlan: bundle,
+          /* smsOnlyPlans: smsOnly,
+          phoneOnlyPlans: phoneOnly, */
+        };
       } else {
         return 'No records found.';
       }

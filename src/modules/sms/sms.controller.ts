@@ -12,7 +12,7 @@ import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entities/user.entity';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
-import { PresetsDto, PresetsUpdateDto } from './preset.dto';
+import { PresetsDto, PresetsUpdateDto, presetTrigger } from './preset.dto';
 import { SmsService } from './sms.service';
 
 @Controller('sms')
@@ -83,6 +83,16 @@ export class SmsController {
     try {
       const templates = await this.service.getPresetMessage(influencer);
       return templates;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('preset/triggers')
+  async getPresetTriggers(@LoginUser() influencer: UserEntity) {
+    try {
+      return presetTrigger;
     } catch (e) {
       throw e;
     }

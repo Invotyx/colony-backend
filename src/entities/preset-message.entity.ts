@@ -14,6 +14,7 @@ import { UserEntity } from './user.entity';
 enum presetTrigger {
   onBoard = 'onBoard',
   noResponse = 'noResponse',
+  welcome='welcome'
 }
 
 @Entity({ name: TABLES.PRESET_MESSAGES.name })

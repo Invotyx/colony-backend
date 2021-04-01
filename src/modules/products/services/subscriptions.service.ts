@@ -9,6 +9,7 @@ import { UserEntity } from 'src/entities/user.entity';
 import { PhoneService } from 'src/modules/phone/phone.service';
 import { UsersService } from 'src/modules/users/services/users.service';
 import Stripe from 'stripe';
+import { getRepository } from 'typeorm';
 import { collection_method, SubscriptionsDto } from '../dto/subscriptions.dto';
 import { SubscriptionsRepository } from '../repos/subscriptions.repo';
 import { PaymentMethodsService } from './payment-methods.service';
@@ -150,15 +151,17 @@ export class SubscriptionsService {
 
   public async getSubscriptions(customer: UserEntity) {
     try {
-      const subscription = await this.repository.find({
-        where: { user: customer.id },
-      });
-      if (subscription) {
-        return subscription;
-      } else {
-        return 'No records found';
+      const ch =  await this.repository.query(`SELECT sub.* FROM "subscriptions" "sub" LEFT JOIN "plans" "plans" ON "plans"."id"="sub"."planId" 
+      LEFT JOIN "country" "country" ON "country"."id"="sub"."countryId"  LEFT JOIN "phones" "phones" ON "phones"."id"="sub"."phoneId" WHERE ( "sub"."userId" =${customer.id}  ) AND ( "sub"."deletedAt" IS NULL )`);
+      //console.log(ch);
+
+      if (ch) {
+        const current = ch.filter((c) => c.cancelled === false);
+        const cancelled = ch.filter((c) => c.cancelled === true);
+        return { current, cancelled };
       }
     } catch (e) {
+      console.log(e);
       throw e;
     }
   }

@@ -1,9 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsOptional, Length } from 'class-validator';
 
-enum presetTrigger {
+export enum presetTrigger {
   onBoard = 'onBoard',
   noResponse = 'noResponse',
+  welcome = 'welcome'
 }
 
 export class PresetsDto {

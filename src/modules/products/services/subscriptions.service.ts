@@ -1,15 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { check } from 'prettier';
 import { env } from 'process';
-import { containsOperation } from 'sift/lib/core';
-import { TABLES } from 'src/consts/tables.const';
 import { PlansEntity } from 'src/entities/plans.entity';
 import { SubscriptionsEntity } from 'src/entities/subscriptions.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { PhoneService } from 'src/modules/phone/phone.service';
 import { UsersService } from 'src/modules/users/services/users.service';
 import Stripe from 'stripe';
-import { getRepository } from 'typeorm';
 import { collection_method, SubscriptionsDto } from '../dto/subscriptions.dto';
 import { SubscriptionsRepository } from '../repos/subscriptions.repo';
 import { PaymentMethodsService } from './payment-methods.service';

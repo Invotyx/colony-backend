@@ -1,5 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { check } from 'prettier';
 import { env } from 'process';
+import { containsOperation } from 'sift/lib/core';
 import { TABLES } from 'src/consts/tables.const';
 import { PlansEntity } from 'src/entities/plans.entity';
 import { SubscriptionsEntity } from 'src/entities/subscriptions.entity';
@@ -75,80 +77,72 @@ export class SubscriptionsService {
       let current_period_end: any = null;
       let current_period_start: any = null;
       let subOrIntent: any = null;
-      /* if (sub.planId.includes('price_')) {
-        const customer_payments = await this.paymentService.repository.findOne({
-          where: { user: customer, default: true },
-        });
-        if (customer_payments) {
-          subscription = await this.stripe.paymentIntents.create({
-            amount: _plan.amount_decimal * 100,
-            currency: _plan.currency,
-            capture_method: 'automatic',
-            confirm: true,
-            customer: customer.customerId,
-            payment_method: customer_payments.id,
-          });
-  
-          subOrIntent = subscription.id;
-        } else {
-          throw new BadRequestException('Please add payment method first.');
-        }
-      } else { */
+      const customer_payments = await this.paymentService.repository.findOne({
+        where: { user: customer, default: true },
+      });
+      if (customer_payments) {
       
-      subscription = await this.stripe.subscriptions.create({
-        customer: customer.customerId,
-        items: [
-          {
-            plan: sub.planId,
-            quantity: 1,
-          },
-        ],
-        collection_method:
-          sub.collectionMethod.toString() == 'charge_automatically'
-            ? 'charge_automatically'
-            : 'send_invoice',
-      });
+        const checkNumber = await this.phoneService.repo.findOne({ number: sub.number, status: 'active' });
+
+        if (checkNumber) {
+          throw new BadRequestException('Phone number is not available for purchase.')
+        }
+        subscription = await this.stripe.subscriptions.create({
+          customer: customer.customerId,
+          items: [
+            {
+              plan: sub.planId,
+              quantity: 1,
+            },
+          ],
+          collection_method:
+            sub.collectionMethod.toString() == 'charge_automatically'
+              ? 'charge_automatically'
+              : 'send_invoice',
+        });
 
 
-      current_period_end = this.timestampToDate(
-        subscription.current_period_end,
-      );
-      current_period_start = this.timestampToDate(
-        subscription.current_period_start,
-      );
+        current_period_end = this.timestampToDate(
+          subscription.current_period_end,
+        );
+        current_period_start = this.timestampToDate(
+          subscription.current_period_start,
+        );
 
-      subOrIntent = subscription.items.data[0].id;
-      //}
+        subOrIntent = subscription.items.data[0].id;
 
-      const purchasedNumber = await this.phoneService.purchasePhoneNumber(
-        _plan.country.code.toUpperCase(),
-        sub.number,
-        customer,
-      );
+        const purchasedNumber = await this.phoneService.purchasePhoneNumber(
+          _plan.country.code.toUpperCase(),
+          sub.number,
+          customer,
+        );
 
-      const purchasedNumberDb = await this.phoneService.repo.findOne({
-        where: { number: purchasedNumber.number.number },
-      });
+        const purchasedNumberDb = await this.phoneService.repo.findOne({
+          where: { number: purchasedNumber.number.number },
+        });
 
-      await this.repository.save({
-        stripeId: subscription.id,
-        plan: _plan,
-        user: customer,
-        cancelled: false,
-        collection_method: sub.collectionMethod,
-        paymentType: _plan.recurring,
-        stripeSubscriptionItem: subOrIntent,
-        currentStartDate: current_period_start,
-        currentEndDate: current_period_end,
-        smsCount: _plan.smsCount,
-        number: purchasedNumberDb,
-        country: _plan.country
-      });
+        await this.repository.save({
+          stripeId: subscription.id,
+          plan: _plan,
+          user: customer,
+          cancelled: false,
+          collection_method: sub.collectionMethod,
+          paymentType: _plan.recurring,
+          stripeSubscriptionItem: subOrIntent,
+          currentStartDate: current_period_start,
+          currentEndDate: current_period_end,
+          smsCount: _plan.smsCount,
+          number: purchasedNumberDb,
+          country: _plan.country
+        });
 
-      return {
-        message: 'Subscribed to selected plan successfully.',
-        number: purchasedNumber.number,
-      };
+        return {
+          message: 'Subscribed to selected plan successfully.' + purchasedNumber.message,
+          number: purchasedNumber.number,
+        };
+      } else {
+        throw new BadRequestException('Please add payment method first.');
+      }
     } catch (e) {
       throw e;
     }
@@ -177,78 +171,75 @@ export class SubscriptionsService {
   ) {
     try {
       const sub = await this.repository.findOne({
-        where: { stripeId: subId, cancelled: false },
+        where: { stripeId: subId, cancelled: true },
       });
-      if (sub) {
-        /* if (sub.paymentType != 'recurring') {
-          throw new BadRequestException(
-            'You cannot update one time purchaseable items.',
-          );
-        }
-        if (planId.includes('price_')) {
-          throw new BadRequestException(
-            'You cannot add one time purchaseable items to subscription.',
-          );
-        } */
-        /* const _tempPlan = await this.planService.repository.findOne({
-          where: { id: planId },
+      console.log(sub,"=== sub ===")
+      if (!sub) {
+        const checkSub = await this.repository.findOne({
+          where: { stripeId: subId, cancelled: false },relations:['plan','country','phone']
         });
-        if (sub.plan.planType !== _tempPlan.planType) {
-          throw new BadRequestException(
-            `You cannot upgrade or downgrade between phoneOnly and bundled plans. Plan of same type can be used to update subscription.`,
-          );
-        } else { */
-        if (sub.plan.id == planId && sub.cancelled == false) {
-          const _upSub = await this.stripe.subscriptions.update(subId, {
-            items: [
-              {
-                id: sub.stripeSubscriptionItem,
-                plan: planId,
-              },
-            ],
-            collection_method: 'charge_automatically',
-          });
+        if (checkSub) {
+          let plans = await this.planService.repository.find({ where: { country: checkSub.country } });
+          if (plans.length>0) {
+            const _toBeSelectedPlan = plans.find(p => { return p.id === planId });
+            const _existing = checkSub.plan; 
+            let checkMonthsUsage = this.daysBetween(checkSub.createdAt, new Date());
+            if (_toBeSelectedPlan.amount_decimal < _existing.amount_decimal && checkMonthsUsage >= 90) {
+              throw new BadRequestException('You have been using this plan for 3 months now and you are only allowed to upgrade subscription for this number.');
+            } else {
+              const canceledInStripe = await this.stripe.subscriptions.del(subId);
+              const current_period_end = this.timestampToDate(
+                canceledInStripe.current_period_end,
+              );
+              const current_period_start = this.timestampToDate(
+                canceledInStripe.current_period_start,
+              );
+              checkSub.cancelled = true;
+              checkSub.currentStartDate = current_period_start;
+              checkSub.currentEndDate = current_period_end;
+              await this.repository.save(checkSub);
+              
+              const newStripeSubscription = await this.stripe.subscriptions.create({
+                customer: customer.customerId,
+                items: [
+                  {
+                    plan: _toBeSelectedPlan.id,
+                    quantity: 1,
+                  },
+                ],
+                collection_method: 'charge_automatically'
+              });
 
-          if (_upSub) {
-            const current_period_end = this.timestampToDate(
-              _upSub.current_period_end,
-            );
-            const current_period_start = this.timestampToDate(
-              _upSub.current_period_start,
-            );
-            const _p = await this.planService.repository.findOne({
-              where: { id: planId },
-            });
-            sub.cancelled = true;
-            await this.repository.save(sub);
-            const newSub = new SubscriptionsEntity();
-            newSub.user = customer;
-            newSub.cancelled = false;
-            newSub.plan = _p;
-            newSub.stripeId = _upSub.items.data[0].subscription;
-            newSub.stripeSubscriptionItem = _upSub.items.data[0].id;
-            newSub.collection_method = collection_method.charge_automatically;
-            newSub.paymentType = 'recurring';
-            newSub.currentStartDate = current_period_start;
-            newSub.currentEndDate = current_period_end;
-            await this.repository.save(newSub);
-            return { message: 'Subscription updated successfully.' };
+              const newSub = new SubscriptionsEntity();
+              newSub.user = customer;
+              newSub.cancelled = false;
+              newSub.plan = _toBeSelectedPlan;
+              newSub.stripeId = newStripeSubscription.id;
+              newSub.stripeSubscriptionItem = newStripeSubscription.items.data[0].id;
+              newSub.collection_method = collection_method.charge_automatically;
+              newSub.paymentType = 'recurring';
+              newSub.currentStartDate = this.timestampToDate(newStripeSubscription.current_period_start);
+              newSub.currentEndDate = this.timestampToDate(newStripeSubscription.current_period_end);
+              newSub.phone = checkSub.phone;
+              newSub.smsCount = _toBeSelectedPlan.smsCount;
+              newSub.country = checkSub.country;
+              await this.repository.save(newSub);
+
+              return { message: 'Subscription updated successfully.' };
+            }
           } else {
-            throw new BadRequestException(
-              'Unable to change subscription right now, try again later',
-            );
+            throw new BadRequestException('No plans found. Contact System admin.')   
           }
         } else {
           throw new BadRequestException(
-            'Unable to change subscription, try again later',
+            'No such subscription exists.',
           );
         }
-      }
-      /* } else {
+      }else {
         throw new BadRequestException(
-          'You are already subscribed to same plan. You cannot subscribe to same plan unless you unsubscribe it first.',
+          'You cannot upgrade or downgrade already cancelled subscription',
         );
-      } */
+      }
     } catch (e) {
       throw e;
     }
@@ -276,5 +267,11 @@ export class SubscriptionsService {
   private timestampToDate(timestamp: number) {
     const milliseconds = timestamp * 1000;
     return new Date(milliseconds);
+  }
+
+
+  private daysBetween(startDate, endDate) {
+    const mpd = 24 * 60 * 60 * 1000;
+    return Math.round((endDate-startDate)/mpd);
   }
 }

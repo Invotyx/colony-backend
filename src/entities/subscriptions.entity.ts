@@ -76,7 +76,7 @@ export class SubscriptionsEntity {
   @ManyToOne(() => PhonesEntity, (phone) => phone.subscription, {
     eager: false,
   })
-  public number: PhonesEntity;
+  public phone: PhonesEntity;
 
   @CreateDateColumn()
   public createdAt: Date;

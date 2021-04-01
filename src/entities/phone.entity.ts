@@ -35,7 +35,7 @@ export class PhonesEntity {
   @ManyToOne(() => UserEntity, (user) => user.numbers, { eager: false })
   public user: UserEntity;
 
-  @OneToMany(() => SubscriptionsEntity, (sub) => sub.number)
+  @OneToMany(() => SubscriptionsEntity, (sub) => sub.phone)
   public subscription!: SubscriptionsEntity[];
 
   @Column()

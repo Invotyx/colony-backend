@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ApiCallingModule } from 'src/services/api-calling/api-calling.module';
 import { ApiCallingService } from 'src/services/api-calling/api-calling.service';
+import { CityCountryModule } from 'src/services/city-country/city-country.module';
 import { MainMysqlModule } from 'src/shared/main-mysql.module';
 import { PhoneModule } from '../phone/phone.module';
 import { PhoneService } from '../phone/phone.service';
@@ -14,7 +15,7 @@ import { ProductsService } from './services/products.service';
 import { SubscriptionsService } from './services/subscriptions.service';
 
 @Module({
-  imports: [MainMysqlModule, UsersModule, PhoneModule, ApiCallingModule],
+  imports: [MainMysqlModule, UsersModule, PhoneModule, ApiCallingModule, CityCountryModule],
   controllers: [
     ProductsController,
     PaymentsController,

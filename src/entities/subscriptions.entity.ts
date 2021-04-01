@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
+import { CountryEntity } from './country.entity';
 import { PhonesEntity } from './phone.entity';
 import { PlansEntity } from './plans.entity';
 import { UserEntity } from './user.entity';
@@ -39,6 +40,13 @@ export class SubscriptionsEntity {
   })
   @JoinColumn({ name: 'planId' })
   public plan: PlansEntity;
+
+  
+  @ManyToOne(() => CountryEntity, (country) => country.subscription, {
+    eager: false,
+    nullable: true,
+  })
+  public country: CountryEntity;
 
   @Column({
     type: 'enum',

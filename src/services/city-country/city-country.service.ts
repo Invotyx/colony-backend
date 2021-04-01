@@ -50,6 +50,7 @@ export class CityCountryService {
     }
   }
 
+
   async city() {
     const countries = await this.countryRepo.find();
     countries.forEach(async (country) => {

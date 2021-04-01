@@ -133,6 +133,7 @@ export class UsersService {
       userFromDb.isApproved = true;
       await this.repository.save(userFromDb);
       await this.emailVerfications.delete(emailVerif);
+      
       return { message: 'Email verified.' };
     } else {
       throw new HttpException(

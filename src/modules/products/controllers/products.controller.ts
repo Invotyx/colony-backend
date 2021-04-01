@@ -18,6 +18,7 @@ import { LoginUser } from 'src/decorators/user.decorator';
 import { PlansEntity } from 'src/entities/plans.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
+import { CountryRepository } from 'src/services/city-country/repos/country.repo';
 import { PlansDto } from '../dto/plans.dto';
 import { PlansService } from '../services/plans.service';
 import { ProductsService } from '../services/products.service';
@@ -29,6 +30,7 @@ export class ProductsController {
   constructor(
     public readonly planService: PlansService,
     public readonly productsService: ProductsService,
+    public readonly country:CountryRepository
   ) {}
 
   @Get('')
@@ -111,6 +113,17 @@ export class ProductsController {
       }
     } catch (e) {
       throw new BadRequestException(e, 'An Exception Occurred');
+    }
+  }
+
+  @Auth({})
+  @Get('plan/countries')
+  public async planActivatedCountries() {
+    const countries = await this.country.find({ where: { active: true } });
+    if (countries) {
+      return countries;
+    } else {
+      return { message: "No records found." };
     }
   }
 

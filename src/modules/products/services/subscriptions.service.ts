@@ -121,7 +121,7 @@ export class SubscriptionsService {
       //}
 
       const purchasedNumber = await this.phoneService.purchasePhoneNumber(
-        sub.country,
+        _plan.country.code.toUpperCase(),
         sub.number,
         customer,
       );
@@ -142,6 +142,7 @@ export class SubscriptionsService {
         currentEndDate: current_period_end,
         smsCount: _plan.smsCount,
         number: purchasedNumberDb,
+        country: _plan.country
       });
 
       return {

@@ -21,10 +21,6 @@ export class SubscriptionsDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  public country: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
   public number: string;
 
   @ApiProperty()

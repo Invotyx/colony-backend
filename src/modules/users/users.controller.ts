@@ -222,6 +222,9 @@ export class UsersController {
           'You cannot create user with username admin',
         );
       }
+      if (!user.mobile || !user.email || !user.firstName || !user.lastName || !user.password || !user.timezone || !user.gender || !user.username) {
+        throw new BadRequestException('One of mandatory fields(firstName,lastName,username,email,password,mobile,gender,timezone) missing.');
+      }
       user.mobile = user.mobile
         .replace(' ', '')
         .replace('(', '')

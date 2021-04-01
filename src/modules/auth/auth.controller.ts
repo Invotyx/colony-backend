@@ -34,6 +34,21 @@ export class AuthController {
     this.logger.setContext('AuthController');
   }
 
+  
+  @Get('verify/:token')
+  async verifyEmail(@Param('token') token: any) {
+    try {
+      const isEmailVerified = await this.userService.verifyEmail(token);
+      if (isEmailVerified) {
+        
+        return { message: "Email verified", accessToken: (await this.authService.login(isEmailVerified)).accessToken };
+      }
+      else throw new BadRequestException('LOGIN_EMAIL_NOT_VERIFIED');
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @ApiBody({ required: true })
   @Post('login')
   async login(@Request() req: any) {

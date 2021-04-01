@@ -29,11 +29,6 @@ export class ContactDto {
   @Length(3, 20)
   public phoneNumber: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  public isComplete: boolean;
-
   @ApiPropertyOptional({ enum: gender })
   @IsOptional()
   public gender: gender;

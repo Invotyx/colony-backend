@@ -124,17 +124,6 @@ export class UsersController {
     });
   }
 
-  @Get('verify/:token')
-  async verifyEmail(@Param('token') token: any) {
-    try {
-      const isEmailVerified = await this.userService.verifyEmail(token);
-      if (isEmailVerified) return isEmailVerified;
-      else throw new BadRequestException('LOGIN_EMAIL_NOT_VERIFIED');
-    } catch (error) {
-      throw error;
-    }
-  }
-
   @Get('resend-verification/:email')
   async sendEmailVerification(@Param() params: any) {
     try {

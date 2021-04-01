@@ -134,7 +134,7 @@ export class UsersService {
       await this.repository.save(userFromDb);
       await this.emailVerfications.delete(emailVerif);
       
-      return { message: 'Email verified.' };
+      return userFromDb;
     } else {
       throw new HttpException(
         'LOGIN_EMAIL_CODE_NOT_VALID',

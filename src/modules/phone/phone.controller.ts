@@ -12,13 +12,18 @@ import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entities/user.entity';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
+import { CityCountryService } from 'src/services/city-country/city-country.service';
+import { CountryRepository } from 'src/services/city-country/repos/country.repo';
 import { PhoneService } from './phone.service';
 
 @Injectable()
 @Controller('phone')
 @ApiTags('phone')
 export class PhoneController {
-  constructor(private readonly service: PhoneService) {}
+  constructor(
+    private readonly service: PhoneService,
+    private readonly countryRepo: CountryRepository 
+  ) { }
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Get('search-numbers')
@@ -28,21 +33,22 @@ export class PhoneController {
     @Query('number_must_have') number_must_have: string = '',
   ) {
     try {
-      if (country.length !== 2) {
-        throw new BadRequestException(
-          'Country Code should be in ISO 2 Code Format eg. GB for United Kingdom',
+      
+      const cc = await this.countryRepo.findOne({ where: { id: country, active: true } });
+      if (cc) {
+        if (limit < 1 || limit > 25) {
+          throw new BadRequestException(
+            'Limit should be greater then 0 and less then 25.',
+          );
+        }
+        return await this.service.searchPhoneNumbers(
+          cc.code.toUpperCase(),
+          limit,
+          number_must_have,
         );
+      } else {
+        throw new BadRequestException('Country is not available for purchasing numbers.');
       }
-      if (limit < 1 || limit > 25) {
-        throw new BadRequestException(
-          'Limit should be greater then 0 and less then 25.',
-        );
-      }
-      return await this.service.searchPhoneNumbers(
-        country,
-        limit,
-        number_must_have,
-      );
     } catch (e) {
       throw e;
     }
@@ -68,7 +74,7 @@ export class PhoneController {
     }
   } */
 
-  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  /* @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Delete('cancel-number')
   public async cancelPhoneNumber(
     @LoginUser() user: UserEntity,
@@ -79,5 +85,5 @@ export class PhoneController {
     } catch (e) {
       throw e;
     }
-  }
+  } */
 }

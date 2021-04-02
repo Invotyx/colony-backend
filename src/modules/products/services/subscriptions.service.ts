@@ -131,7 +131,7 @@ export class SubscriptionsService {
 
   public async getSubscriptions(customer: UserEntity) {
     try {
-      const ch =  await this.repository.query(`SELECT sub.*,  phones."number", "country"."name" FROM "subscriptions" "sub" LEFT JOIN "plans" "plans" ON "plans"."id"="sub"."planId" 
+      const ch =  await this.repository.query(`SELECT sub.*,  phones."number","plans"."nickname" as "planName", "country"."name" as "countryName"  FROM "subscriptions" "sub" LEFT JOIN "plans" "plans" ON "plans"."id"="sub"."planId" 
       LEFT JOIN "country" "country" ON "country"."id"="sub"."countryId"  LEFT JOIN "phones" "phones" ON "phones"."id"="sub"."phoneId" WHERE ( "sub"."userId" =${customer.id}  ) AND ( "sub"."deletedAt" IS NULL )`);
       //console.log(ch);
 

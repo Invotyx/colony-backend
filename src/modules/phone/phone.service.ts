@@ -61,7 +61,9 @@ export class PhoneService {
         countryCode: cc.toUpperCase(),
         billingIntervalMonths: 1,
       };
+
       if (env.NODE_ENV !== 'development') {
+        console.log("=== live ===")
         const number = await this.apiCaller.apiCaller(
           'POST',
           'https://numbers.messagebird.com/v1/phone-numbers/' +
@@ -92,6 +94,7 @@ export class PhoneService {
           );
         }
       } else {
+        console.log("=== dummy ===")
         const dummy = {
           number: num,
           country: cc.toUpperCase(),
@@ -114,28 +117,15 @@ export class PhoneService {
           type: dummy.type,
           user: user,
         });
-        /*user.purchasedPhoneCount = user.purchasedPhoneCount + 1;
-        await this.userService.repository.save(user); */
-        // save to database;
+        
         return {
           number: dummy,
           message:
             'Dummy Number purchased and linked to your account successfully.',
         };
       }
-      /* } else {
-        throw new HttpException(
-          'You have already consumed your phone number credits.',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-    } else {
-      throw new HttpException(
-        'You have to purchase subscription to buy phone numbers.',
-        HttpStatus.BAD_REQUEST,
-      );
-    } */
     } catch (e) {
+      console.log(e);
       throw e;
     }
   }

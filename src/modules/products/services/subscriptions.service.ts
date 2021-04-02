@@ -28,39 +28,21 @@ export class SubscriptionsService {
 
   public async createSubscription(customer: UserEntity, sub: SubscriptionsDto) {
     try {
-      // Check for existing subscriptions
-      // Allow one bundled subscription
-      // Allow multiple phone only subscriptions
-      /* const check = await this.repository
-        .createQueryBuilder('s')
-        .leftJoinAndSelect(TABLES.PLANS.name, 'p', 's.planId = p.id')
-        .where('p.planType = :planType', { planType: 'bundle' })
-        .andWhere('s.userId=:userId', { userId: customer.id })
-        .getCount();
-
-      console.log(check); */
       const _plan = await this.planService.repository.findOne({
-        where: { id: sub.planId },
+        where: { id: sub.planId },relations:['country']
       });
-      const phone = await this.phoneService.repo.findOne({ where: { number: sub.number } });
-      if (phone) {
-        const checkPhoneLinkWithActiveSubscription = await this.repository.findOne({ where: { phone:phone, cancelled: false } });
-        if (checkPhoneLinkWithActiveSubscription) {
-          throw new BadRequestException('This phone number is not available for purchase.');
+      if (_plan) {
+        const phone = await this.phoneService.repo.findOne({ where: { number: sub.number } });
+        if (phone) {
+          const checkPhoneLinkWithActiveSubscription = await this.repository.findOne({ where: { phone: phone, cancelled: false } });
+          if (checkPhoneLinkWithActiveSubscription) {
+            throw new BadRequestException('This phone number is not available for purchase.');
+          }
         }
-      }
-      return await this.createSubscriptionInStripe(customer, sub, _plan);
-      /* 
-      if (check == 0) {
-        return await this.createSubscriptionInStripe(customer, sub, _plan);
-      }
-      if (check > 0 && _plan.planType !== 'bundle') {
         return await this.createSubscriptionInStripe(customer, sub, _plan);
       } else {
-        throw new BadRequestException(
-          'You can only have one BUNDLE subscription.',
-        );
-      } */
+        throw new BadRequestException('Plan does not exist.')
+      }
     } catch (e) {
       throw e;
     }
@@ -84,6 +66,7 @@ export class SubscriptionsService {
         if (checkNumber) {
           throw new BadRequestException('Phone number is not available for purchase.')
         }
+        console.log("================1================")
         subscription = await this.stripe.subscriptions.create({
           customer: customer.customerId,
           items: [
@@ -97,6 +80,8 @@ export class SubscriptionsService {
               ? 'charge_automatically'
               : 'send_invoice',
         });
+        console.log("=== subscription ===")
+        console.log(subscription)
         current_period_end = this.timestampToDate(
           subscription.current_period_end,
         );
@@ -111,9 +96,11 @@ export class SubscriptionsService {
           sub.number,
           customer,
         );
+        console.log("================2================")
         const purchasedNumberDb = await this.phoneService.repo.findOne({
           where: { number: purchasedNumber.number.number },
         });
+        console.log("================3================")
         await this.repository.save({
           stripeId: subscription.id,
           plan: _plan,
@@ -137,6 +124,7 @@ export class SubscriptionsService {
         throw new BadRequestException('Please add payment method first.');
       }
     } catch (e) {
+      console.log(e)
       throw e;
     }
   }

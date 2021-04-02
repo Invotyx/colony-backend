@@ -112,7 +112,7 @@ export class SubscriptionsService {
           currentStartDate: current_period_start,
           currentEndDate: current_period_end,
           smsCount: _plan.smsCount,
-          number: purchasedNumberDb,
+          phone: purchasedNumberDb,
           country: _plan.country
         });
 

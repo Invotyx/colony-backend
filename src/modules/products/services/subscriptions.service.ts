@@ -43,9 +43,11 @@ export class SubscriptionsService {
         where: { id: sub.planId },
       });
       const phone = await this.phoneService.repo.findOne({ where: { number: sub.number } });
-      const checkPhoneLinkWithActiveSubscription = await this.repository.findOne({ where: { number: phone, cancelled: false } });
-      if (checkPhoneLinkWithActiveSubscription) {
-        throw new BadRequestException('This phone number is not available for purchase.');
+      if (phone) {
+        const checkPhoneLinkWithActiveSubscription = await this.repository.findOne({ where: { phone:phone, cancelled: false } });
+        if (checkPhoneLinkWithActiveSubscription) {
+          throw new BadRequestException('This phone number is not available for purchase.');
+        }
       }
       return await this.createSubscriptionInStripe(customer, sub, _plan);
       /* 
@@ -78,9 +80,7 @@ export class SubscriptionsService {
         where: { user: customer, default: true },
       });
       if (customer_payments) {
-      
         const checkNumber = await this.phoneService.repo.findOne({ number: sub.number, status: 'active' });
-
         if (checkNumber) {
           throw new BadRequestException('Phone number is not available for purchase.')
         }
@@ -97,8 +97,6 @@ export class SubscriptionsService {
               ? 'charge_automatically'
               : 'send_invoice',
         });
-
-
         current_period_end = this.timestampToDate(
           subscription.current_period_end,
         );
@@ -113,11 +111,9 @@ export class SubscriptionsService {
           sub.number,
           customer,
         );
-
         const purchasedNumberDb = await this.phoneService.repo.findOne({
           where: { number: purchasedNumber.number.number },
         });
-
         await this.repository.save({
           stripeId: subscription.id,
           plan: _plan,
@@ -147,14 +143,12 @@ export class SubscriptionsService {
 
   public async getSubscriptions(customer: UserEntity) {
     try {
-      const ch =  await this.repository.query(`SELECT sub.*,  phones."number" FROM "subscriptions" "sub" LEFT JOIN "plans" "plans" ON "plans"."id"="sub"."planId" 
+      const ch =  await this.repository.query(`SELECT sub.*,  phones."number", "country"."name" FROM "subscriptions" "sub" LEFT JOIN "plans" "plans" ON "plans"."id"="sub"."planId" 
       LEFT JOIN "country" "country" ON "country"."id"="sub"."countryId"  LEFT JOIN "phones" "phones" ON "phones"."id"="sub"."phoneId" WHERE ( "sub"."userId" =${customer.id}  ) AND ( "sub"."deletedAt" IS NULL )`);
       //console.log(ch);
 
       if (ch) {
-        const current = ch.filter((c) => c.cancelled === false);
-        const cancelled = ch.filter((c) => c.cancelled === true);
-        return { current, cancelled };
+        return  ch ;
       }
     } catch (e) {
       console.log(e);
@@ -178,6 +172,7 @@ export class SubscriptionsService {
           where: { stripeId: subId, cancelled: false },relations:['plan','country','phone']
         });
         if (checkSub) {
+
           let plans = await this.planService.repository.find({ where: { country: checkSub.country } });
           if (plans.length>0) {
             const _toBeSelectedPlan = plans.find(p => { return p.id === planId });

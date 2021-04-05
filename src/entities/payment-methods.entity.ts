@@ -1,3 +1,4 @@
+import { ApiHideProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -33,6 +34,7 @@ export class PaymentMethodsEntity {
   @Column({ default: false, nullable: false })
   public default: boolean;
 
+  @ApiHideProperty()
   @Column({ length: 50, nullable: true })
   public fingerprint: string;
 

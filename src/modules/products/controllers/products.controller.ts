@@ -146,15 +146,17 @@ export class ProductsController {
         plan = await this.planService.repository.find({
           where: { product: pid },
           order: {
-            amount_decimal:"ASC"
-          }
+            amount_decimal: "ASC"
+          },
+          relations:['country']
         });
       } else {
         plan = await this.planService.repository.find({
           where: { product: pid, active: true, country: countryId },
           order: {
             amount_decimal:"ASC"
-          }
+          },
+          relations:['country']
         });
       }
 

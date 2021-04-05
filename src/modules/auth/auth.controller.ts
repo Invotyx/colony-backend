@@ -21,6 +21,7 @@ import { AppLogger } from '../../services/logs/log.service';
 import { UsersService } from '../users/services/users.service';
 import { UpdateProfileDto } from '../users/users.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ROLES } from 'src/services/access-control/consts/roles.const';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -75,22 +76,23 @@ export class AuthController {
     return user;
   }
 
-  @Post(':id/updateUserProfile')
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Post('updateUserProfile')
   @UsePipes(ValidationPipe)
   async updateUserProfile(
     @Body() user: UpdateProfileDto,
-    @Param('id') id: number,
+    @LoginUser() _user:UserEntity,
   ) {
     try {
       const allData = await this.userService.repository.findOne({
-        where: { id: id },
+        where: { id: _user.id },
       });
       const oldPassword = await PasswordHashEngine.check(
         user.oldPassword,
         allData.password,
       );
       if (oldPassword) {
-        const updateUser = await this.userService.updateUser(id, user);
+        const updateUser = await this.userService.updateUser( _user.id, user);
         return { data: updateUser };
       } else {
         throw new BadRequestException('please check the old password!!!');
@@ -100,11 +102,12 @@ export class AuthController {
     }
   }
 
-  @Post(':id/updateProfile')
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Post('updateProfile')
   @UsePipes(ValidationPipe)
-  async updateProfile(@Body() user: UpdateProfileDto, @Param('id') id: number) {
+  async updateProfile(@Body() user: UpdateProfileDto,@LoginUser() _user:UserEntity,) {
     try {
-      const updateUser = await this.userService.updateUser(id, user);
+      const updateUser = await this.userService.updateUser(_user.id, user);
       return { data: updateUser };
     } catch (error) {
       throw error;

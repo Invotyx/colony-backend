@@ -11,6 +11,8 @@ import {
   Post,
   Put,
   Query,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/auth.decorator';
@@ -63,6 +65,7 @@ export class ProductsController {
 
   @Auth({ roles: [ROLES.ADMIN] })
   @Post(':pid/plan/')
+  @UsePipes(ValidationPipe)
   public async createPlan(@Param('pid') pid: string, @Body() data: PlansDto) {
     //createPlanInStripe
     try {

@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
-  IsDecimal,
   IsIn,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Length,
@@ -30,7 +30,7 @@ export class PlansDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsDecimal()
+  @IsNumber()
   @Min(0)
   public amount_decimal: number;
 

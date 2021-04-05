@@ -41,6 +41,11 @@ export class PhoneController {
             'Limit should be greater then 0 and less then 25.',
           );
         }
+        if (number_must_have && number_must_have.length > 5) {
+          throw new BadRequestException(
+            'Number search parameter length should be less then 5 characters.',
+          );
+        }
         return await this.service.searchPhoneNumbers(
           cc.code.toUpperCase(),
           limit,

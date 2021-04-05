@@ -7,9 +7,10 @@ import { LanguageModule } from '../language/language.module';
 import { MailModule } from 'src/services/mail/mail.module';
 import { EmailTokenSender } from 'src/mails/users/emailtoken.mailer';
 import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer';
+import { CityCountryModule } from 'src/services/city-country/city-country.module';
 
 @Module({
-  imports: [MainMysqlModule, LanguageModule, MailModule],
+  imports: [MainMysqlModule, LanguageModule, MailModule, CityCountryModule],
   controllers: [UsersController],
   providers: [
     UsersService,

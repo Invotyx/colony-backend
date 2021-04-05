@@ -24,6 +24,8 @@ import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
 import { nanoid } from 'nanoid';
 import { join } from 'path';
 import * as fs from 'fs';
+import { CountryRepository } from 'src/services/city-country/repos/country.repo';
+import { CityRepository } from 'src/services/city-country/repos/city.repo';
 
 @Injectable()
 export class UsersService {
@@ -34,6 +36,8 @@ export class UsersService {
     private readonly password: ForgotPasswordRepository,
     private readonly emailTokenSend: EmailTokenSender,
     private readonly sendForgotPassword: ForgotPasswordTokenSender,
+    private readonly country: CountryRepository,
+    private readonly city: CityRepository
   ) {}
 
   findAll(): Promise<UserEntity[]> {
@@ -280,7 +284,7 @@ export class UsersService {
       } */
 
       console.log('===========', user);
-
+      updateData.id=id;
       if (user.password) {
         user.password = await PasswordHashEngine.make(user.password);
         updateData.password = user.password;
@@ -310,10 +314,14 @@ export class UsersService {
         updateData.statusMessage = user.statusMessage;
       }
       if (user.city) {
-        updateData.city = user.city;
+        const _c = await this.city.findOne({ where: { id: user.city } });
+        if(_c)
+          updateData.city = _c;
       }
       if (user.country) {
-        updateData.country = user.country;
+        const _c = await this.country.findOne({ where: { id: user.country } });
+        if (_c)
+          updateData.country = _c;
       }
 
       if (user.firstName) {
@@ -327,7 +335,7 @@ export class UsersService {
         updateData.timezone = user.timezone;
       }
 
-      await this.repository.update(id, updateData);
+      await this.repository.save(updateData);
       return { message: 'User details updated.' };
     } catch (error) {
       console.log(error);

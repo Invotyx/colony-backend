@@ -19,7 +19,7 @@ import { AuthService } from './auth.service';
 import { PasswordHashEngine } from '../../shared/hash.service';
 import { AppLogger } from '../../services/logs/log.service';
 import { UsersService } from '../users/services/users.service';
-import { UpdateProfileDto } from '../users/users.dto';
+import { CreateUserDto, UpdateProfileDto } from '../users/users.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
 
@@ -58,7 +58,7 @@ export class AuthController {
         await this.authService.validateUser(req.body),
       );
     } catch (e) {
-      throw new HttpException(e, HttpStatus.FORBIDDEN);
+      throw new HttpException(e, HttpStatus.UNPROCESSABLE_ENTITY);
     }
   }
 
@@ -97,6 +97,31 @@ export class AuthController {
       } else {
         throw new BadRequestException('please check the old password!!!');
       }
+    } catch (error) {
+      throw error;
+    }
+  }
+  // @Auth({})
+  @Post('register')
+  @UsePipes(ValidationPipe)
+  async createUser(@Body() user: CreateUserDto) {
+    try {
+      if (user.username == 'admin') {
+        throw new BadRequestException(
+          'You cannot create user with username admin',
+        );
+      }
+      if (!user.mobile || !user.email || !user.firstName || !user.lastName || !user.password || !user.timezone || !user.gender || !user.username) {
+        throw new BadRequestException('One of mandatory fields(firstName,lastName,username,email,password,mobile,gender,timezone) missing.');
+      }
+      user.mobile = user.mobile
+        .replace(' ', '')
+        .replace('(', '')
+        .replace(')', '')
+        .replace('-', '');
+      console.log(user);
+      const newUser = await this.userService.createUser(user);
+      return { data: newUser, accessToken: (await this.authService.login(newUser.user)).accessToken };
     } catch (error) {
       throw error;
     }

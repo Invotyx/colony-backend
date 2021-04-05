@@ -36,6 +36,8 @@ export class PaymentMethodsService {
           where: { fingerprint: pm.card.fingerprint, user: customer },
         });
 
+        
+
         if (check) {
           await this.stripe.paymentMethods.detach(check.id);
           check.name = methodDetails.name;

@@ -16,7 +16,8 @@ export class AuthService {
       const user = await this.usersService.searchUserForAuth(
         credentials.username,
       );
-      if (user && user.isActive && user.isApproved) {
+      // && user.isActive && user.isApproved
+      if (user) {
         const isPwdMatch = await PasswordHashEngine.check(
           credentials.password,
           user.password,
@@ -25,7 +26,7 @@ export class AuthService {
         if (!isPwdMatch) {
           throw new HttpException(
             'Password mismatch error.',
-            HttpStatus.BAD_REQUEST,
+            HttpStatus.UNPROCESSABLE_ENTITY,
           );
         }
         return user;

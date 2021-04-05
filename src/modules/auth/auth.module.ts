@@ -19,7 +19,7 @@ import { LocalStrategy } from './local.strategy';
     MailModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: 7 * 24 * 60 * 60 },
+      signOptions: { expiresIn: 60 * 60 },
     }),
   ],
   providers: [AppLogger, AuthService, LocalStrategy, JwtStrategy, AuthMailer],

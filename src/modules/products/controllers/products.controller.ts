@@ -11,9 +11,11 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
@@ -143,10 +145,16 @@ export class ProductsController {
       if (user.roles[0].role === ROLES.ADMIN) {
         plan = await this.planService.repository.find({
           where: { product: pid },
+          order: {
+            amount_decimal:"ASC"
+          }
         });
       } else {
         plan = await this.planService.repository.find({
           where: { product: pid, active: true, country: countryId },
+          order: {
+            amount_decimal:"ASC"
+          }
         });
       }
 

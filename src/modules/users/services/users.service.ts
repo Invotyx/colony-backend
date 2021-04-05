@@ -112,10 +112,10 @@ export class UsersService {
 
         user.password = await PasswordHashEngine.make(user.password);
         user.urlId = nanoid();
-        const newUser: any = await this.repository.save(user);
+        const newUser: UserEntity = await this.repository.save(user);
         await this.updateRoles(newUser.id, { userId: newUser.id, roleId: [2] });
-        await this.createEmailToken(user.email);
-        await this.emailTokenSend.sendEmailVerification(user.email);
+        /* await this.createEmailToken(user.email);
+        await this.emailTokenSend.sendEmailVerification(user.email); */
         return { user: newUser };
       } else {
         throw new BadRequestException('Invalid email format');

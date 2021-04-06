@@ -40,28 +40,22 @@ export class PaymentsController {
   ) {
     try {
       if (data.name && data.token) {
-        let _user = await this.userService.findOne(user.id);
-
-        if (_user.customerId) {
-          const pm = await this.paymentService.createPaymentMethod(_user, data);
-          return pm;
-        } else {
+        
+        if (user.customerId == null) {
           const stripe_user = await this.stripe.customers.create({
-            email: _user.email,
-            name: _user.firstName + ' ' + _user.lastName,
-            phone: _user.mobile,
+            email: user.email,
+            name: user.firstName + ' ' + user.lastName,
+            phone: user.mobile,
           });
 
-          _user.customerId = stripe_user.id;
-          _user = await this.userService.repository.save(_user);
-          const pm = await this.paymentService.createPaymentMethod(_user, data);
-          if (pm && _user.isActive==false) {
-            _user.isActive = true;
-            _user.isApproved = true;
-            _user = await this.userService.repository.save(_user);
-          }
-          return pm;
+          user.customerId = stripe_user.id;
+          user.isActive = true;
+          user.isApproved = true;
+          user = await this.userService.repository.save(user);
         }
+        const pm = await this.paymentService.createPaymentMethod(user, data);
+        return pm;
+        
       } else {
         throw new BadRequestException('Incomplete data provided.');
       }

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { env } from 'process';
+import { env, exit } from 'process';
 import { UserEntity } from 'src/entities/user.entity';
 import Stripe from 'stripe';
 import { PaymentMethodDto } from '../dto/payment-methods.dto';
@@ -15,7 +15,7 @@ export class PaymentMethodsService {
   }
 
   public async createPaymentMethod(
-    customer: any,
+    customer: UserEntity,
     methodDetails: PaymentMethodDto,
   ): Promise<any> {
     try {
@@ -27,7 +27,6 @@ export class PaymentMethodsService {
             token: methodDetails.token,
           },
         });
-
         await this.stripe.paymentMethods.attach(pm.id, {
           customer: customer.customerId,
         });
@@ -36,29 +35,29 @@ export class PaymentMethodsService {
           where: { fingerprint: pm.card.fingerprint, user: customer },
         });
 
-        
-
         if (check) {
           await this.stripe.paymentMethods.detach(check.id);
+          await this.repository.delete(check);
           check.name = methodDetails.name;
           check.last4_card = pm.card.last4;
           check.type = pm.card.brand;
           check.user = customer;
           check.fingerprint = pm.card.fingerprint;
           check.default = true;
-          await this.repository.delete(check.id);
           check.id = pm.id;
-          await this.repository.save(check);
+          await this.repository.insert(check);
           await this.stripe.customers.update(customer.customerId, {
             invoice_settings: { default_payment_method: pm.id },
           });
           return { message: 'Payment method added' };
         } else {
           const def = await this.repository.findOne({
-            where: { default: true },
+            where: { default: true, user:customer },
           });
-          def.default = false;
-          await this.repository.save(def);
+          if (def) {
+            def.default = false;
+            await this.repository.save(def);
+          }
           await this.repository.save({
             id: pm.id,
             last4_card: pm.card.last4,
@@ -89,11 +88,12 @@ export class PaymentMethodsService {
       const exist = await this.repository.findOne({
         where: { id: paymentId, user: customer },
       });
-
+      console.log(exist, "=== === ===");
       if (exist) {
         const exDef = await this.repository.findOne({
           where: { default: true, user: customer },
         });
+        
         if (exDef) {
           exDef.default = false;
           await this.repository.save(exDef);

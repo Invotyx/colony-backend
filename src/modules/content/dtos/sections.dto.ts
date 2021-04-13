@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, Length } from 'class-validator';
+import { IsAlpha, IsAlphanumeric, IsNotEmpty, IsNumber, IsOptional, Length } from 'class-validator';
 import { PagesEntity } from 'src/entities/pages.entity';
 
 export enum sectionType {
@@ -13,6 +13,7 @@ export enum sectionType {
 export class SectionsDto {
   @ApiPropertyOptional()
   @IsOptional()
+  @IsNumber()
   public id: number;
 
   @ApiPropertyOptional()
@@ -28,6 +29,7 @@ export class SectionsDto {
   @ApiPropertyOptional()
   @IsOptional()
   @Length(3, 10)
+  @IsAlpha()
   public imagePosition: string;
 
   @ApiPropertyOptional()
@@ -36,6 +38,7 @@ export class SectionsDto {
 
   @ApiPropertyOptional()
   @IsNotEmpty()
+  @IsNumber()
   public sortOrder: number;
 
   @ApiPropertyOptional()
@@ -46,9 +49,10 @@ export class SectionsDto {
   @IsOptional()
   public isActive: boolean;
 
-  @ApiPropertyOptional({ enum: sectionType, enumName: 'sectionType' })
+  @ApiPropertyOptional()
   @IsOptional()
-  public sectionType: sectionType;
+  @IsAlphanumeric()
+  public sectionType: string;
 
   @ApiPropertyOptional()
   @IsOptional()

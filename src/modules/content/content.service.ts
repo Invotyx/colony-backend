@@ -136,6 +136,8 @@ export class ContentService {
           );
         } else {
           data.page = page;
+          data.id = null;
+          data.buttons=(data.buttons ? data.buttons : null);
           const create = await this.sectionsRepo.save(data);
           return create;
         }

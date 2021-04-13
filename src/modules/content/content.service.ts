@@ -154,7 +154,6 @@ export class ContentService {
         const section = await this.sectionsRepo.findOne({
           where: { page: page.id, id: secId },
         });
-        console.log(section);
         if (section) {
           if (data.content) {
             section.content = data.content;
@@ -171,10 +170,8 @@ export class ContentService {
           if (data.sectionType) {
             section.sectionType = data.sectionType;
           }
-
-          if (data.isActive) {
-            section.isActive = (data.isActive?true:false);
-          }
+ 
+          section.isActive = (data.isActive?true:false);
 
           if (data.buttons) {
             section.buttons = data.buttons;

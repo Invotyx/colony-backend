@@ -173,7 +173,7 @@ export class ContentService {
           }
 
           if (data.isActive) {
-            section.isActive = data.isActive;
+            section.isActive = (data.isActive?true:false);
           }
 
           if (data.buttons) {

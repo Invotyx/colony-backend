@@ -1,7 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { MessageBird } from 'messagebird';
 import { env } from 'process';
+import { ContactsEntity } from 'src/entities/contacts.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { ContactsService } from '../contacts/contacts.service';
+import { PhoneService } from '../phone/phone.service';
 import { PresetsDto, PresetsUpdateDto } from './preset.dto';
 import { PresetMessagesRepository } from './repo/sms-presets.repo';
 import { SMSTemplatesRepository } from './repo/sms-templates.repo';
@@ -12,9 +15,63 @@ export class SmsService {
   constructor(
     public readonly smsTemplateRepo: SMSTemplatesRepository,
     public readonly presetRepo: PresetMessagesRepository,
+    public readonly contactService: ContactsService,
+    public readonly phoneService: PhoneService,
   ) {
     console.log(env.MESSAGEBIRD_KEY);
     this.mb = require('messagebird')(env.MESSAGEBIRD_KEY);
+  }
+
+  async receiveSms(
+    sender: string,
+    receiver: string,
+    body: string,
+    receivedAt: Date,
+  ) {
+    try {
+      const influencerNumber = await this.phoneService.repo.findOne({
+        where: { number: receiver, status: 'active' },
+      });
+      const contact = await this.contactService.repository.findOne({
+        where: { phoneNumber: sender },
+      });
+
+      if (contact) {
+        const rel = await this.contactService.influencerContactRepo.findOne({
+          where: { contact: contact, user: influencerNumber.user },
+        });
+        if (rel) {
+          await this.saveSms(contact, influencerNumber.user, body, receivedAt);
+        } else {
+          // send welcome sms
+          // send profile completion sms if not completed yet
+
+          await this.contactService.addContact(
+            sender,
+            influencerNumber.user.id,
+          );
+          await this.saveSms(contact, influencerNumber.user, body, receivedAt);
+        }
+      } else {
+        // send welcome sms
+        // send profile completion sms
+
+        await this.contactService.addContact(sender, influencerNumber.user.id);
+        await this.saveSms(contact, influencerNumber.user, body, receivedAt);
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async saveSms(
+    contact: ContactsEntity,
+    influencer: UserEntity,
+    body: string,
+    receivedAt: Date,
+  ) {
+    //create conversation if not created yet.
+    //add sms to conversation
   }
 
   async sendSms() {
@@ -28,7 +85,6 @@ export class SmsService {
       },
       this.smsCallback,
     );
-    
   }
 
   private smsCallback = (error, res) => {

@@ -31,7 +31,7 @@ export class ContentService {
     }
   }
 
-  async getPage(slug: string) {
+  async getPage(slug: string, key:string) {
     const page = await this.pagesRepo.findOne({ where: { slug: slug } });
     if (page) {
       if (isEmpty(page.slug)) {
@@ -39,7 +39,9 @@ export class ContentService {
       } else {
         const sections = await this.sectionsRepo.find({
           where: { page: page.id },
+          order: { [key]: 'ASC' },
         });
+        
         return { page, sections };
       }
     } else {
@@ -137,7 +139,7 @@ export class ContentService {
         } else {
           data.page = page;
           data.id = null;
-          data.buttons=(data.buttons ? data.buttons : null);
+          data.buttons = data.buttons ? data.buttons : null;
           const create = await this.sectionsRepo.save(data);
           return create;
         }
@@ -170,8 +172,8 @@ export class ContentService {
           if (data.sectionType) {
             section.sectionType = data.sectionType;
           }
- 
-          section.isActive = (data.isActive?true:false);
+
+          section.isActive = data.isActive ? true : false;
 
           if (data.buttons) {
             section.buttons = data.buttons;

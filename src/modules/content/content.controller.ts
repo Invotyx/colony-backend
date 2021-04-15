@@ -53,10 +53,21 @@ export class ContentController {
     }
   }
 
+  @Get('public/page/:slug')
+  async getPublicPage(@Param('slug') slug: string) {
+    try {
+      const res = await this.contentService.getPage(slug, 'sortOrder');
+      return res;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN] })
   @Get('page/:slug')
   async getPage(@Param('slug') slug: string) {
     try {
-      const res = await this.contentService.getPage(slug);
+      const res = await this.contentService.getPage(slug, 'id');
       return res;
     } catch (e) {
       throw new HttpException(e, HttpStatus.BAD_REQUEST);

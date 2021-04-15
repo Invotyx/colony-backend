@@ -7,7 +7,7 @@ import {
   mapColumns,
   paginateQuery,
   PaginatorError,
-  PaginatorErrorHandler,
+  PaginatorErrorHandler
 } from 'src/shared/paginator';
 import { nanoid } from 'src/shared/random-keygen';
 import { ContactsService } from '../contacts/contacts.service';
@@ -123,6 +123,9 @@ export class InfluencerLinksService {
       if (!linkUrl) {
         return { message: "link doesn't exist." };
       }
+
+      //Send link via sms here......
+
       let linkSent = await this.trackingRepo.findOne({
         where: { influencerLink: linkUrl, contact: contactUrl },
       });

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Post,
   Put,
@@ -50,6 +51,21 @@ export class SmsController {
         influencer,
       );
       return template;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Post('receive-sms/webhook')
+  @HttpCode(200)
+  async receiveSms(@Body() body: any) {
+    try {
+      await this.service.receiveSms(
+        body.sender,
+        body.receiver,
+        body.body,
+        body.receivedAt,
+      );
     } catch (e) {
       throw e;
     }

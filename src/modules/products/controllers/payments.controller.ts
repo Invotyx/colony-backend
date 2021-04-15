@@ -40,7 +40,6 @@ export class PaymentsController {
   ) {
     try {
       if (data.name && data.token) {
-        
         if (user.customerId == null) {
           const stripe_user = await this.stripe.customers.create({
             email: user.email,
@@ -55,7 +54,6 @@ export class PaymentsController {
         }
         const pm = await this.paymentService.createPaymentMethod(user, data);
         return pm;
-        
       } else {
         throw new BadRequestException('Incomplete data provided.');
       }

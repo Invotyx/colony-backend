@@ -2,10 +2,13 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { MessageBird } from 'messagebird';
 import { env } from 'process';
 import { ContactsEntity } from 'src/entities/contacts.entity';
+import { PhonesEntity } from 'src/entities/phone.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { ContactsService } from '../contacts/contacts.service';
 import { PhoneService } from '../phone/phone.service';
 import { PresetsDto, PresetsUpdateDto } from './preset.dto';
+import { ConversationsRepository } from './repo/conversation-messages.repo';
+import { ConversationMessagesRepository } from './repo/conversation.repo';
 import { PresetMessagesRepository } from './repo/sms-presets.repo';
 import { SMSTemplatesRepository } from './repo/sms-templates.repo';
 
@@ -17,6 +20,8 @@ export class SmsService {
     public readonly presetRepo: PresetMessagesRepository,
     public readonly contactService: ContactsService,
     public readonly phoneService: PhoneService,
+    public readonly conversationsRepo: ConversationsRepository,
+    public readonly conversationsMessagesRepo: ConversationMessagesRepository,
   ) {
     console.log(env.MESSAGEBIRD_KEY);
     this.mb = require('messagebird')(env.MESSAGEBIRD_KEY);
@@ -41,7 +46,13 @@ export class SmsService {
           where: { contact: contact, user: influencerNumber.user },
         });
         if (rel) {
-          await this.saveSms(contact, influencerNumber.user, body, receivedAt);
+          await this.saveSms(
+            contact,
+            influencerNumber,
+            body,
+            receivedAt,
+            'inBound',
+          );
         } else {
           // send welcome sms
           // send profile completion sms if not completed yet
@@ -50,14 +61,26 @@ export class SmsService {
             sender,
             influencerNumber.user.id,
           );
-          await this.saveSms(contact, influencerNumber.user, body, receivedAt);
+          await this.saveSms(
+            contact,
+            influencerNumber,
+            body,
+            receivedAt,
+            'inBound',
+          );
         }
       } else {
         // send welcome sms
         // send profile completion sms
 
         await this.contactService.addContact(sender, influencerNumber.user.id);
-        await this.saveSms(contact, influencerNumber.user, body, receivedAt);
+        await this.saveSms(
+          contact,
+          influencerNumber,
+          body,
+          receivedAt,
+          'inBound',
+        );
       }
     } catch (e) {
       throw e;
@@ -66,31 +89,72 @@ export class SmsService {
 
   async saveSms(
     contact: ContactsEntity,
-    influencer: UserEntity,
+    influencerPhone: PhonesEntity,
     body: string,
     receivedAt: Date,
+    type: string,
   ) {
     //create conversation if not created yet.
     //add sms to conversation
+    let conversation = await this.conversationsRepo.findOne({
+      where: { contact: contact, phone: influencerPhone },
+    });
+    let message;
+    if (conversation) {
+      message = await this.conversationsMessagesRepo.save({
+        conversations: conversation,
+        sms: body,
+        status: '',
+        type: type,
+        receivedAt: receivedAt,
+      });
+
+      conversation.isActive = true;
+      await this.conversationsRepo.save(conversation);
+    } else {
+      conversation = await this.conversationsRepo.save({
+        contact: contact,
+        phone: influencerPhone,
+        isActive: type == 'broadcast' ? false : true,
+      });
+      message = await this.conversationsMessagesRepo.save({
+        conversations: conversation,
+        sms: body,
+        status: '',
+        type: type,
+        receivedAt: receivedAt,
+      });
+    }
+    return message;
   }
 
-  async sendSms() {
+  async sendSms(
+    contact: ContactsEntity,
+    influencerNumber: PhonesEntity,
+    body: string,
+    type: string,
+  ) {
     const sms = this.mb.messages;
+    //parse sms here to fill in details.
     sms.create(
       {
-        body: '',
-        recipients: [''], //recipient(s)
+        body: body,
+        recipients: [contact.phoneNumber], //recipient(s)
         type: 'sms',
-        originator: '', //sender
+        originator: influencerNumber.number, //sender
       },
       this.smsCallback,
     );
+
+    await this.saveSms(contact, influencerNumber, body, new Date(), type);
   }
 
   private smsCallback = (error, res) => {
     if (error) {
       //failure case
     } else {
+      //save sms here.
+
       //success scenario
       return res;
     }

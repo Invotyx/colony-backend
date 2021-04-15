@@ -5,13 +5,14 @@ import { AppModule } from './app.module';
 import { logger } from './services/logs/log.storage';
 import { SeederModule } from './seeder/seeder.module';
 import { SeederService } from './seeder/seeder.service';
-import { BadRequestException, HttpException, HttpStatus, ValidationPipe } from '@nestjs/common';
-
-
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  ValidationPipe,
+} from '@nestjs/common';
 
 async function bootstrap() {
-  
-  
   NestFactory.createApplicationContext(SeederModule)
     .then((appContext) => {
       const seeder = appContext.get(SeederService);
@@ -66,28 +67,31 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  
-
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   const port = env.port || '4000';
-  app.useGlobalPipes(new ValidationPipe({
-    errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-    transform: true,
-    exceptionFactory: (errors) => {
-      let _e= [];
-      errors.forEach((error, i) => {
-        _e.push({
-          [error.property]:error.constraints
-        })
-      })
-      return new HttpException({
-        errors: _e,
-        message: "Unprocessable entity",
-        statusCode:HttpStatus.UNPROCESSABLE_ENTITY 
-      },HttpStatus.UNPROCESSABLE_ENTITY);
-    }
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      transform: true,
+      exceptionFactory: (errors) => {
+        let _e = [];
+        errors.forEach((error, i) => {
+          _e.push({
+            [error.property]: error.constraints,
+          });
+        });
+        return new HttpException(
+          {
+            errors: _e,
+            message: 'Unprocessable entity',
+            statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      },
+    }),
+  );
   await app.listen(port, () => {
     console.log(
       'Listening API at http://localhost:' + port + '/' + globalPrefix,

@@ -27,7 +27,7 @@ export class PlansService {
           HttpStatus.BAD_REQUEST,
         );
       } else {
-      /*  else if (
+        /*  else if (
         plan.planType === 'phoneOnly' &&
         (!plan.phoneCount || plan.phoneCount < 1)
       ) {
@@ -50,7 +50,6 @@ export class PlansService {
         if (plan.planType === 'phoneOnly') {
           plan.smsCount = 0;
         } */
-
 
         const newPlan = await this.stripe.plans.create({
           amount_decimal: (plan.amount_decimal * 100).toString(),

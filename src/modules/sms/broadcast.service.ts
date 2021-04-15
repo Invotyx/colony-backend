@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { MessageBird } from 'messagebird/types';
 import { env } from 'process';
+import { ContactsEntity } from 'src/entities/contacts.entity';
+import { PhonesEntity } from 'src/entities/phone.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { ContactDto } from '../contacts/contact.dto';
 import { BroadcastContactsRepository } from './repo/broadcast-contact.repo';
 import { BroadcastsRepository } from './repo/broadcast.repo';
+import { SmsService } from './sms.service';
 
 @Injectable()
 export class BroadcastService {
@@ -12,32 +14,35 @@ export class BroadcastService {
   constructor(
     public readonly repository: BroadcastsRepository,
     public readonly bcRepo: BroadcastContactsRepository,
+    public readonly smsService: SmsService,
   ) {
     this.mb = require('messagebird')(env.MESSAGEBIRD_KEY);
   }
 
-  async createBroadcast(User: UserEntity, _con: ContactDto[]) {
+  async createBroadcast(
+    User: UserEntity,
+    phone: PhonesEntity,
+    _con: ContactsEntity[],
+    name: string,
+    body: string,
+  ) {
     const broadcast = await this.repository.save({
-      body: '',
-      name: '',
+      body: body,
+      name: name,
       user: User,
+      contacts: _con,
     });
 
-    let _contactNumbers: string[];
-
-    _con.forEach((item) => {
-      _contactNumbers.push(item.phoneNumber);
-    });
-
-    //let _contactString = _contactNumbers.join(',')
-
-    // send via MessageBird
-    let contact: [any];
-    contact.forEach(async (con) => {
+    _con.forEach(async (con) => {
+      //parse sms body here
+      const sms = '';
+      // send via MessageBird
+      await this.smsService.sendSms(con, phone, body, 'broadcast');
+      //push sms to conversation
       await this.bcRepo.save({
         broadcast: broadcast,
         contact: con,
-        isSent: false,
+        isSent: true,
         status: '',
       });
     });

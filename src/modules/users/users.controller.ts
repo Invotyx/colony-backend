@@ -119,10 +119,9 @@ export class UsersController {
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
   async getUserProfile(@LoginUser() user: UserEntity): Promise<UserEntity> {
-    
     return await this.userService.repository.findOne({
       where: { id: user.id },
-      relations:['paymentMethod']
+      relations: ['paymentMethod'],
     });
   }
 
@@ -202,8 +201,6 @@ export class UsersController {
     return this.userService.repository.findOne(id, { relations: ['roles'] });
     //return this.rolesService.repository.find();
   }
-
-
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Post(':id/update')

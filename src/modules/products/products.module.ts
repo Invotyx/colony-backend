@@ -15,7 +15,13 @@ import { ProductsService } from './services/products.service';
 import { SubscriptionsService } from './services/subscriptions.service';
 
 @Module({
-  imports: [MainMysqlModule, UsersModule, PhoneModule, ApiCallingModule, CityCountryModule],
+  imports: [
+    MainMysqlModule,
+    UsersModule,
+    PhoneModule,
+    ApiCallingModule,
+    CityCountryModule,
+  ],
   controllers: [
     ProductsController,
     PaymentsController,

@@ -7,7 +7,7 @@ import {
   mapColumns,
   paginateQuery,
   PaginatorError,
-  PaginatorErrorHandler
+  PaginatorErrorHandler,
 } from 'src/shared/paginator';
 import { nanoid } from 'src/shared/random-keygen';
 import { ContactsService } from '../contacts/contacts.service';

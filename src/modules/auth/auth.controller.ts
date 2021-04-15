@@ -35,16 +35,17 @@ export class AuthController {
     this.logger.setContext('AuthController');
   }
 
-  
   @Get('verify/:token')
   async verifyEmail(@Param('token') token: any) {
     try {
       const isEmailVerified = await this.userService.verifyEmail(token);
       if (isEmailVerified) {
-        
-        return { message: "Email verified", accessToken: (await this.authService.login(isEmailVerified)).accessToken };
-      }
-      else throw new BadRequestException('LOGIN_EMAIL_NOT_VERIFIED');
+        return {
+          message: 'Email verified',
+          accessToken: (await this.authService.login(isEmailVerified))
+            .accessToken,
+        };
+      } else throw new BadRequestException('LOGIN_EMAIL_NOT_VERIFIED');
     } catch (error) {
       throw error;
     }
@@ -81,7 +82,7 @@ export class AuthController {
   @UsePipes(ValidationPipe)
   async updateUserProfile(
     @Body() user: UpdateProfileDto,
-    @LoginUser() _user:UserEntity,
+    @LoginUser() _user: UserEntity,
   ) {
     try {
       const allData = await this.userService.repository.findOne({
@@ -92,7 +93,7 @@ export class AuthController {
         allData.password,
       );
       if (oldPassword) {
-        const updateUser = await this.userService.updateUser( _user.id, user);
+        const updateUser = await this.userService.updateUser(_user.id, user);
         return { data: updateUser };
       } else {
         throw new BadRequestException('please check the old password!!!');
@@ -111,8 +112,19 @@ export class AuthController {
           'You cannot create user with username admin',
         );
       }
-      if (!user.mobile || !user.email || !user.firstName || !user.lastName || !user.password || !user.timezone || !user.gender || !user.username) {
-        throw new BadRequestException('One of mandatory fields(firstName,lastName,username,email,password,mobile,gender,timezone) missing.');
+      if (
+        !user.mobile ||
+        !user.email ||
+        !user.firstName ||
+        !user.lastName ||
+        !user.password ||
+        !user.timezone ||
+        !user.gender ||
+        !user.username
+      ) {
+        throw new BadRequestException(
+          'One of mandatory fields(firstName,lastName,username,email,password,mobile,gender,timezone) missing.',
+        );
       }
       user.mobile = user.mobile
         .replace(' ', '')
@@ -121,7 +133,10 @@ export class AuthController {
         .replace('-', '');
       console.log(user);
       const newUser = await this.userService.createUser(user);
-      return { data: newUser, accessToken: (await this.authService.login(newUser.user)).accessToken };
+      return {
+        data: newUser,
+        accessToken: (await this.authService.login(newUser.user)).accessToken,
+      };
     } catch (error) {
       throw error;
     }
@@ -130,7 +145,10 @@ export class AuthController {
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Post('updateProfile')
   @UsePipes(ValidationPipe)
-  async updateProfile(@Body() user: UpdateProfileDto,@LoginUser() _user:UserEntity,) {
+  async updateProfile(
+    @Body() user: UpdateProfileDto,
+    @LoginUser() _user: UserEntity,
+  ) {
     try {
       const updateUser = await this.userService.updateUser(_user.id, user);
       return { data: updateUser };

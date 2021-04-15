@@ -34,7 +34,7 @@ export class ProductsController {
   constructor(
     public readonly planService: PlansService,
     public readonly productsService: ProductsService,
-    public readonly country:CountryRepository
+    public readonly country: CountryRepository,
   ) {}
 
   @Get('')
@@ -80,16 +80,27 @@ export class ProductsController {
             /* if (data.planType === 'smsOnly') {
               data.recurring == 'one_time';
             } */
-            const checkSamePricePlans = await this.planService.repository.findOne({ where: { amount_decimal: data.amount_decimal, country: data.country } });
-            if (checkSamePricePlans)
-            {
-              throw new BadRequestException('Plan with same price for this country already exists.');
+            const checkSamePricePlans = await this.planService.repository.findOne(
+              {
+                where: {
+                  amount_decimal: data.amount_decimal,
+                  country: data.country,
+                },
+              },
+            );
+            if (checkSamePricePlans) {
+              throw new BadRequestException(
+                'Plan with same price for this country already exists.',
+              );
             }
 
-            const checkSameSmsPlans = await this.planService.repository.findOne({ where: { smsCount: data.smsCount, country: data.country } });
-            if (checkSameSmsPlans)
-            {
-              throw new BadRequestException('Plan with same sms count for this country already exists.');
+            const checkSameSmsPlans = await this.planService.repository.findOne(
+              { where: { smsCount: data.smsCount, country: data.country } },
+            );
+            if (checkSameSmsPlans) {
+              throw new BadRequestException(
+                'Plan with same sms count for this country already exists.',
+              );
             }
             const plan = await this.planService.createPlanInStripe(data, pid);
             return plan;
@@ -128,7 +139,7 @@ export class ProductsController {
     if (countries) {
       return countries;
     } else {
-      return { message: "No records found." };
+      return { message: 'No records found.' };
     }
   }
 
@@ -146,17 +157,17 @@ export class ProductsController {
         plan = await this.planService.repository.find({
           where: { product: pid },
           order: {
-            amount_decimal: "ASC"
+            amount_decimal: 'ASC',
           },
-          relations:['country']
+          relations: ['country'],
         });
       } else {
         plan = await this.planService.repository.find({
           where: { product: pid, active: true, country: countryId },
           order: {
-            amount_decimal:"ASC"
+            amount_decimal: 'ASC',
           },
-          relations:['country']
+          relations: ['country'],
         });
       }
 

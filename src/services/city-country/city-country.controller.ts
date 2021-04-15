@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Injectable, Param, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Injectable,
+  Param,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { TABLES } from 'src/consts/tables.const';
 import {
@@ -33,15 +41,15 @@ export class CityCountryController {
   @Put('active')
   async activateCountries(
     @Body('active') active: boolean,
-    @Body('id') id: string
+    @Body('id') id: string,
   ) {
     try {
-      const c=await this.countryRepo.findOne({ id: id });
+      const c = await this.countryRepo.findOne({ id: id });
       c.active = active;
       await this.countryRepo.save(c);
       return {
-        message: "Country updated"
-      }
+        message: 'Country updated',
+      };
     } catch (e) {
       throw e;
     }
@@ -104,7 +112,6 @@ export class CityCountryController {
 
     return this.getAllCities(data);
   }
-
 
   async getAllCities(data: any) {
     try {

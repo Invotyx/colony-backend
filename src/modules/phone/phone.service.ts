@@ -63,7 +63,7 @@ export class PhoneService {
       };
 
       if (env.NODE_ENV !== 'development') {
-        console.log("=== live ===")
+        console.log('=== live ===');
         const number = await this.apiCaller.apiCaller(
           'POST',
           'https://numbers.messagebird.com/v1/phone-numbers/' +
@@ -94,7 +94,7 @@ export class PhoneService {
           );
         }
       } else {
-        console.log("=== dummy ===")
+        console.log('=== dummy ===');
         const dummy = {
           number: num,
           country: cc.toUpperCase(),
@@ -117,7 +117,7 @@ export class PhoneService {
           type: dummy.type,
           user: user,
         });
-        
+
         return {
           number: dummy,
           message:

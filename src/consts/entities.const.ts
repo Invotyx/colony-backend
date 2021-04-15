@@ -26,6 +26,8 @@ import { SMSTemplatesEntity } from '../entities/sms-templates.entity';
 import { PhonesEntity } from '../entities/phone.entity';
 import { BroadcastsEntity } from '../entities/broadcast.entity';
 import { BroadcastsContactsEntity } from '../entities/broadcast-contacts.entity';
+import { ConversationsEntity } from '../entities/conversations.entity';
+import { ConversationMessagesEntity } from '../entities/conversation-messages.entity';
 import { JOIN_HELPER } from './join-helper.const';
 
 export const EntitiesRegister: any = {
@@ -57,6 +59,8 @@ export const EntitiesRegister: any = {
   PhonesEntity,
   BroadcastsEntity,
   BroadcastsContactsEntity,
+  ConversationsEntity,
+  ConversationMessagesEntity,
 };
 
 export const Entities: any = Object.values(EntitiesRegister);

@@ -13,14 +13,23 @@ import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entities/user.entity';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
+import { BroadcastService } from './broadcast.service';
 import { PresetsDto, PresetsUpdateDto, presetTrigger } from './preset.dto';
 import { SmsService } from './sms.service';
 
 @Controller('sms')
 @ApiTags('sms')
 export class SmsController {
-  constructor(private readonly service: SmsService) {}
+  constructor(
+    private readonly service: SmsService,
+    private readonly broadcastService: BroadcastService,
+  ) {}
 
+  //#region broadcast
+
+  //#endregion
+
+  //#region  message templates
   @ApiBody({ required: true })
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Post('template/create')
@@ -93,6 +102,9 @@ export class SmsController {
     }
   }
 
+  //#endregion
+
+  //#region preset
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Get('preset')
   async getPreset(@LoginUser() influencer: UserEntity) {
@@ -160,4 +172,6 @@ export class SmsController {
       throw e;
     }
   }
+
+  //#endregion
 }

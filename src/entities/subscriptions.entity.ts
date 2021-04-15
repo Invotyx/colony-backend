@@ -41,7 +41,6 @@ export class SubscriptionsEntity {
   @JoinColumn({ name: 'planId' })
   public plan: PlansEntity;
 
-  
   @ManyToOne(() => CountryEntity, (country) => country.subscription, {
     eager: false,
     nullable: true,

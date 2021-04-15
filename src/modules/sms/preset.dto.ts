@@ -4,7 +4,7 @@ import { IsEnum, IsNotEmpty, IsOptional, Length } from 'class-validator';
 export enum presetTrigger {
   onBoard = 'onBoard',
   noResponse = 'noResponse',
-  welcome = 'welcome'
+  welcome = 'welcome',
 }
 
 export class PresetsDto {

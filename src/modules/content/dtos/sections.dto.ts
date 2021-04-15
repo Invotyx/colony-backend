@@ -1,5 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsAlpha, IsAlphanumeric, IsBoolean, IsNotEmpty, IsNumber, IsOptional, Length } from 'class-validator';
+import {
+  IsAlpha,
+  IsAlphanumeric,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  Length,
+} from 'class-validator';
 import { PagesEntity } from 'src/entities/pages.entity';
 
 export enum sectionType {

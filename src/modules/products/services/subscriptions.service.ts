@@ -29,19 +29,26 @@ export class SubscriptionsService {
   public async createSubscription(customer: UserEntity, sub: SubscriptionsDto) {
     try {
       const _plan = await this.planService.repository.findOne({
-        where: { id: sub.planId },relations:['country']
+        where: { id: sub.planId },
+        relations: ['country'],
       });
       if (_plan) {
-        const phone = await this.phoneService.repo.findOne({ where: { number: sub.number } });
+        const phone = await this.phoneService.repo.findOne({
+          where: { number: sub.number },
+        });
         if (phone) {
-          const checkPhoneLinkWithActiveSubscription = await this.repository.findOne({ where: { phone: phone, cancelled: false } });
+          const checkPhoneLinkWithActiveSubscription = await this.repository.findOne(
+            { where: { phone: phone, cancelled: false } },
+          );
           if (checkPhoneLinkWithActiveSubscription) {
-            throw new BadRequestException('This phone number is not available for purchase.');
+            throw new BadRequestException(
+              'This phone number is not available for purchase.',
+            );
           }
         }
         return await this.createSubscriptionInStripe(customer, sub, _plan);
       } else {
-        throw new BadRequestException('Plan does not exist.')
+        throw new BadRequestException('Plan does not exist.');
       }
     } catch (e) {
       throw e;
@@ -62,11 +69,16 @@ export class SubscriptionsService {
         where: { user: customer, default: true },
       });
       if (customer_payments) {
-        const checkNumber = await this.phoneService.repo.findOne({ number: sub.number, status: 'active' });
+        const checkNumber = await this.phoneService.repo.findOne({
+          number: sub.number,
+          status: 'active',
+        });
         if (checkNumber) {
-          throw new BadRequestException('Phone number is not available for purchase.')
+          throw new BadRequestException(
+            'Phone number is not available for purchase.',
+          );
         }
-        console.log("================1================")
+        console.log('================1================');
         subscription = await this.stripe.subscriptions.create({
           customer: customer.customerId,
           items: [
@@ -80,8 +92,8 @@ export class SubscriptionsService {
               ? 'charge_automatically'
               : 'send_invoice',
         });
-        console.log("=== subscription ===")
-        console.log(subscription)
+        console.log('=== subscription ===');
+        console.log(subscription);
         current_period_end = this.timestampToDate(
           subscription.current_period_end,
         );
@@ -96,11 +108,11 @@ export class SubscriptionsService {
           sub.number,
           customer,
         );
-        console.log("================2================")
+        console.log('================2================');
         const purchasedNumberDb = await this.phoneService.repo.findOne({
           where: { number: purchasedNumber.number.number },
         });
-        console.log("================3================")
+        console.log('================3================');
         await this.repository.save({
           stripeId: subscription.id,
           plan: _plan,
@@ -113,30 +125,33 @@ export class SubscriptionsService {
           currentEndDate: current_period_end,
           smsCount: _plan.smsCount,
           phone: purchasedNumberDb,
-          country: _plan.country
+          country: _plan.country,
         });
 
         return {
-          message: 'Subscribed to selected plan successfully.' + purchasedNumber.message,
+          message:
+            'Subscribed to selected plan successfully.' +
+            purchasedNumber.message,
           number: purchasedNumber.number,
         };
       } else {
         throw new BadRequestException('Please add payment method first.');
       }
     } catch (e) {
-      console.log(e)
+      console.log(e);
       throw e;
     }
   }
 
   public async getSubscriptions(customer: UserEntity) {
     try {
-      const ch =  await this.repository.query(`SELECT sub.*,  phones."number","plans"."nickname" as "planName", "country"."name" as "countryName"  FROM "subscriptions" "sub" LEFT JOIN "plans" "plans" ON "plans"."id"="sub"."planId" 
+      const ch = await this.repository
+        .query(`SELECT sub.*,  phones."number","plans"."nickname" as "planName", "country"."name" as "countryName"  FROM "subscriptions" "sub" LEFT JOIN "plans" "plans" ON "plans"."id"="sub"."planId" 
       LEFT JOIN "country" "country" ON "country"."id"="sub"."countryId"  LEFT JOIN "phones" "phones" ON "phones"."id"="sub"."phoneId" WHERE ( "sub"."userId" =${customer.id}  ) AND ( "sub"."deletedAt" IS NULL )`);
       //console.log(ch);
 
       if (ch) {
-        return  ch ;
+        return ch;
       }
     } catch (e) {
       console.log(e);
@@ -154,22 +169,36 @@ export class SubscriptionsService {
       const sub = await this.repository.findOne({
         where: { stripeId: subId, cancelled: true },
       });
-      console.log(sub,"=== sub ===")
+      console.log(sub, '=== sub ===');
       if (!sub) {
         const checkSub = await this.repository.findOne({
-          where: { stripeId: subId, cancelled: false },relations:['plan','country','phone']
+          where: { stripeId: subId, cancelled: false },
+          relations: ['plan', 'country', 'phone'],
         });
         if (checkSub) {
-
-          let plans = await this.planService.repository.find({ where: { country: checkSub.country } });
-          if (plans.length>0) {
-            const _toBeSelectedPlan = plans.find(p => { return p.id === planId });
-            const _existing = checkSub.plan; 
-            let checkMonthsUsage = this.daysBetween(checkSub.createdAt, new Date());
-            if (_toBeSelectedPlan.amount_decimal < _existing.amount_decimal && checkMonthsUsage >= 90) {
-              throw new BadRequestException('You have been using this plan for 3 months now and you are only allowed to upgrade subscription for this number.');
+          let plans = await this.planService.repository.find({
+            where: { country: checkSub.country },
+          });
+          if (plans.length > 0) {
+            const _toBeSelectedPlan = plans.find((p) => {
+              return p.id === planId;
+            });
+            const _existing = checkSub.plan;
+            let checkMonthsUsage = this.daysBetween(
+              checkSub.createdAt,
+              new Date(),
+            );
+            if (
+              _toBeSelectedPlan.amount_decimal < _existing.amount_decimal &&
+              checkMonthsUsage >= 90
+            ) {
+              throw new BadRequestException(
+                'You have been using this plan for 3 months now and you are only allowed to upgrade subscription for this number.',
+              );
             } else {
-              const canceledInStripe = await this.stripe.subscriptions.del(subId);
+              const canceledInStripe = await this.stripe.subscriptions.del(
+                subId,
+              );
               const current_period_end = this.timestampToDate(
                 canceledInStripe.current_period_end,
               );
@@ -180,28 +209,35 @@ export class SubscriptionsService {
               checkSub.currentStartDate = current_period_start;
               checkSub.currentEndDate = current_period_end;
               await this.repository.save(checkSub);
-              
-              const newStripeSubscription = await this.stripe.subscriptions.create({
-                customer: customer.customerId,
-                items: [
-                  {
-                    plan: _toBeSelectedPlan.id,
-                    quantity: 1,
-                  },
-                ],
-                collection_method: 'charge_automatically'
-              });
+
+              const newStripeSubscription = await this.stripe.subscriptions.create(
+                {
+                  customer: customer.customerId,
+                  items: [
+                    {
+                      plan: _toBeSelectedPlan.id,
+                      quantity: 1,
+                    },
+                  ],
+                  collection_method: 'charge_automatically',
+                },
+              );
 
               const newSub = new SubscriptionsEntity();
               newSub.user = customer;
               newSub.cancelled = false;
               newSub.plan = _toBeSelectedPlan;
               newSub.stripeId = newStripeSubscription.id;
-              newSub.stripeSubscriptionItem = newStripeSubscription.items.data[0].id;
+              newSub.stripeSubscriptionItem =
+                newStripeSubscription.items.data[0].id;
               newSub.collection_method = collection_method.charge_automatically;
               newSub.paymentType = 'recurring';
-              newSub.currentStartDate = this.timestampToDate(newStripeSubscription.current_period_start);
-              newSub.currentEndDate = this.timestampToDate(newStripeSubscription.current_period_end);
+              newSub.currentStartDate = this.timestampToDate(
+                newStripeSubscription.current_period_start,
+              );
+              newSub.currentEndDate = this.timestampToDate(
+                newStripeSubscription.current_period_end,
+              );
               newSub.phone = checkSub.phone;
               newSub.smsCount = _toBeSelectedPlan.smsCount;
               newSub.country = checkSub.country;
@@ -210,14 +246,14 @@ export class SubscriptionsService {
               return { message: 'Subscription updated successfully.' };
             }
           } else {
-            throw new BadRequestException('No plans found. Contact System admin.')   
+            throw new BadRequestException(
+              'No plans found. Contact System admin.',
+            );
           }
         } else {
-          throw new BadRequestException(
-            'No such subscription exists.',
-          );
+          throw new BadRequestException('No such subscription exists.');
         }
-      }else {
+      } else {
         throw new BadRequestException(
           'You cannot upgrade or downgrade already cancelled subscription',
         );
@@ -251,9 +287,8 @@ export class SubscriptionsService {
     return new Date(milliseconds);
   }
 
-
   private daysBetween(startDate, endDate) {
     const mpd = 24 * 60 * 60 * 1000;
-    return Math.round((endDate-startDate)/mpd);
+    return Math.round((endDate - startDate) / mpd);
   }
 }

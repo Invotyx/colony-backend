@@ -31,7 +31,7 @@ export class ContentService {
     }
   }
 
-  async getPage(slug: string, key:string) {
+  async getPage(slug: string, key: string) {
     const page = await this.pagesRepo.findOne({ where: { slug: slug } });
     if (page) {
       if (isEmpty(page.slug)) {
@@ -41,7 +41,7 @@ export class ContentService {
           where: { page: page.id },
           order: { [key]: 'ASC' },
         });
-        
+
         return { page, sections };
       }
     } else {

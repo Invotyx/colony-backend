@@ -11,6 +11,6 @@ import { PhoneService } from './phone.service';
   imports: [MainMysqlModule, ApiCallingModule, UsersModule, CityCountryModule],
   controllers: [PhoneController],
   providers: [PhoneService, ApiCallingService],
-  exports:[PhoneService]
+  exports: [PhoneService],
 })
 export class PhoneModule {}

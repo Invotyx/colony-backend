@@ -39,6 +39,8 @@ const TablesList: any = {
   BROADCASTS_CONTACTS: new TableData(),
   PRESET_MESSAGES: new TableData(),
   PHONES: new TableData(),
+  CONVERSATIONS: new TableData(),
+  CONVERSATION_MESSAGES: new TableData(),
 };
 
 const numHash = (t: string) =>

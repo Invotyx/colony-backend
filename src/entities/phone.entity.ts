@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
+import { ConversationsEntity } from './conversations.entity';
 import { SubscriptionsEntity } from './subscriptions.entity';
 import { UserEntity } from './user.entity';
 
@@ -37,6 +38,9 @@ export class PhonesEntity {
 
   @OneToMany(() => SubscriptionsEntity, (sub) => sub.phone)
   public subscription!: SubscriptionsEntity[];
+
+  @OneToMany(() => ConversationsEntity, (con) => con.phone)
+  public conversations!: ConversationsEntity[];
 
   @Column()
   public renewalDate: Date;

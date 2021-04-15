@@ -37,7 +37,7 @@ export class UsersService {
     private readonly emailTokenSend: EmailTokenSender,
     private readonly sendForgotPassword: ForgotPasswordTokenSender,
     private readonly country: CountryRepository,
-    private readonly city: CityRepository
+    private readonly city: CityRepository,
   ) {}
 
   findAll(): Promise<UserEntity[]> {
@@ -137,7 +137,7 @@ export class UsersService {
       userFromDb.isApproved = true;
       await this.repository.save(userFromDb);
       await this.emailVerfications.delete(emailVerif);
-      
+
       return userFromDb;
     } else {
       throw new HttpException(
@@ -284,7 +284,7 @@ export class UsersService {
       } */
 
       console.log('===========', user);
-      updateData.id=id;
+      updateData.id = id;
       if (user.password) {
         user.password = await PasswordHashEngine.make(user.password);
         updateData.password = user.password;
@@ -315,13 +315,11 @@ export class UsersService {
       }
       if (user.city) {
         const _c = await this.city.findOne({ where: { id: user.city } });
-        if(_c)
-          updateData.city = _c;
+        if (_c) updateData.city = _c;
       }
       if (user.country) {
         const _c = await this.country.findOne({ where: { id: user.country } });
-        if (_c)
-          updateData.country = _c;
+        if (_c) updateData.country = _c;
       }
 
       if (user.firstName) {

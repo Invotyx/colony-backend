@@ -14,6 +14,7 @@ import {
 import { TABLES } from '../consts/tables.const';
 import { BroadcastsContactsEntity } from './broadcast-contacts.entity';
 import { CityEntity } from './city.entity';
+import { ConversationsEntity } from './conversations.entity';
 import { CountryEntity } from './country.entity';
 import { InfluencerContactsEntity } from './influencer-contacts.entity';
 import { InfluencerLinksTrackingEntity } from './influencer-links-tracking.entity';
@@ -70,6 +71,9 @@ export class ContactsEntity {
 
   @OneToMany(() => BroadcastsContactsEntity, (b) => b.contact)
   public broadcast!: [];
+
+  @OneToMany(() => ConversationsEntity, (con) => con.contact)
+  public conversations!: ConversationsEntity[];
 
   @ManyToMany(() => UserEntity, (user) => user.contact, { eager: true })
   @JoinTable({

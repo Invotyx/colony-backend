@@ -22,8 +22,8 @@ import { PhoneService } from './phone.service';
 export class PhoneController {
   constructor(
     private readonly service: PhoneService,
-    private readonly countryRepo: CountryRepository 
-  ) { }
+    private readonly countryRepo: CountryRepository,
+  ) {}
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Get('search-numbers')
@@ -33,8 +33,9 @@ export class PhoneController {
     @Query('number_must_have') number_must_have: string = '',
   ) {
     try {
-      
-      const cc = await this.countryRepo.findOne({ where: { id: country, active: true } });
+      const cc = await this.countryRepo.findOne({
+        where: { id: country, active: true },
+      });
       if (cc) {
         if (limit < 1 || limit > 25) {
           throw new BadRequestException(
@@ -52,7 +53,9 @@ export class PhoneController {
           number_must_have,
         );
       } else {
-        throw new BadRequestException('Country is not available for purchasing numbers.');
+        throw new BadRequestException(
+          'Country is not available for purchasing numbers.',
+        );
       }
     } catch (e) {
       throw e;

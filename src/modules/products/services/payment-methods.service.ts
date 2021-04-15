@@ -52,7 +52,7 @@ export class PaymentMethodsService {
           return { message: 'Payment method added' };
         } else {
           const def = await this.repository.findOne({
-            where: { default: true, user:customer },
+            where: { default: true, user: customer },
           });
           if (def) {
             def.default = false;
@@ -88,12 +88,12 @@ export class PaymentMethodsService {
       const exist = await this.repository.findOne({
         where: { id: paymentId, user: customer },
       });
-      console.log(exist, "=== === ===");
+      console.log(exist, '=== === ===');
       if (exist) {
         const exDef = await this.repository.findOne({
           where: { default: true, user: customer },
         });
-        
+
         if (exDef) {
           exDef.default = false;
           await this.repository.save(exDef);

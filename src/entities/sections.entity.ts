@@ -40,7 +40,7 @@ export class SectionsEntity {
   @Column({ type: 'int', unsigned: true })
   public sortOrder: number;
 
-  @Column({ length:8,default:'type1' })
+  @Column({ length: 8, default: 'type1' })
   public sectionType: string;
 
   @ManyToOne(() => PagesEntity, (pages) => pages.id, {

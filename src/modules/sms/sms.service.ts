@@ -29,6 +29,7 @@ export class SmsService {
     this.mb = require('messagebird')(env.MESSAGEBIRD_KEY);
   }
 
+  //#region sms
   async receiveSms(
     sender: string,
     receiver: string,
@@ -94,6 +95,7 @@ export class SmsService {
                   ' ' +
                   influencerNumber.user.firstName,
               }),
+              'outBound',
             );
             await this.sendSms(
               contact,
@@ -105,6 +107,7 @@ export class SmsService {
                   ' ' +
                   influencerNumber.user.firstName,
               }),
+              'outBound',
             );
           }
         } else {
@@ -142,6 +145,7 @@ export class SmsService {
                 ' ' +
                 influencerNumber.user.firstName,
             }),
+            'outBound',
           );
 
           await this.sendSms(
@@ -154,6 +158,7 @@ export class SmsService {
                 ' ' +
                 influencerNumber.user.firstName,
             }),
+            'outBound',
           );
         }
       } else {
@@ -177,7 +182,7 @@ export class SmsService {
     //create conversation if not created yet.
     //add sms to conversation
     let conversation = await this.conversationsRepo.findOne({
-      where: { contact: contact, phone: influencerPhone },
+      where: { contact: contact, user: influencerPhone.user },
     });
     let message;
     if (conversation) {
@@ -196,6 +201,7 @@ export class SmsService {
         contact: contact,
         phone: influencerPhone,
         isActive: type == 'broadcast' ? false : true,
+        user: influencerPhone.user,
       });
       message = await this.conversationsMessagesRepo.save({
         conversations: conversation,
@@ -212,6 +218,7 @@ export class SmsService {
     contact: ContactsEntity,
     influencerNumber: PhonesEntity,
     body: string,
+    type: string,
   ) {
     const sms = await this.mb.messages;
     //parse sms here to fill in details.
@@ -235,9 +242,71 @@ export class SmsService {
         }
       },
     );
-    await this.saveSms(contact, influencerNumber, body, new Date(), 'outBound');
+    await this.saveSms(contact, influencerNumber, body, new Date(), type);
   }
 
+  //#endregion
+
+  //#region conversation
+
+  async getConversation(inf: UserEntity, contact: string) {
+    try {
+      const contactNumber = await this.contactService.repository.findOne({
+        where: { phoneNumber: contact, user: inf },
+      });
+      if (contactNumber) {
+        const conversation = await this.conversationsRepo.findOne({
+          where: { user: inf, contact: contactNumber },
+        });
+        const conversationMessages = await this.conversationsMessagesRepo.find({
+          where: { conversations: conversation },
+          order: { createdAt: 'DESC'}
+        });
+        return { conversation, conversationMessages };
+      } else {
+        throw new BadRequestException('No such contact exists');
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async deleteConversation(inf: UserEntity, contact: string) {
+    try {
+      const contactNumber = await this.contactService.repository.findOne({
+        where: { phoneNumber: contact, user: inf },
+      });
+      if (contactNumber) {
+        const conversation = await this.conversationsRepo.findOne({
+          where: { user: inf, contact: contactNumber },
+        });
+        await this.conversationsMessagesRepo.softDelete({
+          conversations: conversation,
+        });
+        await this.conversationsRepo.softDelete(conversation);
+        return { message: 'Conversation with all its messages deleted.' };
+      } else {
+        throw new BadRequestException('No such contact exists');
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async deleteMessage(smsId: any) {
+    try {
+      await this.conversationsMessagesRepo.softDelete({
+        id: smsId,
+      });
+      return { message: 'Sms deleted.' };
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  //#endregion
+
+  //#region  sms templates
   async createSmsTemplate(body: string, influencer: UserEntity) {
     try {
       const template = await this.smsTemplateRepo.save({
@@ -288,6 +357,9 @@ export class SmsService {
     }
   }
 
+  //#endregion
+
+  //#region  preset messages
   async setPresetMessage(preset: PresetsDto, user: UserEntity) {
     try {
       const existing = await this.presetRepo.findOne({
@@ -360,4 +432,6 @@ export class SmsService {
       throw e;
     }
   }
+
+  //#endregion
 }

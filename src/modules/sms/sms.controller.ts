@@ -13,6 +13,7 @@ import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entities/user.entity';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
+import { tagReplace } from 'src/shared/tag-replace';
 import { BroadcastService } from './broadcast.service';
 import { PresetsDto, PresetsUpdateDto, presetTrigger } from './preset.dto';
 import { SmsService } from './sms.service';
@@ -24,6 +25,77 @@ export class SmsController {
     private readonly service: SmsService,
     private readonly broadcastService: BroadcastService,
   ) {}
+
+  //#region  conversation
+  @Auth({})
+  @Get('/conversation/:contact')
+  async getConversation(
+    @LoginUser() inf: UserEntity,
+    @Param('contact') contact: string,
+  ) {
+    try {
+      return await this.service.getConversation(inf, contact);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({})
+  @Delete('/conversation/:contact')
+  async deleteConversation(
+    @LoginUser() inf: UserEntity,
+    @Param('contact') contact: string,
+  ) {
+    try {
+      return await this.service.deleteConversation(inf, contact);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({})
+  @Delete('/conversation/sms/:smsId')
+  async deleteSms(@LoginUser() inf: UserEntity, @Param('smsId') smsId: string) {
+    try {
+      return await this.service.deleteMessage(smsId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({})
+  @Post('/conversation/:contact')
+  async sendSms(
+    @LoginUser() inf: UserEntity,
+    @Param('contact') contact: string,
+    @Body('message') message: string,
+    @Body('phoneNumber') phoneNumber: string,
+  ) {
+    try {
+      const _contact = await this.service.contactService.repository.findOne({
+        where: { phoneNumber: contact, user: inf },
+      });
+      if (_contact) {
+        const _inf_phone = await this.service.phoneService.repo.findOne({
+          where: { user: inf, number: phoneNumber },
+        });
+        if (_inf_phone)
+          await this.service.sendSms(
+            _contact,
+            _inf_phone,
+            tagReplace(message, {
+              name: _contact.name,
+              inf_name:
+                _inf_phone.user.firstName + ' ' + _inf_phone.user.firstName,
+            }),
+            'outBound',
+          );
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+  //#endregion
 
   //#region broadcast
 

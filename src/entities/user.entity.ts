@@ -16,6 +16,7 @@ import { TABLES } from '../consts/tables.const';
 import { BroadcastsEntity } from './broadcast.entity';
 import { CityEntity } from './city.entity';
 import { ContactsEntity } from './contacts.entity';
+import { ConversationsEntity } from './conversations.entity';
 import { CountryEntity } from './country.entity';
 import { InfluencerContactsEntity } from './influencer-contacts.entity';
 import { InfluencerLinksEntity } from './influencer-links.entity';
@@ -154,6 +155,9 @@ export class UserEntity {
 
   @ManyToMany(() => ContactsEntity, (contact) => contact.user)
   public contact!: ContactsEntity[];
+
+  @ManyToMany(() => ConversationsEntity, (convo) => convo.user)
+  public conversations!: ConversationsEntity[];
 
   toJSON() {
     return classToPlain(this);

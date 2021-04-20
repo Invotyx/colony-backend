@@ -1,0 +1,1 @@
+{"statusCode":422,"errors":[{"code":10,"description":"Sending messages to United States of America requires approval, go to https://www.messagebird.com/app/preferences/sms to request approval.","parameter":"recipient"}],"level":"error"}

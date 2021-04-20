@@ -34,15 +34,18 @@ export class SubscriptionsController {
     @Body() subscription: SubscriptionsDto,
   ) {
     try {
-      const _user = await this.userService.findOne(customer.id);
-      const result = await this.subscriptionService.createSubscription(
-        _user,
-        subscription,
-      );
-      if (result.message) {
-        return result;
+      if (customer.isActive && customer.isApproved) {
+        const result = await this.subscriptionService.createSubscription(
+          customer,
+          subscription,
+        );
+        if (result.message) {
+          return result;
+        } else {
+          throw new BadRequestException('An error occurred');
+        }
       } else {
-        throw new BadRequestException('An error occurred');
+        throw new BadRequestException('Influencer is has not activated his/her account yet.');
       }
     } catch (e) {
       throw new BadRequestException(e, 'An exception occurred');

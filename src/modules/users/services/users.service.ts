@@ -4,28 +4,28 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
+import * as fs from 'fs';
+import { nanoid } from 'nanoid';
+import { join } from 'path';
+import { ForgotPassword } from 'src/entities/forgottenpassword.entity';
+import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer';
+import { CityRepository } from 'src/services/city-country/repos/city.repo';
+import { CountryRepository } from 'src/services/city-country/repos/country.repo';
 import { UserEntity } from '../../../entities/user.entity';
-import { CreateUserDto, UpdateProfileDto, UpdateRole } from '../users.dto';
+import { EmailVerifications } from '../../../entities/verifyemail.entity';
+import { EmailTokenSender } from '../../../mails/users/emailtoken.mailer';
 import { RoleRepository } from '../../../repos/roles.repo';
-import { UserRepository } from '../repos/user.repo';
-import { isExist } from '../../../shared/repo.fun';
 import { PasswordHashEngine } from '../../../shared/hash.service';
+import { isExist } from '../../../shared/repo.fun';
 import {
   EmailAlreadyExistError,
   PhoneAlreadyExistError,
   UserNameAlreadyExistError,
 } from '../errors/users.error';
-import { EmailVerificationsRepository } from '../repos/verifyemail.repo';
-import { EmailVerifications } from '../../../entities/verifyemail.entity';
-import { EmailTokenSender } from '../../../mails/users/emailtoken.mailer';
-import { ForgotPassword } from 'src/entities/forgottenpassword.entity';
-import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer';
 import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
-import { nanoid } from 'nanoid';
-import { join } from 'path';
-import * as fs from 'fs';
-import { CountryRepository } from 'src/services/city-country/repos/country.repo';
-import { CityRepository } from 'src/services/city-country/repos/city.repo';
+import { UserRepository } from '../repos/user.repo';
+import { EmailVerificationsRepository } from '../repos/verifyemail.repo';
+import { CreateUserDto, UpdateProfileDto, UpdateRole } from '../users.dto';
 
 @Injectable()
 export class UsersService {
@@ -182,47 +182,57 @@ export class UsersService {
   }
 
   async createForgottenPasswordToken(email: string): Promise<ForgotPassword> {
-    const forgottenPassword = await this.password.findOne({
-      where: { email: email },
+    const user = await this.repository.findOne({
+      where: { email: email, isActive: true, isApproved: true },
     });
-    if (
-      forgottenPassword &&
-      (new Date().getTime() -
-        new Date(forgottenPassword.timestamp.toString()).getTime()) /
-        60000 <
-        15
-    ) {
-      throw new HttpException(
-        'Please check your email for instructions, duplicate request within 15 minutes!',
-        HttpStatus.BAD_REQUEST,
-      );
-    } else {
-      const _emver = new ForgotPassword();
-      if (!forgottenPassword) {
-        _emver.email = email;
-        _emver.newPasswordToken = this.makeid(60);
-        _emver.timestamp = new Date();
-
-        this.password.save(_emver);
-
-        return _emver;
-      } else {
-        const forgottenPasswordModel = await this.password.update(
-          { email: email },
-          {
-            newPasswordToken: this.makeid(60), //Generate 7 digits number,
-            timestamp: new Date(),
-          },
+    if (user) {
+      const forgottenPassword = await this.password.findOne({
+        where: { email: email },
+      });
+      if (
+        forgottenPassword &&
+        (new Date().getTime() -
+          new Date(forgottenPassword.timestamp.toString()).getTime()) /
+          60000 <
+          15
+      ) {
+        throw new HttpException(
+          'Please check your email for instructions, duplicate request within 15 minutes!',
+          HttpStatus.BAD_REQUEST,
         );
-        if (forgottenPasswordModel) {
-          return this.password.findOne({ where: { email } });
+      } else {
+        const _emver = new ForgotPassword();
+        if (!forgottenPassword) {
+          _emver.email = email;
+          _emver.newPasswordToken = this.makeid(60);
+          _emver.timestamp = new Date();
+
+          this.password.save(_emver);
+
+          return _emver;
         } else {
-          throw new HttpException(
-            'Invalid data, try again.',
-            HttpStatus.INTERNAL_SERVER_ERROR,
+          const forgottenPasswordModel = await this.password.update(
+            { email: email },
+            {
+              newPasswordToken: this.makeid(60), //Generate 7 digits number,
+              timestamp: new Date(),
+            },
           );
+          if (forgottenPasswordModel) {
+            return this.password.findOne({ where: { email } });
+          } else {
+            throw new HttpException(
+              'Invalid data, try again.',
+              HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+          }
         }
       }
+    } else {
+      throw new HttpException(
+        'Influencer has not activated his/her profile yet.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 

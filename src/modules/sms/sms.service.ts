@@ -4,6 +4,7 @@ import { env } from 'process';
 import { ContactsEntity } from 'src/entities/contacts.entity';
 import { PhonesEntity } from 'src/entities/phone.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { logger } from 'src/services/logs/log.storage';
 import { ContactsService } from '../contacts/contacts.service';
 import { PhoneService } from '../phone/phone.service';
 import { PresetsDto, PresetsUpdateDto } from './preset.dto';
@@ -36,28 +37,57 @@ export class SmsService {
     try {
       const influencerNumber = await this.phoneService.repo.findOne({
         where: { number: receiver, status: 'active' },
+        relations: ['user'],
       });
-      const contact = await this.contactService.repository.findOne({
-        where: { phoneNumber: sender },
-      });
-
-      if (contact) {
-        const rel = await this.contactService.influencerContactRepo.findOne({
-          where: { contact: contact, user: influencerNumber.user },
+      if (influencerNumber) {
+        let contact = await this.contactService.repository.findOne({
+          where: { phoneNumber: sender },
         });
-        if (rel) {
-          await this.saveSms(
-            contact,
-            influencerNumber,
-            body,
-            receivedAt,
-            'inBound',
-          );
-        } else {
-          // send welcome sms
-          // send profile completion sms if not completed yet
 
-          await this.contactService.addContact(
+        if (contact) {
+          const rel = await this.contactService.influencerContactRepo.findOne({
+            where: { contact: contact, user: influencerNumber.user },
+          });
+          if (rel) {
+            await this.saveSms(
+              contact,
+              influencerNumber,
+              body,
+              receivedAt,
+              'inBound',
+            );
+            //this is just a normal sms
+          } else {
+            // contact already exists but not subscribed to this influencer
+            // send welcome sms
+            // send profile completion sms if not completed yet
+
+            contact = await this.contactService.addContact(
+              sender,
+              influencerNumber.user.id,
+            );
+
+            await this.saveSms(
+              contact,
+              influencerNumber,
+              body,
+              receivedAt,
+              'inBound',
+            );
+
+            await this.sendSms(
+              contact,
+              influencerNumber,
+              'Welcome to colony systems. This is test message and you have subscribed to this influencer.',
+              'sms',
+            );
+          }
+        } else {
+          // new contact onboarding.
+          // send welcome sms
+          // send profile completion sms
+
+          contact = await this.contactService.addContact(
             sender,
             influencerNumber.user.id,
           );
@@ -68,19 +98,18 @@ export class SmsService {
             receivedAt,
             'inBound',
           );
+          await this.sendSms(
+            contact,
+            influencerNumber,
+            'Welcome to colony systems. This is test message and you have subscribed to this influencer.',
+            'sms',
+          );
         }
       } else {
-        // send welcome sms
-        // send profile completion sms
-
-        await this.contactService.addContact(sender, influencerNumber.user.id);
-        await this.saveSms(
-          contact,
-          influencerNumber,
-          body,
-          receivedAt,
-          'inBound',
+        logger.error(
+          'Influencer not found. Error genertaed. Returned 200 to messagebird hook.',
         );
+        return 200;
       }
     } catch (e) {
       throw e;
@@ -134,8 +163,9 @@ export class SmsService {
     body: string,
     type: string,
   ) {
-    const sms = this.mb.messages;
+    const sms = await this.mb.messages;
     //parse sms here to fill in details.
+    console.log(contact);
     sms.create(
       {
         body: body,
@@ -143,22 +173,20 @@ export class SmsService {
         type: 'sms',
         originator: influencerNumber.number, //sender
       },
-      this.smsCallback,
+      (error, res) => {
+        if (error) {
+          //failure case
+          logger.error(error);
+          return true;
+        } else {
+          //save sms here.
+          console.log(res);
+          //success scenario
+        }
+      },
     );
-
-    await this.saveSms(contact, influencerNumber, body, new Date(), type);
+    await this.saveSms(contact, influencerNumber, body, new Date(), 'outBound');
   }
-
-  private smsCallback = (error, res) => {
-    if (error) {
-      //failure case
-    } else {
-      //save sms here.
-
-      //success scenario
-      return res;
-    }
-  };
 
   async createSmsTemplate(body: string, influencer: UserEntity) {
     try {

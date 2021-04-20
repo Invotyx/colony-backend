@@ -5,6 +5,7 @@ import { ContactsEntity } from 'src/entities/contacts.entity';
 import { PhonesEntity } from 'src/entities/phone.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { logger } from 'src/services/logs/log.storage';
+import { tagReplace } from 'src/shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
 import { PhoneService } from '../phone/phone.service';
 import { PresetsDto, PresetsUpdateDto } from './preset.dto';
@@ -75,11 +76,35 @@ export class SmsService {
               'inBound',
             );
 
+            const preset_onboard = await this.presetRepo.findOne({
+              where: { trigger: 'onBoard', user: influencerNumber.user },
+            });
+
+            const preset_welcome = await this.presetRepo.findOne({
+              where: { trigger: 'welcome', user: influencerNumber.user },
+            });
+
             await this.sendSms(
               contact,
               influencerNumber,
-              'Welcome to colony systems. This is test message and you have subscribed to this influencer.',
-              'sms',
+              tagReplace(preset_onboard.body, {
+                name: contact.name,
+                inf_name:
+                  influencerNumber.user.firstName +
+                  ' ' +
+                  influencerNumber.user.firstName,
+              }),
+            );
+            await this.sendSms(
+              contact,
+              influencerNumber,
+              tagReplace(preset_welcome.body, {
+                name: contact.name,
+                inf_name:
+                  influencerNumber.user.firstName +
+                  ' ' +
+                  influencerNumber.user.firstName,
+              }),
             );
           }
         } else {
@@ -98,11 +123,37 @@ export class SmsService {
             receivedAt,
             'inBound',
           );
+
+          const preset_onboard = await this.presetRepo.findOne({
+            where: { trigger: 'onBoard', user: influencerNumber.user },
+          });
+
+          const preset_welcome = await this.presetRepo.findOne({
+            where: { trigger: 'welcome', user: influencerNumber.user },
+          });
+
           await this.sendSms(
             contact,
             influencerNumber,
-            'Welcome to colony systems. This is test message and you have subscribed to this influencer.',
-            'sms',
+            tagReplace(preset_onboard.body, {
+              name: contact.name,
+              inf_name:
+                influencerNumber.user.firstName +
+                ' ' +
+                influencerNumber.user.firstName,
+            }),
+          );
+
+          await this.sendSms(
+            contact,
+            influencerNumber,
+            tagReplace(preset_welcome.body, {
+              name: contact.name,
+              inf_name:
+                influencerNumber.user.firstName +
+                ' ' +
+                influencerNumber.user.firstName,
+            }),
           );
         }
       } else {
@@ -161,7 +212,6 @@ export class SmsService {
     contact: ContactsEntity,
     influencerNumber: PhonesEntity,
     body: string,
-    type: string,
   ) {
     const sms = await this.mb.messages;
     //parse sms here to fill in details.

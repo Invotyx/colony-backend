@@ -75,6 +75,7 @@ export class SmsController {
         body.body,
         body.receivedAt,
       );
+      return;
     } catch (e) {
       throw e;
     }

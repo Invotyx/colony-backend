@@ -24,18 +24,12 @@ export class ContactDto {
   @Length(3, 60)
   public name: string;
 
-  @ApiPropertyOptional()
-  @IsNotEmpty()
-  @Length(3, 20)
-  public phoneNumber: string;
-
   @ApiPropertyOptional({ enum: gender })
   @IsOptional()
   public gender: gender;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsDate()
   public dob: Date;
 
   @ApiPropertyOptional()

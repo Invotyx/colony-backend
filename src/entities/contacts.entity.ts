@@ -46,11 +46,11 @@ export class ContactsEntity {
   @Column({ nullable: true })
   public dob: Date;
 
-  @ManyToOne(() => CountryEntity, { nullable: true })
+  @ManyToOne(() => CountryEntity, { nullable: true, eager: true })
   @JoinColumn({ name: 'countryId' })
   public country: CountryEntity;
 
-  @ManyToOne(() => CityEntity, { nullable: true })
+  @ManyToOne(() => CityEntity, { nullable: true, eager: true })
   @JoinColumn({ name: 'cityId' })
   public city: CityEntity;
 
@@ -75,7 +75,7 @@ export class ContactsEntity {
   @OneToMany(() => ConversationsEntity, (con) => con.contact)
   public conversations!: ConversationsEntity[];
 
-  @ManyToMany(() => UserEntity, (user) => user.contact, { eager: true })
+  @ManyToMany(() => UserEntity, (user) => user.contact, { eager: false })
   @JoinTable({
     name: TABLES.INFLUENCER_CONTACTS.name,
     joinColumn: { name: 'contactId', referencedColumnName: 'id' },

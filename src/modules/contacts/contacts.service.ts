@@ -134,7 +134,7 @@ export class ContactsService {
   }
 
   async updateContact(urlId: string, data: ContactDto) {
-    let contactDetails: any;
+    let contactDetails= new ContactsEntity();
     let flag = 0;
     if (data.name) {
       contactDetails.name = data.name;

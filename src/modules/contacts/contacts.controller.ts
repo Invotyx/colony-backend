@@ -1,5 +1,17 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/decorators/auth.decorator';
+import { UserEntity } from 'src/entities/user.entity';
+import { GetUser } from '../users/get-user.decorator';
 import { ContactDto, ContactFilter } from './contact.dto';
 import { ContactsService } from './contacts.service';
 
@@ -32,20 +44,37 @@ export class ContactsController {
     }
   }
 
+  @Auth({})
   @Get(':infId/filter')
   async filterContactsByAge(
-    @Param('infId') infId: number,
+    @GetUser() user: UserEntity,
     @Query() data: ContactFilter,
   ) {
     try {
-      return await this.service.filterContacts(infId, data);
+      return await this.service.filterContacts(user.id, data);
     } catch (e) {
       throw e;
     }
   }
 
-  @Put(':id')
-  async updateContact(@Param('id') id: string, @Body() data: ContactDto) {
+  @Get(':urlId/check')
+  async checkContact(@Param('urlId') urlId: string) {
+    try {
+      const contact = await this.service.repository.findOne({
+        where: { urlMapper: urlId },
+      });
+      if (contact) {
+        return contact;
+      } else {
+        throw new BadRequestException('Contact does not exist in our system.');
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Put(':urlId')
+  async updateContact(@Param('urlId') id: string, @Body() data: ContactDto) {
     try {
       return await this.service.updateContact(id, data);
     } catch (e) {

@@ -63,13 +63,13 @@ export class PhoneService {
       };
 
       if (env.NODE_ENV !== 'development') {
-        console.log('=== live ===');
         const number = await this.apiCaller.apiCaller(
           'POST',
-          'https://numbers.messagebird.com/v1/phone-numbers/' +
-            this.serialize(data),
+          'https://numbers.messagebird.com/v1/phone-numbers',
           { key: 'AccessKey', value: this.key },
+          data
         );
+
         // save to database;
         if (number.status && number.status == 'active') {
           await this.repo.save({

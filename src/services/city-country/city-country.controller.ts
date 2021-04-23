@@ -57,60 +57,64 @@ export class CityCountryController {
 
   @Get(':id/city')
   async getCities(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Query('page') page: number,
     @Query('limit') limit: number,
     @Query('city') city: string,
   ) {
-    if (!page) {
-      page = 1;
-    }
-    if (!limit) {
-      limit = 20;
-    }
-    const data: any = {
-      filter: {
-        condition: 'AND',
-        rules: [
-          {
-            field: 'countryId',
-            operator: 'equal',
-            value: id,
-          },
-          {
-            condition: 'OR',
-            rules: [
-              {
-                field: 'name',
-                operator: 'begins_with',
-                value: city.toUpperCase(),
-                type: 'string',
-                input: 'text',
-              },
-              {
-                field: 'name',
-                operator: 'begins_with',
-                value: city
-                  .substr(0, 1)
-                  .toUpperCase()
-                  .concat(city.substring(1, city.length)),
-                type: 'string',
-                input: 'text',
-              },
-            ],
-          },
-        ],
-        valid: true,
-      },
-      config: {
-        sort: 'name',
-        order: 'ASC',
-        page: page,
-        limit: limit,
-      },
-    };
+    try {
+      if (!page) {
+        page = 1;
+      }
+      if (!limit) {
+        limit = 20;
+      }
+      const data: any = {
+        filter: {
+          condition: 'AND',
+          rules: [
+            {
+              field: 'countryId',
+              operator: 'equal',
+              value: id,
+            },
+            {
+              condition: 'OR',
+              rules: [
+                {
+                  field: 'name',
+                  operator: 'begins_with',
+                  value: (city? city.toUpperCase():''),
+                  type: 'string',
+                  input: 'text',
+                },
+                {
+                  field: 'name',
+                  operator: 'begins_with',
+                  value: (city?  city
+                    .substr(0, 1)
+                    .toUpperCase()
+                    .concat(city.substring(1, city.length)):''),
+                  type: 'string',
+                  input: 'text',
+                },
+              ],
+            },
+          ],
+          valid: true,
+        },
+        config: {
+          sort: 'name',
+          order: 'ASC',
+          page: page,
+          limit: limit,
+        },
+      };
 
-    return this.getAllCities(data);
+      return this.getAllCities(data);
+    } catch (ex) {
+      throw ex;
+    }
   }
 
   async getAllCities(data: any) {

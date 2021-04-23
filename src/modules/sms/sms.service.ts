@@ -46,10 +46,21 @@ export class SmsService {
           where: { phoneNumber: sender },
         });
 
+        const preset_onboard = await this.presetRepo.findOne({
+          where: { trigger: 'onBoard', user: influencerNumber.user },
+        });
+
+        const preset_welcome = await this.presetRepo.findOne({
+          where: { trigger: 'welcome', user: influencerNumber.user },
+        });
+
+        if (!preset_onboard) preset_onboard.body = 'Welcome Onboard';
+        if (!preset_welcome) preset_welcome.body = 'Welcome to colony systems';
         if (contact) {
           const rel = await this.contactService.influencerContactRepo.findOne({
             where: { contact: contact, user: influencerNumber.user },
           });
+
           if (rel) {
             await this.saveSms(
               contact,
@@ -76,14 +87,6 @@ export class SmsService {
               receivedAt,
               'inBound',
             );
-
-            const preset_onboard = await this.presetRepo.findOne({
-              where: { trigger: 'onBoard', user: influencerNumber.user },
-            });
-
-            const preset_welcome = await this.presetRepo.findOne({
-              where: { trigger: 'welcome', user: influencerNumber.user },
-            });
 
             await this.sendSms(
               contact,
@@ -127,14 +130,6 @@ export class SmsService {
             'inBound',
           );
 
-          const preset_onboard = await this.presetRepo.findOne({
-            where: { trigger: 'onBoard', user: influencerNumber.user },
-          });
-
-          const preset_welcome = await this.presetRepo.findOne({
-            where: { trigger: 'welcome', user: influencerNumber.user },
-          });
-
           await this.sendSms(
             contact,
             influencerNumber,
@@ -163,7 +158,7 @@ export class SmsService {
         }
       } else {
         logger.error(
-          'Influencer not found. Error genertaed. Returned 200 to messagebird hook.',
+          'Influencer not found. Error generated. Returned 200 to messagebird hook.',
         );
         return 200;
       }
@@ -260,7 +255,7 @@ export class SmsService {
         });
         const conversationMessages = await this.conversationsMessagesRepo.find({
           where: { conversations: conversation },
-          order: { createdAt: 'DESC'}
+          order: { createdAt: 'DESC' },
         });
         return { conversation, conversationMessages };
       } else {

@@ -78,7 +78,7 @@ export class SubscriptionsService {
             'Phone number is not available for purchase.',
           );
         }
-        console.log('================1================');
+        
         subscription = await this.stripe.subscriptions.create({
           customer: customer.customerId,
           items: [
@@ -92,7 +92,7 @@ export class SubscriptionsService {
               ? 'charge_automatically'
               : 'send_invoice',
         });
-        console.log('=== subscription ===');
+        
         console.log(subscription);
         current_period_end = this.timestampToDate(
           subscription.current_period_end,
@@ -108,11 +108,11 @@ export class SubscriptionsService {
           sub.number,
           customer,
         );
-        console.log('================2================');
+        
         const purchasedNumberDb = await this.phoneService.repo.findOne({
           where: { number: purchasedNumber.number.number },
         });
-        console.log('================3================');
+        
         await this.repository.save({
           stripeId: subscription.id,
           plan: _plan,

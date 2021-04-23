@@ -7,8 +7,10 @@ import {
   Param,
   Post,
   Put,
+  Res,
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entities/user.entity';
@@ -25,6 +27,24 @@ export class SmsController {
     private readonly service: SmsService,
     private readonly broadcastService: BroadcastService,
   ) {}
+
+  @Post('receive-sms/webhook')
+  @HttpCode(200)
+  async receiveSms(@Body() body: any, @Res() res: Response) {
+    try {
+      await this.service.receiveSms(
+        body.sender,
+        body.receiver,
+        body.body,
+        body.receivedAt,
+      );
+
+      res.status(200).send('OK');
+      return;
+    } catch (e) {
+      throw e;
+    }
+  }
 
   //#region  conversation
   @Auth({})
@@ -132,22 +152,6 @@ export class SmsController {
         influencer,
       );
       return template;
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  @Post('receive-sms/webhook')
-  @HttpCode(200)
-  async receiveSms(@Body() body: any) {
-    try {
-      await this.service.receiveSms(
-        body.sender,
-        body.receiver,
-        body.body,
-        body.receivedAt,
-      );
-      return;
     } catch (e) {
       throw e;
     }

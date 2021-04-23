@@ -33,6 +33,7 @@ export class SmsController {
   async receiveSms(@Body() body: any, @Res() res: Response) {
     try {
       console.log(body);
+      console.log('test');
       await this.service.receiveSms(
         body.sender,
         body.receiver,

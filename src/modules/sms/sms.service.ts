@@ -54,8 +54,6 @@ export class SmsService {
           where: { trigger: 'welcome', user: influencerNumber.user },
         });
 
-        if (!preset_onboard) preset_onboard.body = 'Welcome Onboard';
-        if (!preset_welcome) preset_welcome.body = 'Welcome to colony systems';
         if (contact) {
           const rel = await this.contactService.influencerContactRepo.findOne({
             where: { contact: contact, user: influencerNumber.user },

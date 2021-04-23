@@ -32,12 +32,15 @@ export class SmsController {
   @HttpCode(200)
   async receiveSms(@Body() body: any, @Res() res: Response) {
     try {
+      console.log(body);
       await this.service.receiveSms(
         body.sender,
         body.receiver,
         body.body,
         body.receivedAt,
       );
+
+
 
       res.status(200).send('OK');
       return;

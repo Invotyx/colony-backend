@@ -40,9 +40,6 @@ export class SmsController {
         body.receivedAt,
       );
 
-
-
-      res.status(200).send('OK');
       return;
     } catch (e) {
       throw e;

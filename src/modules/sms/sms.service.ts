@@ -215,7 +215,7 @@ export class SmsService {
   ) {
     const sms = await this.mb.messages;
     //parse sms here to fill in details.
-    console.log(contact);
+    console.log('=================outbound', body, type);
     sms.create(
       {
         body: body,
@@ -226,7 +226,7 @@ export class SmsService {
       (error, res) => {
         if (error) {
           //failure case
-          logger.error(error);
+          console.log(error);
           return true;
         } else {
           //save sms here.

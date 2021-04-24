@@ -1,32 +1,32 @@
+import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
+import { MulterModule } from '@nestjs/platform-express';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './modules/auth/auth.module';
+import { ContactsModule } from './modules/contacts/contacts.module';
+import { ContentModule } from './modules/content/content.module';
+import { InfluencerLinksModule } from './modules/influencer-links/influencer-links.module';
+import { LanguageModule } from './modules/language/language.module';
+import { PhoneModule } from './modules/phone/phone.module';
+import { ProductsModule } from './modules/products/products.module';
+import { SmsModule } from './modules/sms/sms.module';
+import { TasksModule } from './modules/tasks/tasks.module';
+import { PermissionsService } from './modules/users/services/permissions.service';
 import { SeederController } from './seeder/seeder.controller';
 import { SeederProviders } from './seeder/seeder.module';
 import { AccessControlService } from './services/access-control/access-control.service';
-import { AuthModule } from './modules/auth/auth.module';
+import { ApiCallingModule } from './services/api-calling/api-calling.module';
+import { CityCountryController } from './services/city-country/city-country.controller';
+import { CityCountryModule } from './services/city-country/city-country.module';
+import { CityCountryService } from './services/city-country/city-country.service';
 import { CompressionInterceptor } from './services/common/compression/compression.interceptor';
 import { AppLogger } from './services/logs/log.service';
 import { MailModule } from './services/mail/mail.module';
-import { PermissionsService } from './modules/users/services/permissions.service';
-import { ScheduleModule } from '@nestjs/schedule';
-import { LanguageModule } from './modules/language/language.module';
 import { MainMysqlModule } from './shared/main-mysql.module';
-import { MulterModule } from '@nestjs/platform-express';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
-import { ContentModule } from './modules/content/content.module';
-import { ProductsModule } from './modules/products/products.module';
-import { TasksModule } from './modules/tasks/tasks.module';
-import { SmsModule } from './modules/sms/sms.module';
-import { PhoneModule } from './modules/phone/phone.module';
-import { ApiCallingModule } from './services/api-calling/api-calling.module';
-import { CityCountryModule } from './services/city-country/city-country.module';
-import { CityCountryService } from './services/city-country/city-country.service';
-import { CityCountryController } from './services/city-country/city-country.controller';
-import { ContactsModule } from './modules/contacts/contacts.module';
-import { InfluencerLinksModule } from './modules/influencer-links/influencer-links.module';
-import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -40,8 +40,8 @@ import { BullModule } from '@nestjs/bull';
     }),
     BullModule.forRoot({
       redis: {
-        host: 'localhost',
-        port: 6379,
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT,
       },
     }),
     AuthModule,

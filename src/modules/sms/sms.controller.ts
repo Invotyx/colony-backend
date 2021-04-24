@@ -1,3 +1,4 @@
+import { InjectQueue } from '@nestjs/bull';
 import {
   Body,
   Controller,
@@ -10,6 +11,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { Queue } from 'bull';
 import { Response } from 'express';
 import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
@@ -26,22 +28,20 @@ export class SmsController {
   constructor(
     private readonly service: SmsService,
     private readonly broadcastService: BroadcastService,
+    @InjectQueue('receive_sms_and_send_welcome') private readonly queue: Queue,
   ) {}
 
   @Post('receive-sms/webhook')
   @HttpCode(200)
   async receiveSms(@Body() body: any, @Res() res: Response) {
     try {
-      console.log(body);
-      console.log('test');
-      await this.service.receiveSms(
-        body.sender,
-        body.receiver,
-        body.body,
-        body.receivedAt,
-      );
+      await this.queue.add('inboundSms', body, {
+        removeOnComplete: true,
+        removeOnFail: true,
+        attempts: 2,
+      });
 
-      return;
+      res.status(200).send('OK');
     } catch (e) {
       throw e;
     }

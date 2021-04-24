@@ -46,13 +46,25 @@ export class SmsService {
           where: { phoneNumber: sender },
         });
 
-        const preset_onboard = await this.presetRepo.findOne({
+        let preset_onboard:any = await this.presetRepo.findOne({
           where: { trigger: 'onBoard', user: influencerNumber.user },
         });
 
-        const preset_welcome = await this.presetRepo.findOne({
+        if (!preset_onboard) {
+          preset_onboard = {
+            body: 'Welcome to colony systems.',
+          }
+        }
+        let preset_welcome:any = await this.presetRepo.findOne({
           where: { trigger: 'welcome', user: influencerNumber.user },
         });
+
+        if (!preset_welcome) {
+          preset_welcome = {
+            body: 'Welcome to colony systems.',
+          };
+        }
+
 
         if (contact) {
           const rel = await this.contactService.influencerContactRepo.findOne({

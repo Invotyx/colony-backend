@@ -26,6 +26,7 @@ import { CityCountryService } from './services/city-country/city-country.service
 import { CityCountryController } from './services/city-country/city-country.controller';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { InfluencerLinksModule } from './modules/influencer-links/influencer-links.module';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -36,6 +37,12 @@ import { InfluencerLinksModule } from './modules/influencer-links/influencer-lin
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       exclude: ['/api*'],
+    }),
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
     }),
     AuthModule,
     MailModule,

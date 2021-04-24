@@ -41,7 +41,7 @@ import { MainMysqlModule } from './shared/main-mysql.module';
     BullModule.forRoot({
       redis: {
         host: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT,
+        port: +process.env.REDIS_PORT,
       },
     }),
     AuthModule,

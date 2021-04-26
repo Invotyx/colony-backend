@@ -61,6 +61,9 @@ export class PhoneService {
         billingIntervalMonths: 1,
       };
 
+      console.log('===================')
+      console.log(data);
+      console.log('===================');
       if (env.NODE_ENV !== 'development') {
         const number = await this.apiCaller.apiCaller(
           'POST',
@@ -70,7 +73,7 @@ export class PhoneService {
         );
 
         // save to database;
-        if (number.status && number.status == 'active') {
+        if (number && number.status && number.status == 'active') {
           await this.repo.save({
             country: number.country,
             features: number.features.join(','),

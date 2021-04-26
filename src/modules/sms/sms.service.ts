@@ -3,11 +3,13 @@ import { MessageBird } from 'messagebird';
 import { env } from 'process';
 import { ContactsEntity } from 'src/entities/contacts.entity';
 import { PhonesEntity } from 'src/entities/phone.entity';
+import { presetTrigger } from 'src/entities/preset-message.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { logger } from 'src/services/logs/log.storage';
 import { tagReplace } from 'src/shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
 import { PhoneService } from '../phone/phone.service';
+import { UsersService } from '../users/services/users.service';
 import { PresetsDto, PresetsUpdateDto } from './preset.dto';
 import { ConversationsRepository } from './repo/conversation-messages.repo';
 import { ConversationMessagesRepository } from './repo/conversation.repo';
@@ -24,6 +26,7 @@ export class SmsService {
     public readonly phoneService: PhoneService,
     public readonly conversationsRepo: ConversationsRepository,
     public readonly conversationsMessagesRepo: ConversationMessagesRepository,
+    public readonly userService: UsersService,
   ) {
     console.log(env.MESSAGEBIRD_KEY);
     this.mb = require('messagebird')(env.MESSAGEBIRD_KEY);
@@ -46,16 +49,16 @@ export class SmsService {
           where: { phoneNumber: sender },
         });
 
-        let preset_onboard:any = await this.presetRepo.findOne({
+        let preset_onboard: any = await this.presetRepo.findOne({
           where: { trigger: 'onBoard', user: influencerNumber.user },
         });
 
         if (!preset_onboard) {
           preset_onboard = {
             body: 'Welcome to colony systems.',
-          }
+          };
         }
-        let preset_welcome:any = await this.presetRepo.findOne({
+        let preset_welcome: any = await this.presetRepo.findOne({
           where: { trigger: 'welcome', user: influencerNumber.user },
         });
 
@@ -64,7 +67,6 @@ export class SmsService {
             body: 'Welcome to colony systems.',
           };
         }
-
 
         if (contact) {
           const rel = await this.contactService.influencerContactRepo.findOne({
@@ -419,7 +421,31 @@ export class SmsService {
 
   async getPresetMessage(user: UserEntity) {
     try {
-      const _preset = await this.presetRepo.find({ where: { user: user } });
+      let _preset = await this.presetRepo.find({ where: { user: user } });
+      if (!_preset || _preset.length == 0) {
+        await this.presetRepo.save({
+          body: 'Welcome to Colony Systems.',
+          name: 'Welcome',
+          trigger: presetTrigger.welcome,
+          user: user,
+        });
+        await this.presetRepo.save({
+          body:
+            'Hi ${name}, You have subscribe to to ${inf_name}. Please complete your profile using this link ${link}',
+          name: 'OnBoard',
+          trigger: presetTrigger.onBoard,
+          user: user,
+        });
+
+        await this.presetRepo.save({
+          body:
+            'Hi ${name}, You recently subscribed me on Colony Systems. Please complete your profile using this link ${link}',
+          name: 'NoResponse',
+          trigger: presetTrigger.noResponse,
+          user: user,
+        });
+        _preset = await this.presetRepo.find({ where: { user: user } });
+      }
       return { preset: _preset };
     } catch (e) {
       throw e;

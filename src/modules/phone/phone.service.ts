@@ -17,7 +17,6 @@ export class PhoneService {
   private key: string;
   constructor(
     private readonly apiCaller: ApiCallingService,
-    private readonly userService: UsersService,
     public readonly repo: PhonesRepository,
   ) {
     //this.key = env.MESSAGEBIRD_KEY_TEST;

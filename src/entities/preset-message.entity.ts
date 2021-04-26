@@ -11,7 +11,7 @@ import {
 import { TABLES } from '../consts/tables.const';
 import { UserEntity } from './user.entity';
 
-enum presetTrigger {
+export enum presetTrigger {
   onBoard = 'onBoard',
   noResponse = 'noResponse',
   welcome = 'welcome',

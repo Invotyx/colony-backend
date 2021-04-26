@@ -9,6 +9,8 @@ import { nanoid } from 'nanoid';
 import { join } from 'path';
 import { ForgotPassword } from 'src/entities/forgottenpassword.entity';
 import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer';
+import { presetTrigger } from 'src/modules/sms/preset.dto';
+import { SmsService } from 'src/modules/sms/sms.service';
 import { CityRepository } from 'src/services/city-country/repos/city.repo';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
 import { UserEntity } from '../../../entities/user.entity';
@@ -38,6 +40,7 @@ export class UsersService {
     private readonly sendForgotPassword: ForgotPasswordTokenSender,
     private readonly country: CountryRepository,
     private readonly city: CityRepository,
+    private readonly smsService: SmsService,
   ) {}
 
   findAll(): Promise<UserEntity[]> {
@@ -116,6 +119,27 @@ export class UsersService {
         await this.updateRoles(newUser.id, { userId: newUser.id, roleId: [2] });
         /* await this.createEmailToken(user.email);
         await this.emailTokenSend.sendEmailVerification(user.email); */
+        await this.smsService.presetRepo.save({
+          body: 'Welcome to Colony Systems.',
+          name: 'Welcome',
+          trigger: presetTrigger.welcome,
+          user: newUser,
+        });
+        await this.smsService.presetRepo.save({
+          body:
+            'Hi ${name}, You have subscribe to to ${inf_name}. Please complete your profile using this link ${link}',
+          name: 'OnBoard',
+          trigger: presetTrigger.onBoard,
+          user: newUser,
+        });
+
+        await this.smsService.presetRepo.save({
+          body:
+            'Hi ${name}, You recently subscribed me on Colony Systems. Please complete your profile using this link ${link}',
+          name: 'NoResponse',
+          trigger: presetTrigger.noResponse,
+          user: newUser,
+        });
         return { user: newUser };
       } else {
         throw new BadRequestException('Invalid email format');

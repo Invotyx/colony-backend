@@ -56,14 +56,11 @@ export class PhoneService {
       /*       if (user.purchasedPhoneNumberCredits > 0) {
               if (user.purchasedPhoneNumberCredits - user.purchasedPhoneCount > 0) { */
       const data: any = {
-        number: num,
+        number: num.toString(),
         countryCode: cc.toUpperCase(),
         billingIntervalMonths: 1,
       };
 
-      console.log('===================')
-      console.log(data);
-      console.log('===================');
       if (env.NODE_ENV !== 'development') {
         const number = await this.apiCaller.apiCaller(
           'POST',

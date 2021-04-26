@@ -20,7 +20,7 @@ export class ApiCallingService {
       Authorization: apiKey.key + ' ' + apiKey.value,
     };
 
-    console.log(data);
+    
 
     if (method.toUpperCase() == 'GET') {
       try {

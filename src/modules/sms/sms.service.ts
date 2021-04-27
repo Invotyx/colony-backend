@@ -105,7 +105,7 @@ export class SmsService {
               contact,
               influencerNumber,
               tagReplace(preset_onboard.body, {
-                name: contact.name,
+                name: contact.name ? contact.name : '',
                 inf_name:
                   influencerNumber.user.firstName +
                   ' ' +
@@ -120,7 +120,7 @@ export class SmsService {
               contact,
               influencerNumber,
               tagReplace(preset_welcome.body, {
-                name: contact.name,
+                name: contact.name ? contact.name : '',
                 inf_name:
                   influencerNumber.user.firstName +
                   ' ' +
@@ -152,7 +152,7 @@ export class SmsService {
             contact,
             influencerNumber,
             tagReplace(preset_onboard.body, {
-              name: contact.name,
+              name: contact.name ? contact.name : '',
               inf_name:
                 influencerNumber.user.firstName +
                 ' ' +
@@ -167,7 +167,7 @@ export class SmsService {
             contact,
             influencerNumber,
             tagReplace(preset_welcome.body, {
-              name: contact.name,
+              name: contact.name ? contact.name : '',
               inf_name:
                 influencerNumber.user.firstName +
                 ' ' +

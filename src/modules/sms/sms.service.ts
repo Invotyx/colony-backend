@@ -110,7 +110,8 @@ export class SmsService {
                   influencerNumber.user.firstName +
                   ' ' +
                   influencerNumber.user.firstName,
-                link: env.PUBLIC_APP_URL + contact.urlMapper,
+                link:
+                  env.PUBLIC_APP_URL + '/contacts/enroll/' + contact.urlMapper,
               }),
               'outBound',
             );
@@ -124,7 +125,8 @@ export class SmsService {
                   influencerNumber.user.firstName +
                   ' ' +
                   influencerNumber.user.firstName,
-                link: env.PUBLIC_APP_URL + contact.urlMapper,
+                link:
+                  env.PUBLIC_APP_URL + '/contacts/enroll/' + contact.urlMapper,
               }),
               'outBound',
             );
@@ -155,7 +157,8 @@ export class SmsService {
                 influencerNumber.user.firstName +
                 ' ' +
                 influencerNumber.user.firstName,
-              link: env.PUBLIC_APP_URL + contact.urlMapper,
+              link:
+                env.PUBLIC_APP_URL + '/contacts/enroll/' + contact.urlMapper,
             }),
             'outBound',
           );
@@ -169,7 +172,8 @@ export class SmsService {
                 influencerNumber.user.firstName +
                 ' ' +
                 influencerNumber.user.firstName,
-              link: env.PUBLIC_APP_URL + contact.urlMapper,
+              link:
+                env.PUBLIC_APP_URL + '/contacts/enroll/' + contact.urlMapper,
             }),
             'outBound',
           );

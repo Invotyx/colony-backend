@@ -1,11 +1,11 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ContactsRepository } from './repo/contact.repo';
-import { InfluencerContactRepository } from './repo/influencer-contact.repo';
-import { ContactDto, ContactFilter } from './contact.dto';
-import { UsersService } from '../users/services/users.service';
+import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/entities/contacts.entity';
 import { nanoid } from 'src/shared/random-keygen';
-import { TABLES } from 'src/consts/tables.const';
+import { UsersService } from '../users/services/users.service';
+import { ContactDto, ContactFilter } from './contact.dto';
+import { ContactsRepository } from './repo/contact.repo';
+import { InfluencerContactRepository } from './repo/influencer-contact.repo';
 
 @Injectable()
 export class ContactsService {
@@ -15,7 +15,10 @@ export class ContactsService {
     public readonly users: UsersService,
   ) {}
 
-  async addContact(phoneNumber: string, userId: number): Promise<any> {
+  async addContact(
+    phoneNumber: string,
+    userId: number,
+  ): Promise<ContactsEntity> {
     try {
       const user = await this.users.repository.findOne({
         where: { id: userId, isActive: true, isApproved: true },
@@ -134,7 +137,7 @@ export class ContactsService {
   }
 
   async updateContact(urlId: string, data: ContactDto) {
-    let contactDetails= new ContactsEntity();
+    let contactDetails = new ContactsEntity();
     let flag = 0;
     if (data.name) {
       contactDetails.name = data.name;

@@ -29,6 +29,7 @@ export class PaymentMethodsService {
         });
         await this.stripe.paymentMethods.attach(pm.id, {
           customer: customer.customerId,
+
         });
 
         const check = await this.repository.findOne({

@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { MessageBird } from 'messagebird';
 import { env } from 'process';
+import { delay } from 'rxjs/operators';
 import { ContactsEntity } from 'src/entities/contacts.entity';
 import { PhonesEntity } from 'src/entities/phone.entity';
 import { presetTrigger } from 'src/entities/preset-message.entity';
@@ -55,7 +56,7 @@ export class SmsService {
 
         if (!preset_onboard) {
           preset_onboard = {
-            body: 'Welcome to colony systems.',
+            body: 'Welcome by ${inf_name}.',
           };
         }
         let preset_welcome: any = await this.presetRepo.findOne({
@@ -64,7 +65,7 @@ export class SmsService {
 
         if (!preset_welcome) {
           preset_welcome = {
-            body: 'Welcome to colony systems.',
+            body: 'Welcome from ${inf_name}.',
           };
         }
 
@@ -109,9 +110,11 @@ export class SmsService {
                   influencerNumber.user.firstName +
                   ' ' +
                   influencerNumber.user.firstName,
+                link: env.PUBLIC_APP_URL + contact.urlMapper,
               }),
               'outBound',
             );
+            delay(1000);
             await this.sendSms(
               contact,
               influencerNumber,
@@ -121,6 +124,7 @@ export class SmsService {
                   influencerNumber.user.firstName +
                   ' ' +
                   influencerNumber.user.firstName,
+                link: env.PUBLIC_APP_URL + contact.urlMapper,
               }),
               'outBound',
             );
@@ -151,10 +155,11 @@ export class SmsService {
                 influencerNumber.user.firstName +
                 ' ' +
                 influencerNumber.user.firstName,
+              link: env.PUBLIC_APP_URL + contact.urlMapper,
             }),
             'outBound',
           );
-
+          delay(1000);
           await this.sendSms(
             contact,
             influencerNumber,
@@ -164,6 +169,7 @@ export class SmsService {
                 influencerNumber.user.firstName +
                 ' ' +
                 influencerNumber.user.firstName,
+              link: env.PUBLIC_APP_URL + contact.urlMapper,
             }),
             'outBound',
           );

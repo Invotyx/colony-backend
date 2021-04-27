@@ -81,6 +81,7 @@ async function bootstrap() {
             [error.property]: error.constraints,
           });
         });
+        Object.assign(_e);
         return new HttpException(
           {
             errors: _e,

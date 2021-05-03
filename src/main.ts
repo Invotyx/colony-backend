@@ -1,16 +1,11 @@
+import { HttpException, HttpStatus, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { env } from 'process';
 import { AppModule } from './app.module';
-import { logger } from './services/logs/log.storage';
 import { SeederModule } from './seeder/seeder.module';
 import { SeederService } from './seeder/seeder.service';
-import {
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-  ValidationPipe,
-} from '@nestjs/common';
+import { logger } from './services/logs/log.storage';
 
 async function bootstrap() {
   NestFactory.createApplicationContext(SeederModule)
@@ -75,16 +70,14 @@ async function bootstrap() {
       errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
       transform: true,
       exceptionFactory: (errors) => {
-        let _e = [];
-        
-        errors.forEach((error, i) => {
-          _e.push({
-            [error.property]: error.constraints,
-          });
-        }); 
+        errors = Object.assign(
+          {},
+          ...errors.map((item) => ({ [item.property]: item.constraints })),
+        );
+        console.log(errors)
         return new HttpException(
           {
-            errors: _e,
+            errors: errors,
             message: 'Unprocessable entity',
             statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
           },

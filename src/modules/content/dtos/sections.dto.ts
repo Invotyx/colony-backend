@@ -19,10 +19,6 @@ export enum sectionType {
 }
 
 export class SectionsDto {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsNumber()
-  public id: number;
 
   @ApiPropertyOptional()
   @IsOptional()

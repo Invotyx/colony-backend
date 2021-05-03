@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Delete,
   Get,
@@ -61,13 +62,13 @@ export class PhoneController {
       throw e;
     }
   }
-  /* 
+  
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Post('purchase-numbers')
   public async purchasePhoneNumber(
     @LoginUser() user: UserEntity,
-    @Query('country') country: string,
-    @Query('number') number: string,
+    @Body('country') country: string,
+    @Body('number') number: string,
   ) {
     try {
       if (country.length !== 2) {
@@ -80,9 +81,9 @@ export class PhoneController {
     } catch (e) {
       throw e;
     }
-  } */
+  } 
 
-  /* @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Delete('cancel-number')
   public async cancelPhoneNumber(
     @LoginUser() user: UserEntity,
@@ -93,5 +94,5 @@ export class PhoneController {
     } catch (e) {
       throw e;
     }
-  } */
+  } 
 }

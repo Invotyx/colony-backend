@@ -5,23 +5,20 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { env } from 'process';
-import * as faker from 'faker';
 import { UserEntity } from 'src/entities/user.entity';
-import { ApiCallingService } from 'src/services/api-calling/api-calling.service';
-import { UsersService } from '../users/services/users.service';
 import { PhonesRepository } from './phone.repo';
 
 @Injectable()
 export class PhoneService {
-  //private mb: MessageBird;
-  private key: string;
-  constructor(
-    private readonly apiCaller: ApiCallingService,
-    public readonly repo: PhonesRepository,
-  ) {
-    //this.key = env.MESSAGEBIRD_KEY_TEST;
-    this.key = env.MESSAGEBIRD_KEY;
-    //this.mb = initMB(env.MESSAGEBIRD_KEY);
+  private client;
+  constructor(public readonly repo: PhonesRepository) {
+    this.client = require('twilio')(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN,
+      {
+        lazyLoading: true,
+      },
+    );
   }
 
   public async searchPhoneNumbers(
@@ -38,13 +35,13 @@ export class PhoneService {
     const country = cc.toUpperCase();
     //
     try {
-      const numbers = await this.apiCaller.apiCaller(
-        'GET',
-        'https://numbers.messagebird.com/v1/available-phone-numbers/' +
-          country +
-          this.serialize(data),
-        { key: 'AccessKey', value: this.key },
-      );
+      const numbers = await this.client
+        .availablePhoneNumbers(country)
+        .mobile.list({
+          contains: number_must_have,
+          smsEnabled: true,
+          limit: 20,
+        });
       return { numbers: numbers };
     } catch (e) {
       throw e;
@@ -53,44 +50,38 @@ export class PhoneService {
 
   public async purchasePhoneNumber(cc: string, num: string, user: UserEntity) {
     try {
-      /*       if (user.purchasedPhoneNumberCredits > 0) {
-              if (user.purchasedPhoneNumberCredits - user.purchasedPhoneCount > 0) { */
-      const data: any = {
-        number: num.toString(),
-        countryCode: cc.toUpperCase(),
-        billingIntervalMonths: 1,
-      };
-
       if (env.NODE_ENV !== 'development') {
-        const number = await this.apiCaller.apiCaller(
-          'POST',
-          'https://numbers.messagebird.com/v1/phone-numbers',
-          { key: 'AccessKey', value: this.key },
-          data
-        );
-
-        // save to database;
-        if (number && number.status && number.status == 'active') {
-          await this.repo.save({
-            country: number.country,
-            features: number.features.join(','),
-            number: number.number,
-            renewalDate: number.renewalAt,
-            status: number.status,
-            type: number.type,
-            user: user,
+        try {
+          const number = await this.client.incomingPhoneNumbers.create({
+            phoneNumber: num,
           });
-          /* user.purchasedPhoneCount = user.purchasedPhoneCount + 1;
-          await this.userService.repository.save(user); */
-          return {
-            number,
-            message:
-              'Number purchased and linked to your account successfully.',
-          };
-        } else {
-          throw new BadRequestException(
-            'An error ocurred while number purchasing, try again later.',
-          );
+
+          // save to database;
+          if (number) {
+            const date = new Date(); // Now
+            date.setDate(date.getDate() + 30);
+            await this.repo.save({
+              country: cc.toUpperCase(),
+              features: number.capabilities.join(','),
+              number: number.phoneNumber,
+              renewalDate: date,
+              status: number.status,
+              sid: number.sid,
+              user: user,
+            });
+
+            return {
+              number,
+              message:
+                'Number purchased and linked to your account successfully.',
+            };
+          } else {
+            throw new BadRequestException(
+              'An error ocurred while number purchasing, try again later.',
+            );
+          }
+        } catch (ex) {
+          throw ex;
         }
       } else {
         console.log('=== dummy ===');
@@ -101,7 +92,7 @@ export class PhoneService {
           locality: '',
           features: ['sms', 'mms', 'voice'],
           tags: [],
-          type: 'landline_or_mobile',
+          sid: 'landline_or_mobile',
           status: 'active',
           createdAt: '2019-04-25T14:04:04Z',
           renewalAt: '2019-05-25T00:00:00Z',
@@ -113,7 +104,7 @@ export class PhoneService {
           number: dummy.number,
           renewalDate: dummy.renewalAt,
           status: dummy.status,
-          type: dummy.type,
+          sid: dummy.sid,
           user: user,
         });
 
@@ -123,9 +114,12 @@ export class PhoneService {
             'Dummy Number purchased and linked to your account successfully.',
         };
       }
-    } catch (e) {
-      console.log(e);
-      throw e;
+    } catch (err) {
+      throw new BadRequestException({
+        status: err.status,
+        message: err.message,
+        code: err.code,
+      });
     }
   }
 
@@ -136,11 +130,7 @@ export class PhoneService {
           where: { user: user, number: num, status: 'active' },
         });
         if (numb) {
-          const number = await this.apiCaller.apiCaller(
-            'DELETE',
-            'https://numbers.messagebird.com/v1/phone-numbers/' + num,
-            { key: 'AccessKey', value: this.key },
-          );
+          const number = this.client.incomingPhoneNumbers(numb.sid).remove();
 
           numb.status = 'canceled';
           await this.repo.save(numb);

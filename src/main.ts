@@ -76,12 +76,12 @@ async function bootstrap() {
       transform: true,
       exceptionFactory: (errors) => {
         let _e = [];
+        
         errors.forEach((error, i) => {
           _e.push({
             [error.property]: error.constraints,
           });
-        });
-        Object.assign(_e);
+        }); 
         return new HttpException(
           {
             errors: _e,

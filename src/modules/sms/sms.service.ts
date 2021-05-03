@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { MessageBird } from 'messagebird';
 import { env } from 'process';
 import { delay } from 'rxjs/operators';
 import { ContactsEntity } from 'src/entities/contacts.entity';
@@ -19,7 +18,7 @@ import { SMSTemplatesRepository } from './repo/sms-templates.repo';
 
 @Injectable()
 export class SmsService {
-  private mb: MessageBird;
+  private client;
   constructor(
     public readonly smsTemplateRepo: SMSTemplatesRepository,
     public readonly presetRepo: PresetMessagesRepository,
@@ -29,8 +28,13 @@ export class SmsService {
     public readonly conversationsMessagesRepo: ConversationMessagesRepository,
     public readonly userService: UsersService,
   ) {
-    console.log(env.MESSAGEBIRD_KEY);
-    this.mb = require('messagebird')(env.MESSAGEBIRD_KEY);
+    this.client = require('twilio')(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN,
+      {
+        lazyLoading: true,
+      },
+    );
   }
 
   //#region sms
@@ -237,29 +241,32 @@ export class SmsService {
     body: string,
     type: string,
   ) {
-    const sms = await this.mb.messages;
-    //parse sms here to fill in details.
-    console.log('=================outbound', body, type);
-    sms.create(
-      {
-        body: body,
-        recipients: [contact.phoneNumber], //recipient(s)
-        type: 'sms',
-        originator: influencerNumber.number, //sender
-      },
-      (error, res) => {
-        if (error) {
-          //failure case
-          console.log(error);
-          return true;
-        } else {
-          //save sms here.
-          console.log(res);
-          //success scenario
-        }
-      },
-    );
-    await this.saveSms(contact, influencerNumber, body, new Date(), type);
+    try {
+      const sms = await this.client.messages;
+      //parse sms here to fill in details.
+      console.log('=================outbound', body, type);
+      sms.create(
+        {
+          body: body,
+          to: contact.phoneNumber, //recipient(s)
+          from: influencerNumber.number,
+        },
+        (error, res) => {
+          if (error) {
+            //failure case
+            console.log(error);
+            return true;
+          } else {
+            //save sms here.
+            console.log(res);
+            //success scenario
+          }
+        },
+      );
+      await this.saveSms(contact, influencerNumber, body, new Date(), type);
+    } catch (e) {
+      throw e;
+    }
   }
 
   //#endregion

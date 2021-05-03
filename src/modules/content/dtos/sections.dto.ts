@@ -31,7 +31,6 @@ export class SectionsDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @Length(3, 200)
   public subTitle: string;
 
   @ApiPropertyOptional()

@@ -13,7 +13,6 @@ import { PostsEntity } from '../entities/posts.entity';
 import { SectionsEntity } from '../entities/sections.entity';
 import { ButtonsEntity } from '../entities/buttons.entity';
 import { PlansEntity } from '../entities/plans.entity';
-import { ProductsEntity } from '../entities/products.entity';
 import { SubscriptionsEntity } from '../entities/subscriptions.entity';
 import { PaymentMethodsEntity } from '../entities/payment-methods.entity';
 import { CityEntity } from '../entities/city.entity';
@@ -46,7 +45,6 @@ export const EntitiesRegister: any = {
   SectionsEntity,
   ButtonsEntity,
   PlansEntity,
-  ProductsEntity,
   SubscriptionsEntity,
   PaymentMethodsEntity,
   CityEntity,

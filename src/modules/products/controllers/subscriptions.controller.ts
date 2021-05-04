@@ -7,7 +7,6 @@ import {
   Injectable,
   Param,
   Post,
-  Put,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/auth.decorator';
@@ -45,7 +44,9 @@ export class SubscriptionsController {
           throw new BadRequestException('An error occurred');
         }
       } else {
-        throw new BadRequestException('Influencer is has not activated his/her account yet.');
+        throw new BadRequestException(
+          'Influencer is has not activated his/her account yet.',
+        );
       }
     } catch (e) {
       throw new BadRequestException(e, 'An exception occurred');
@@ -64,7 +65,7 @@ export class SubscriptionsController {
       throw new BadRequestException(e, 'An exception occurred');
     }
   }
-
+  /* 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Put(':subId')
   public async updateSubscriptions(
@@ -84,7 +85,7 @@ export class SubscriptionsController {
       throw new BadRequestException(e, 'An exception occurred');
     }
   }
-
+ */
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Delete(':subId')
   public async cancelSubscriptions(

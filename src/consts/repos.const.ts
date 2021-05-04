@@ -10,9 +10,9 @@ import { InfluencerLinksTrackingRepository } from '../modules/influencer-links/r
 import { InfluencerLinksRepository } from '../modules/influencer-links/repo/influencer-links.repo';
 import { LanguageRepository } from '../modules/language/languages.repo';
 import { PhonesRepository } from '../modules/phone/phone.repo';
+import { PaymentHistoryRepository } from '../modules/products/repos/payment-history.repo';
 import { PaymentMethodsRepository } from '../modules/products/repos/payment-methods.repo';
 import { PlansRepository } from '../modules/products/repos/plans.repo';
-import { ProductsRepository } from '../modules/products/repos/products.repo';
 import { SubscriptionsRepository } from '../modules/products/repos/subscriptions.repo';
 import { BroadcastContactsRepository } from '../modules/sms/repo/broadcast-contact.repo';
 import { BroadcastsRepository } from '../modules/sms/repo/broadcast.repo';
@@ -42,7 +42,6 @@ export const REPOS = [
   SectionsRepository,
   ButtonsRepository,
   FaqsRepository,
-  ProductsRepository,
   PlansRepository,
   PaymentMethodsRepository,
   SubscriptionsRepository,
@@ -60,4 +59,5 @@ export const REPOS = [
   BroadcastsRepository,
   ConversationsRepository,
   ConversationMessagesRepository,
+  PaymentHistoryRepository,
 ];

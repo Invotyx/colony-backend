@@ -24,6 +24,7 @@ import { LanguageEntity } from './language.entity';
 import { PaymentMethodsEntity } from './payment-methods.entity';
 import { PhonesEntity } from './phone.entity';
 import { PresetMessagesEntity } from './preset-message.entity';
+import { PaymentHistoryEntity } from './purchaseHistory.entity';
 import { RoleEntity } from './role.entity';
 import { SMSTemplatesEntity } from './sms-templates.entity';
 import { UserToRoleEntity } from './user-to-role.entity';
@@ -76,6 +77,12 @@ export class UserEntity {
   @Column({ default: false })
   public isApproved: boolean;
 
+  @Column({ default: 0.0, type: 'decimal' })
+  public consumedSmsCost: number;
+
+  @Column({ default: 0.0, type: 'decimal' })
+  public consumedSubscriberCost: number;
+
   @CreateDateColumn()
   public createdAt: Date;
 
@@ -120,6 +127,12 @@ export class UserEntity {
     cascade: true,
   })
   public paymentMethod!: PaymentMethodsEntity[];
+
+  @OneToMany(() => PaymentHistoryEntity, (ph) => ph.user, {
+    eager: false,
+    cascade: true,
+  })
+  public paymentHistory!: PaymentHistoryEntity[];
 
   @OneToMany(() => InfluencerLinksEntity, (il) => il.user, {
     eager: false,

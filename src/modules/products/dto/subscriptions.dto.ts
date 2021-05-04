@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, Length } from 'class-validator';
 
 export enum collection_method {
   charge_automatically = 'charge_automatically',
@@ -13,7 +13,7 @@ export class SubscriptionsDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  public stripeId: string;
+  public rId: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -27,6 +27,11 @@ export class SubscriptionsDto {
   @IsNotEmpty()
   @IsEnum(collection_method)
   public collectionMethod: collection_method;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @Length(2, 2)
+  public country: string;
 
   @ApiPropertyOptional()
   @IsOptional()

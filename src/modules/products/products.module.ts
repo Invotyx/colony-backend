@@ -11,7 +11,6 @@ import { ProductsController } from './controllers/products.controller';
 import { SubscriptionsController } from './controllers/subscriptions.controller';
 import { PaymentMethodsService } from './services/payment-methods.service';
 import { PlansService } from './services/plans.service';
-import { ProductsService } from './services/products.service';
 import { SubscriptionsService } from './services/subscriptions.service';
 
 @Module({
@@ -28,13 +27,12 @@ import { SubscriptionsService } from './services/subscriptions.service';
     SubscriptionsController,
   ],
   providers: [
-    ProductsService,
     PlansService,
     PaymentMethodsService,
     SubscriptionsService,
     PhoneService,
     ApiCallingService,
   ],
-  exports: [ProductsService, PlansService],
+  exports: [PlansService],
 })
 export class ProductsModule {}

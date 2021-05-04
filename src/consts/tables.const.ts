@@ -22,7 +22,6 @@ const TablesList: any = {
   POSTS: new TableData(),
   FAQS: new TableData(),
   BUTTONS: new TableData(),
-  PRODUCTS: new TableData(),
   PLANS: new TableData(),
   PAYMENT_METHODS: new TableData(),
   SUBSCRIPTIONS: new TableData(),
@@ -41,6 +40,7 @@ const TablesList: any = {
   PHONES: new TableData(),
   CONVERSATIONS: new TableData(),
   CONVERSATION_MESSAGES: new TableData(),
+  PAYMENT_HISTORY: new TableData()
 };
 
 const numHash = (t: string) =>

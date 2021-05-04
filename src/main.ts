@@ -22,15 +22,14 @@ async function bootstrap() {
         });
 
       seeder
-        .sow({ klass: 'AddProductsSeed', up: true })
+        .sow({ klass: 'PlanSeed', up: true })
         .then(() => {
-          console.log('Products seeds completed!');
+          console.log('Plan Seeding complete!');
         })
         .catch((error) => {
-          console.log('Products seeds  failed!');
+          console.log('Plan Seeding failed!');
           throw error;
         });
-
       seeder
         .sow({ klass: 'CreateAdminSeed', up: true })
         .then(() => {
@@ -64,7 +63,7 @@ async function bootstrap() {
 
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
-  const port = env.port || '4000';
+  const port = env.port || 4000;
   app.useGlobalPipes(
     new ValidationPipe({
       errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,

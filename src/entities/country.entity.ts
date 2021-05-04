@@ -1,7 +1,6 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
 import { CityEntity } from './city.entity';
-import { PlansEntity } from './plans.entity';
 import { SubscriptionsEntity } from './subscriptions.entity';
 
 @Entity({ name: TABLES.COUNTRY.name })
@@ -21,17 +20,17 @@ export class CountryEntity {
   @Column({ default: false, comment: 'Use only with plans.' })
   public active: boolean;
 
+  @Column({ type: 'decimal', nullable: true })
+  public smsCost: number;
+
+  @Column({ type: 'decimal', nullable: true })
+  public phoneCost: number;
+
   @OneToMany(() => CityEntity, (c) => c.country, {
     eager: false,
     cascade: true,
   })
   public city!: CityEntity[];
-
-  @OneToMany(() => PlansEntity, (plan) => plan.country, {
-    eager: false,
-    cascade: true,
-  })
-  public plan!: PlansEntity[];
 
   @OneToMany(() => SubscriptionsEntity, (sub) => sub.country, {
     eager: false,

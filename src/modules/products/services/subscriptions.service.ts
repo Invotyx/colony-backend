@@ -5,6 +5,7 @@ import { SubscriptionsEntity } from 'src/entities/subscriptions.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { PhoneService } from 'src/modules/phone/phone.service';
 import { UsersService } from 'src/modules/users/services/users.service';
+import { nanoid } from 'src/shared/random-keygen';
 import Stripe from 'stripe';
 import { collection_method, SubscriptionsDto } from '../dto/subscriptions.dto';
 import { SubscriptionsRepository } from '../repos/subscriptions.repo';
@@ -29,8 +30,7 @@ export class SubscriptionsService {
   public async createSubscription(customer: UserEntity, sub: SubscriptionsDto) {
     try {
       const _plan = await this.planService.repository.findOne({
-        where: { id: sub.planId },
-        relations: ['country'],
+        where: { id: sub.planId }
       });
       if (_plan) {
         const phone = await this.phoneService.repo.findOne({
@@ -46,7 +46,7 @@ export class SubscriptionsService {
             );
           }
         }
-        return await this.createSubscriptionInStripe(customer, sub, _plan);
+        return await this.createSubscriptionInDb(customer, sub, _plan);
       } else {
         throw new BadRequestException('Plan does not exist.');
       }
@@ -55,16 +55,12 @@ export class SubscriptionsService {
     }
   }
 
-  private async createSubscriptionInStripe(
+  private async createSubscriptionInDb(
     customer: UserEntity,
     sub: SubscriptionsDto,
     _plan: PlansEntity,
   ) {
     try {
-      let subscription: any;
-      let current_period_end: any = null;
-      let current_period_start: any = null;
-      let subOrIntent: any = null;
       const customer_payments = await this.paymentService.repository.findOne({
         where: { user: customer, default: true },
       });
@@ -78,54 +74,29 @@ export class SubscriptionsService {
             'Phone number is not available for purchase.',
           );
         }
-        
-        subscription = await this.stripe.subscriptions.create({
-          customer: customer.customerId,
-          items: [
-            {
-              plan: sub.planId,
-              quantity: 1,
-            },
-          ],
-          collection_method:
-            sub.collectionMethod.toString() == 'charge_automatically'
-              ? 'charge_automatically'
-              : 'send_invoice',
-        });
-        
-        console.log(subscription);
-        current_period_end = this.timestampToDate(
-          subscription.current_period_end,
-        );
-        current_period_start = this.timestampToDate(
-          subscription.current_period_start,
-        );
-
-        subOrIntent = subscription.items.data[0].id;
 
         const purchasedNumber = await this.phoneService.purchasePhoneNumber(
-          _plan.country.code.toUpperCase(),
+          sub.country.toUpperCase(),
           sub.number,
           customer,
         );
-        
+
         const purchasedNumberDb = await this.phoneService.repo.findOne({
           where: { number: purchasedNumber.number.number },
         });
-        
+
         await this.repository.save({
-          stripeId: subscription.id,
+          rId: nanoid(),
           plan: _plan,
           user: customer,
           cancelled: false,
           collection_method: sub.collectionMethod,
-          paymentType: _plan.recurring,
-          stripeSubscriptionItem: subOrIntent,
-          currentStartDate: current_period_start,
-          currentEndDate: current_period_end,
-          smsCount: _plan.smsCount,
+          paymentType: 'recurring',
+          currentStartDate: new Date(),
+          currentEndDate: new Date(
+            new Date().setDate(new Date().getDate() + 30),
+          ),
           phone: purchasedNumberDb,
-          country: _plan.country,
         });
 
         return {
@@ -167,12 +138,12 @@ export class SubscriptionsService {
   ) {
     try {
       const sub = await this.repository.findOne({
-        where: { stripeId: subId, cancelled: true },
+        where: { rId: subId, cancelled: true },
       });
       console.log(sub, '=== sub ===');
       if (!sub) {
         const checkSub = await this.repository.findOne({
-          where: { stripeId: subId, cancelled: false },
+          where: { rId: subId, cancelled: false },
           relations: ['plan', 'country', 'phone'],
         });
         if (checkSub) {
@@ -183,75 +154,28 @@ export class SubscriptionsService {
             const _toBeSelectedPlan = plans.find((p) => {
               return p.id === planId;
             });
-            const _existing = checkSub.plan;
-            let checkMonthsUsage = this.daysBetween(
-              checkSub.createdAt,
-              new Date(),
+
+            checkSub.cancelled = true;
+            checkSub.currentEndDate = new Date();
+            await this.repository.save(checkSub);
+
+            const newSub = new SubscriptionsEntity();
+            newSub.user = customer;
+            newSub.cancelled = false;
+            newSub.plan = _toBeSelectedPlan;
+            newSub.rId = nanoid();
+            newSub.collection_method = collection_method.charge_automatically;
+            newSub.paymentType = 'recurring';
+            newSub.currentStartDate = new Date();
+            newSub.currentEndDate = new Date(
+              new Date().setDate(new Date().getDate() + 30),
             );
-            if (
-              _toBeSelectedPlan.amount_decimal < _existing.amount_decimal &&
-              checkMonthsUsage >= 90
-            ) {
-              throw new BadRequestException(
-                'You have been using this plan for 3 months now and you are only allowed to upgrade subscription for this number.',
-              );
-            } else {
-              const canceledInStripe = await this.stripe.subscriptions.del(
-                subId,
-              );
-              const current_period_end = this.timestampToDate(
-                canceledInStripe.current_period_end,
-              );
-              const current_period_start = this.timestampToDate(
-                canceledInStripe.current_period_start,
-              );
-              checkSub.cancelled = true;
-              checkSub.currentStartDate = current_period_start;
-              checkSub.currentEndDate = current_period_end;
-              await this.repository.save(checkSub);
+            newSub.phone = checkSub.phone;
+            newSub.country = checkSub.country;
+            await this.repository.save(newSub);
 
-              const newStripeSubscription = await this.stripe.subscriptions.create(
-                {
-                  customer: customer.customerId,
-                  items: [
-                    {
-                      plan: _toBeSelectedPlan.id,
-                      quantity: 1,
-                    },
-                  ],
-                  collection_method: 'charge_automatically',
-                },
-              );
-
-              const newSub = new SubscriptionsEntity();
-              newSub.user = customer;
-              newSub.cancelled = false;
-              newSub.plan = _toBeSelectedPlan;
-              newSub.stripeId = newStripeSubscription.id;
-              newSub.stripeSubscriptionItem =
-                newStripeSubscription.items.data[0].id;
-              newSub.collection_method = collection_method.charge_automatically;
-              newSub.paymentType = 'recurring';
-              newSub.currentStartDate = this.timestampToDate(
-                newStripeSubscription.current_period_start,
-              );
-              newSub.currentEndDate = this.timestampToDate(
-                newStripeSubscription.current_period_end,
-              );
-              newSub.phone = checkSub.phone;
-              newSub.smsCount = _toBeSelectedPlan.smsCount;
-              newSub.country = checkSub.country;
-              await this.repository.save(newSub);
-
-              return { message: 'Subscription updated successfully.' };
-            }
-          } else {
-            throw new BadRequestException(
-              'No plans found. Contact System admin.',
-            );
+            return { message: 'Subscription updated successfully.' };
           }
-        } else {
-          throw new BadRequestException('No such subscription exists.');
         }
       } else {
         throw new BadRequestException(
@@ -269,26 +193,11 @@ export class SubscriptionsService {
       where: { stripeId: subId, cancelled: false },
     });
     try {
-      if (sub && sub.stripeSubscriptionItem.includes('si_')) {
-        sub.cancelled = true;
-        await this.repository.save(sub);
-        await this.stripe.subscriptions.del(sub.stripeId);
-        return { message: 'Unsubscribed successfully.' };
-      } else {
-        throw new BadRequestException('One time payments cannot be canceled.');
-      }
+      sub.cancelled = true;
+      await this.repository.save(sub);
+      return { message: 'Unsubscribed successfully.' };
     } catch (e) {
       throw e;
     }
-  }
-
-  private timestampToDate(timestamp: number) {
-    const milliseconds = timestamp * 1000;
-    return new Date(milliseconds);
-  }
-
-  private daysBetween(startDate, endDate) {
-    const mpd = 24 * 60 * 60 * 1000;
-    return Math.round((endDate - startDate) / mpd);
   }
 }

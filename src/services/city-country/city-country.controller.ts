@@ -16,6 +16,7 @@ import {
   PaginatorError,
   PaginatorErrorHandler,
 } from 'src/shared/paginator';
+import { CountryCost } from './country-cost.dto';
 import { CityRepository } from './repos/city.repo';
 import { CountryRepository } from './repos/country.repo';
 
@@ -39,13 +40,12 @@ export class CityCountryController {
   }
 
   @Put('active')
-  async activateCountries(
-    @Body('active') active: boolean,
-    @Body('id') id: string,
-  ) {
+  async activateCountries(@Body() body: CountryCost) {
     try {
-      const c = await this.countryRepo.findOne({ id: id });
-      c.active = active;
+      const c = await this.countryRepo.findOne({ id: body.id });
+      c.active = body.active;
+      c.phoneCost = body.phoneCost;
+      c.smsCost = body.smsCost;
       await this.countryRepo.save(c);
       return {
         message: 'Country updated',
@@ -84,17 +84,19 @@ export class CityCountryController {
                 {
                   field: 'name',
                   operator: 'begins_with',
-                  value: (city? city.toUpperCase():''),
+                  value: city ? city.toUpperCase() : '',
                   type: 'string',
                   input: 'text',
                 },
                 {
                   field: 'name',
                   operator: 'begins_with',
-                  value: (city?  city
-                    .substr(0, 1)
-                    .toUpperCase()
-                    .concat(city.substring(1, city.length)):''),
+                  value: city
+                    ? city
+                        .substr(0, 1)
+                        .toUpperCase()
+                        .concat(city.substring(1, city.length))
+                    : '',
                   type: 'string',
                   input: 'text',
                 },

@@ -25,7 +25,7 @@ export class SubscriptionsEntity {
   public id: number;
 
   @Column({ length: 100, unique: false, nullable: false })
-  public stripeId: string;
+  public rId: string;
 
   @ManyToOne(() => UserEntity, (user) => user.paymentMethod, {
     eager: false,
@@ -53,9 +53,6 @@ export class SubscriptionsEntity {
     default: collection_method.charge_automatically,
   })
   public collection_method: collection_method;
-
-  @Column({ length: 100, nullable: false })
-  public stripeSubscriptionItem: string;
 
   @Column({ nullable: false, length: 20 })
   public paymentType: string;

@@ -1,26 +1,17 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsIn,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Length,
   Min,
 } from 'class-validator';
-import { CountryEntity } from 'src/entities/country.entity';
-import { ProductsEntity } from 'src/entities/products.entity';
 
 export enum interval {
   month = 'month',
   year = 'year',
-}
-
-export enum planType {
-  bundle = 'bundle',
-  phoneOnly = 'phoneOnly',
-  smsOnly = 'smsOnly',
 }
 
 export class PlansDto {
@@ -57,14 +48,6 @@ export class PlansDto {
   @IsBoolean()
   public active: boolean;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  public country: CountryEntity;
-
-  @ApiProperty({ enum: planType, enumName: 'planType' })
-  @IsNotEmpty()
-  public planType: planType;
-
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -73,16 +56,13 @@ export class PlansDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
-  public product: ProductsEntity;
-
-  /*   @ApiPropertyOptional()
-  @IsOptional()
-  @Min(0)
-  public phoneCount: number; */
+  @IsNumber()
+  @Min(0.001)
+  public threshold: number;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @Min(0)
-  public smsCount: number;
+  @IsNumber()
+  @Min(0.001)
+  public subscriberCost: number;
 }

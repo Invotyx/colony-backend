@@ -104,7 +104,7 @@ export class ProductsController {
     try {
       const plan = await this.planService.repository.findOne();
       if (plan) {
-        return plan;
+        return [plan];
       } else {
         return 'No record found.';
       }

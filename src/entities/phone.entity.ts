@@ -27,7 +27,7 @@ export class PhonesEntity {
   @Column({ length: 100, nullable: true })
   public features: string;
 
-  @Column({ length: 100, nullable: false, default: null })
+  @Column({ length: 100, default: null })
   public sid: string;
 
   @Column({ length: 10, nullable: false })

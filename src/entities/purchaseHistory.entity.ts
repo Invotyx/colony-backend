@@ -19,7 +19,7 @@ export class PaymentHistoryEntity {
 
   @ManyToOne(() => UserEntity, (user) => user.paymentHistory, {
     eager: false,
-    nullable: false
+    nullable: false,
   })
   @JoinColumn({ name: 'userId' })
   public user: UserEntity;
@@ -52,6 +52,12 @@ export class PaymentHistoryEntity {
     default: 0,
   })
   public thresholdSmsCount: number;
+
+  @Column({
+    length: 255,
+    nullable: true,
+  })
+  public description: string;
 
   @CreateDateColumn()
   public createdAt: Date;

@@ -10,7 +10,7 @@ import { InfluencerLinksTrackingRepository } from '../modules/influencer-links/r
 import { InfluencerLinksRepository } from '../modules/influencer-links/repo/influencer-links.repo';
 import { LanguageRepository } from '../modules/language/languages.repo';
 import { PhonesRepository } from '../modules/phone/phone.repo';
-import { PaymentHistoryRepository } from '../modules/products/repos/payment-history.repo';
+import { PaymentHistoryRepository } from '../modules/payment-history/payment-history.repo';
 import { PaymentMethodsRepository } from '../modules/products/repos/payment-methods.repo';
 import { PlansRepository } from '../modules/products/repos/plans.repo';
 import { SubscriptionsRepository } from '../modules/products/repos/subscriptions.repo';

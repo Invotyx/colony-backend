@@ -3,6 +3,7 @@ import { env } from 'process';
 import { PlansEntity } from 'src/entities/plans.entity';
 import { SubscriptionsEntity } from 'src/entities/subscriptions.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { PaymentHistoryService } from 'src/modules/payment-history/payment-history.service';
 import { PhoneService } from 'src/modules/phone/phone.service';
 import { UsersService } from 'src/modules/users/services/users.service';
 import { nanoid } from 'src/shared/random-keygen';
@@ -21,6 +22,7 @@ export class SubscriptionsService {
     public readonly paymentService: PaymentMethodsService,
     public readonly userService: UsersService,
     public readonly phoneService: PhoneService,
+    public readonly paymentHistory: PaymentHistoryService,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
@@ -30,7 +32,7 @@ export class SubscriptionsService {
   public async createSubscription(customer: UserEntity, sub: SubscriptionsDto) {
     try {
       const _plan = await this.planService.repository.findOne({
-        where: { id: sub.planId }
+        where: { id: sub.planId },
       });
       if (_plan) {
         const phone = await this.phoneService.repo.findOne({
@@ -75,36 +77,64 @@ export class SubscriptionsService {
           );
         }
 
-        const purchasedNumber = await this.phoneService.purchasePhoneNumber(
-          sub.country.toUpperCase(),
-          sub.number,
-          customer,
-        );
-
-        const purchasedNumberDb = await this.phoneService.repo.findOne({
-          where: { number: purchasedNumber.number.number },
+        // charge client here
+        const charge = await this.stripe.charges.create({
+          amount: _plan.amount_decimal * 100,
+          capture: true,
+          currency: 'GBP',
+          source: customer_payments.id,
+          customer: customer.customerId,
+          description: 'Base Package subscription charge!',
         });
 
-        await this.repository.save({
-          rId: nanoid(),
-          plan: _plan,
-          user: customer,
-          cancelled: false,
-          collection_method: sub.collectionMethod,
-          paymentType: 'recurring',
-          currentStartDate: new Date(),
-          currentEndDate: new Date(
-            new Date().setDate(new Date().getDate() + 30),
-          ),
-          phone: purchasedNumberDb,
-        });
+        if (charge.status == 'succeeded') {
+          // add charge details to history
 
-        return {
-          message:
-            'Subscribed to selected plan successfully.' +
-            purchasedNumber.message,
-          number: purchasedNumber.number,
-        };
+          const purchasedNumber = await this.phoneService.purchasePhoneNumber(
+            sub.country.toUpperCase(),
+            sub.number,
+            customer,
+            'sub',
+          );
+          await this.paymentHistory.repository.save({
+            packageCost: _plan.amount_decimal,
+            user: customer,
+            description:
+              'Base Plan purchased with number: ' +
+              purchasedNumber.number.number,
+          });
+          const purchasedNumberDb = await this.phoneService.repo.findOne({
+            where: { number: purchasedNumber.number.number },
+          });
+
+          await this.repository.save({
+            rId: nanoid(),
+            plan: _plan,
+            user: customer,
+            cancelled: false,
+            collection_method: sub.collectionMethod,
+            paymentType: 'recurring',
+            currentStartDate: new Date(),
+            currentEndDate: new Date(
+              new Date().setDate(new Date().getDate() + 30),
+            ),
+            phone: purchasedNumberDb,
+          });
+
+          return {
+            message:
+              'Subscribed to selected plan successfully.' +
+              purchasedNumber.message,
+            number: purchasedNumber.number,
+          };
+        } else {
+          //fail if unsuccessful.
+          throw new BadRequestException(
+            'Payment against your default card is failed. Details: ' +
+              charge.failure_code +
+              charge.failure_message,
+          );
+        }
       } else {
         throw new BadRequestException('Please add payment method first.');
       }

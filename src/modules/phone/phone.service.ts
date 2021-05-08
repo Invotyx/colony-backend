@@ -6,12 +6,22 @@ import {
 } from '@nestjs/common';
 import { env } from 'process';
 import { UserEntity } from 'src/entities/user.entity';
+import { CityCountryService } from 'src/services/city-country/city-country.service';
+import Stripe from 'stripe';
+import { PaymentHistoryService } from '../payment-history/payment-history.service';
+import { PaymentMethodsService } from '../products/services/payment-methods.service';
 import { PhonesRepository } from './phone.repo';
 
 @Injectable()
 export class PhoneService {
   private client;
-  constructor(public readonly repo: PhonesRepository) {
+  private stripe: Stripe;
+  constructor(
+    public readonly repo: PhonesRepository,
+    public readonly cityCountry: CityCountryService,
+    public readonly payment: PaymentMethodsService,
+    public readonly paymentHistory: PaymentHistoryService,
+  ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
       process.env.TWILIO_AUTH_TOKEN,
@@ -19,6 +29,10 @@ export class PhoneService {
         lazyLoading: true,
       },
     );
+
+    this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
+      apiVersion: '2020-08-27',
+    });
   }
 
   public async searchPhoneNumbers(
@@ -48,37 +62,119 @@ export class PhoneService {
     }
   }
 
-  public async purchasePhoneNumber(cc: string, num: string, user: UserEntity) {
+  public async purchasePhoneNumber(
+    cc: string,
+    num: string,
+    user: UserEntity,
+    type = 'phone',
+  ) {
     try {
       if (env.NODE_ENV !== 'development') {
         try {
-          const number = await this.client.incomingPhoneNumbers.create({
-            phoneNumber: num,
-          });
+          if (type != 'sub') {
+            //get phone costing from country...
+            const country = await this.cityCountry.countryRepo.findOne({
+              where: { code: cc.toUpperCase() },
+            });
+            if (country) {
+              //get default payment method
+              const default_pm = await this.payment.repository.findOne({
+                where: { default: true, user: user },
+              });
+              if (default_pm) {
+                //create charge
+                const charge = await this.stripe.charges.create({
+                  amount: country.phoneCost * 100,
+                  currency: 'GBP',
+                  customer: user.customerId,
+                  capture: true,
+                  source: default_pm.id,
+                });
 
-          // save to database;
-          if (number) {
-            const date = new Date(); // Now
-            date.setDate(date.getDate() + 30);
-            await this.repo.save({
-              country: cc.toUpperCase(),
-              features: number.capabilities.join(','),
-              number: number.phoneNumber,
-              renewalDate: date,
-              status: number.status,
-              sid: number.sid,
-              user: user,
+                if (charge.status == 'succeeded') {
+                  //proceed if charge is successful.
+                  const number = await this.client.incomingPhoneNumbers.create({
+                    phoneNumber: num,
+                  });
+                  await this.paymentHistory.repository.save({
+                    packageCost: country.phoneCost,
+                    user: user,
+                    description:
+                      'Phone number: ' + number.phoneNumber + ' purchased.',
+                  });
+                  // save to database;
+                  if (number) {
+                    const date = new Date(); // Now
+                    date.setDate(date.getDate() + 30);
+                    await this.repo.save({
+                      country: cc.toUpperCase(),
+                      features: number.capabilities.join(','),
+                      number: number.phoneNumber,
+                      renewalDate: date,
+                      status: number.status,
+                      sid: number.sid,
+                      user: user,
+                      type: 'extra',
+                    });
+
+                    return {
+                      number,
+                      message:
+                        'Number purchased and linked to your account successfully.',
+                    };
+                  } else {
+                    throw new BadRequestException(
+                      'An error ocurred while number purchasing, try again later.',
+                    );
+                  }
+                } else {
+                  //fail if unsuccessful.
+                  throw new BadRequestException(
+                    'Payment against your default card is failed. Details: ' +
+                      charge.failure_code +
+                      charge.failure_message,
+                  );
+                }
+              } else {
+                throw new BadRequestException(
+                  'Please add a payment method or set one of your payment methods as default.',
+                );
+              }
+            } else {
+              throw new BadRequestException(
+                'This country is not included in Active Phone number purchase list.',
+              );
+            }
+          } else {
+            const number = await this.client.incomingPhoneNumbers.create({
+              phoneNumber: num,
             });
 
-            return {
-              number,
-              message:
-                'Number purchased and linked to your account successfully.',
-            };
-          } else {
-            throw new BadRequestException(
-              'An error ocurred while number purchasing, try again later.',
-            );
+            // save to database;
+            if (number) {
+              const date = new Date(); // Now
+              date.setDate(date.getDate() + 30);
+              await this.repo.save({
+                country: cc.toUpperCase(),
+                features: number.capabilities.join(','),
+                number: number.phoneNumber,
+                renewalDate: date,
+                status: number.status,
+                sid: number.sid,
+                user: user,
+                type: 'default',
+              });
+
+              return {
+                number,
+                message:
+                  'Number purchased and linked to your account successfully.',
+              };
+            } else {
+              throw new BadRequestException(
+                'An error ocurred while number purchasing, try again later.',
+              );
+            }
           }
         } catch (ex) {
           throw ex;

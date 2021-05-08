@@ -1,12 +1,12 @@
 import { HttpException, HttpStatus, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as mtz from 'moment-timezone';
 import { env } from 'process';
 import { AppModule } from './app.module';
 import { SeederModule } from './seeder/seeder.module';
 import { SeederService } from './seeder/seeder.service';
 import { logger } from './services/logs/log.storage';
-
 async function bootstrap() {
   NestFactory.createApplicationContext(SeederModule)
     .then((appContext) => {
@@ -48,7 +48,7 @@ async function bootstrap() {
     });
 
   const app = await NestFactory.create(AppModule, { ...logger, cors: true });
-
+  mtz.tz.setDefault('UTC');
   const config = new DocumentBuilder()
     .setTitle('Colony API')
     .setDescription('Colony API Docs')
@@ -73,7 +73,7 @@ async function bootstrap() {
           {},
           ...errors.map((item) => ({ [item.property]: item.constraints })),
         );
-        console.log(errors)
+        console.log(errors);
         return new HttpException(
           {
             errors: errors,

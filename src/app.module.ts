@@ -27,6 +27,7 @@ import { CompressionInterceptor } from './services/common/compression/compressio
 import { AppLogger } from './services/logs/log.service';
 import { MailModule } from './services/mail/mail.module';
 import { MainMysqlModule } from './shared/main-mysql.module';
+import { PaymentHistoryModule } from './modules/payment-history/payment-history.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { MainMysqlModule } from './shared/main-mysql.module';
     CityCountryModule,
     ContactsModule,
     InfluencerLinksModule,
+    PaymentHistoryModule,
   ],
   controllers: [AppController, SeederController, CityCountryController],
   providers: [

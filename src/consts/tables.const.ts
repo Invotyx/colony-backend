@@ -40,7 +40,9 @@ const TablesList: any = {
   PHONES: new TableData(),
   CONVERSATIONS: new TableData(),
   CONVERSATION_MESSAGES: new TableData(),
-  PAYMENT_HISTORY: new TableData()
+  PAYMENT_HISTORY: new TableData(),
+  DUE_PAYMENTS: new TableData()
+
 };
 
 const numHash = (t: string) =>

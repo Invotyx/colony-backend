@@ -35,6 +35,6 @@ import { SubscriptionsService } from './services/subscriptions.service';
     PhoneService,
     ApiCallingService,
   ],
-  exports: [PlansService],
+  exports: [PlansService, SubscriptionsService],
 })
 export class ProductsModule {}

@@ -27,6 +27,7 @@ import { PresetMessagesEntity } from './preset-message.entity';
 import { PaymentHistoryEntity } from './purchaseHistory.entity';
 import { RoleEntity } from './role.entity';
 import { SMSTemplatesEntity } from './sms-templates.entity';
+import { SubscriptionsEntity } from './subscriptions.entity';
 import { UserToRoleEntity } from './user-to-role.entity';
 
 enum gender {
@@ -127,6 +128,12 @@ export class UserEntity {
     cascade: true,
   })
   public paymentMethod!: PaymentMethodsEntity[];
+
+  @OneToMany(() => SubscriptionsEntity, (sub) => sub.user, {
+    eager: true,
+    cascade: true,
+  })
+  public subscription!: SubscriptionsEntity[];
 
   @OneToMany(() => PaymentHistoryEntity, (ph) => ph.user, {
     eager: false,

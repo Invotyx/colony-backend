@@ -96,13 +96,17 @@ export class SubscriptionsService {
             customer,
             'sub',
           );
-          await this.paymentHistory.repository.save({
-            packageCost: _plan.amount_decimal,
+
+          await this.paymentHistory.addRecordToHistory({
             user: customer,
             description:
               'Base Plan purchased with number: ' +
               purchasedNumber.number.number,
+            cost: _plan.amount_decimal,
+            costType: 'base-plan-purchase',
+            chargeId: charge.id,
           });
+          
           const purchasedNumberDb = await this.phoneService.repo.findOne({
             where: { number: purchasedNumber.number.number },
           });

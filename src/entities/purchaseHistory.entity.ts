@@ -28,30 +28,19 @@ export class PaymentHistoryEntity {
     type: 'decimal',
     default: 0.0,
   })
-  public smsCost: number;
+  public cost: number;
 
   @Column({
-    type: 'decimal',
-    default: 0.0,
+    length: 20,
+    nullable: false,
   })
-  public phoneCost: number;
+  public costType: string;
 
   @Column({
-    type: 'decimal',
-    default: 0.0,
+    length: 100,
+    nullable: false
   })
-  public subscriberCost: number;
-
-  @Column({
-    type: 'decimal',
-    default: 0.0,
-  })
-  public packageCost: number;
-
-  @Column({
-    default: 0,
-  })
-  public thresholdSmsCount: number;
+  public chargeId: string;
 
   @Column({
     length: 255,

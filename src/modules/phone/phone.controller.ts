@@ -13,7 +13,6 @@ import { Auth } from 'src/decorators/auth.decorator';
 import { LoginUser } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entities/user.entity';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
-import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
 import { PhoneService } from './phone.service';
 
@@ -25,6 +24,17 @@ export class PhoneController {
     private readonly service: PhoneService,
     private readonly countryRepo: CountryRepository,
   ) {}
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('my-numbers')
+  async getPurchasedPhoneNumbers(@LoginUser() user: UserEntity) {
+    try {
+      const numbers = await this.service.getPurchasedPhoneNumbers(user);
+      return numbers;
+    } catch (e) {
+      throw e;
+    }
+  }
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Get('search-numbers')
@@ -62,7 +72,7 @@ export class PhoneController {
       throw e;
     }
   }
-  
+
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Post('purchase-numbers')
   public async purchasePhoneNumber(
@@ -72,16 +82,20 @@ export class PhoneController {
   ) {
     try {
       if (country.length !== 2) {
-        throw new BadRequestException('Country Code should be in ISO 2 Code Format eg. GB for United Kingdom');
+        throw new BadRequestException(
+          'Country Code should be in ISO 2 Code Format eg. GB for United Kingdom',
+        );
       }
-      if (number.length < 10 || number.length > 20 ) {
-        throw new BadRequestException('Number should be in international format and length should be between 10 to 20 characters.');
+      if (number.length < 10 || number.length > 20) {
+        throw new BadRequestException(
+          'Number should be in international format and length should be between 10 to 20 characters.',
+        );
       }
       return await this.service.purchasePhoneNumber(country, number, user);
     } catch (e) {
       throw e;
     }
-  } 
+  }
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Delete('cancel-number')
@@ -94,5 +108,5 @@ export class PhoneController {
     } catch (e) {
       throw e;
     }
-  } 
+  }
 }

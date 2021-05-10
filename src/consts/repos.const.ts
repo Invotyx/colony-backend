@@ -28,6 +28,7 @@ import { RoleRepository } from '../repos/roles.repo';
 import { CityRepository } from '../services/city-country/repos/city.repo';
 import { CountryRepository } from '../services/city-country/repos/country.repo';
 import { TimezonesRepository } from '../services/city-country/repos/timezone.repo';
+import { PaymentDuesRepository } from 'src/modules/payment-history/due-payment.repo';
 
 export const REPOS = [
   PermissionRepository,
@@ -60,4 +61,5 @@ export const REPOS = [
   ConversationsRepository,
   ConversationMessagesRepository,
   PaymentHistoryRepository,
+  PaymentDuesRepository,
 ];

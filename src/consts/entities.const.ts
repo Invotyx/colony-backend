@@ -27,6 +27,7 @@ import { BroadcastsEntity } from '../entities/broadcast.entity';
 import { BroadcastsContactsEntity } from '../entities/broadcast-contacts.entity';
 import { ConversationsEntity } from '../entities/conversations.entity';
 import { ConversationMessagesEntity } from '../entities/conversation-messages.entity';
+import { PaymentDuesEntity } from '../entities/due-payments.entity';
 import { JOIN_HELPER } from './join-helper.const';
 
 export const EntitiesRegister: any = {
@@ -59,6 +60,7 @@ export const EntitiesRegister: any = {
   BroadcastsContactsEntity,
   ConversationsEntity,
   ConversationMessagesEntity,
+  PaymentDuesEntity,
 };
 
 export const Entities: any = Object.values(EntitiesRegister);

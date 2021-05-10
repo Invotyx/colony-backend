@@ -2,8 +2,9 @@ import {
   BadRequestException,
   HttpException,
   HttpStatus,
-  Injectable,
+  Injectable
 } from '@nestjs/common';
+import e from 'express';
 import { env } from 'process';
 import { UserEntity } from 'src/entities/user.entity';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
@@ -96,12 +97,15 @@ export class PhoneService {
                   const number = await this.client.incomingPhoneNumbers.create({
                     phoneNumber: num,
                   });
-                  await this.paymentHistory.repository.save({
-                    packageCost: country.phoneCost,
-                    user: user,
-                    description:
-                      'Phone number: ' + number.phoneNumber + ' purchased.',
-                  });
+                  
+                    await this.paymentHistory.addRecordToHistory({
+                      user: user,
+                      description:
+                        'Phone number: ' + number.phoneNumber + ' purchased.',
+                      cost: country.phoneCost,
+                      costType: 'number-purchase',
+                      chargeId: charge.id,
+                    });
                   // save to database;
                   if (number) {
                     const date = new Date(); // Now
@@ -116,6 +120,7 @@ export class PhoneService {
                       user: user,
                       type: 'extra',
                     });
+
 
                     return {
                       number,
@@ -260,6 +265,21 @@ export class PhoneService {
         }
       }
     } catch (e) {
+      throw e;
+    }
+  }
+
+  public async getPurchasedPhoneNumbers(user: UserEntity) {
+    try {
+      const numbers = await this.repo.find({ where: { user: user } });
+      if (numbers) {
+        return numbers;
+      } else {
+        throw new BadRequestException(
+          'You have not purchased any numbers yet.',
+        );
+      }
+    } catch {
       throw e;
     }
   }

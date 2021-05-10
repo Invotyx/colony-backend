@@ -8,7 +8,9 @@ import { UserEntity } from 'src/entities/user.entity';
 import { logger } from 'src/services/logs/log.storage';
 import { tagReplace } from 'src/shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
+import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhoneService } from '../phone/phone.service';
+import { SubscriptionsService } from '../products/services/subscriptions.service';
 import { UsersService } from '../users/services/users.service';
 import { PresetsDto, PresetsUpdateDto } from './preset.dto';
 import { ConversationsRepository } from './repo/conversation-messages.repo';
@@ -27,6 +29,8 @@ export class SmsService {
     public readonly conversationsRepo: ConversationsRepository,
     public readonly conversationsMessagesRepo: ConversationMessagesRepository,
     public readonly userService: UsersService,
+    public readonly subService: SubscriptionsService,
+    public readonly paymentHistory: PaymentHistoryService
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -96,6 +100,13 @@ export class SmsService {
               sender,
               influencerNumber.user.id,
             );
+
+            const plan = await this.subService.planService.repository.findOne();
+            await this.paymentHistory.updateDues({
+              cost: plan.subscriberCost,
+              costType: 'contacts',
+              user: influencerNumber.user,
+            });
 
             await this.saveSms(
               contact,

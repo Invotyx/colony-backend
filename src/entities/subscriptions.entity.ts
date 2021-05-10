@@ -27,7 +27,7 @@ export class SubscriptionsEntity {
   @Column({ length: 100, unique: false, nullable: false })
   public rId: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.paymentMethod, {
+  @ManyToOne(() => UserEntity, (user) => user.subscription, {
     eager: false,
     nullable: false,
   })

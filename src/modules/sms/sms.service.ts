@@ -5,6 +5,7 @@ import { ContactsEntity } from 'src/entities/contacts.entity';
 import { PhonesEntity } from 'src/entities/phone.entity';
 import { presetTrigger } from 'src/entities/preset-message.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { logger } from 'src/services/logs/log.storage';
 import { tagReplace } from 'src/shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
@@ -30,7 +31,8 @@ export class SmsService {
     public readonly conversationsMessagesRepo: ConversationMessagesRepository,
     public readonly userService: UsersService,
     public readonly subService: SubscriptionsService,
-    public readonly paymentHistory: PaymentHistoryService
+    public readonly paymentHistory: PaymentHistoryService,
+    public readonly countryService: CityCountryService,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -210,6 +212,7 @@ export class SmsService {
     body: string,
     receivedAt: Date,
     type: string,
+    status?: string,
   ) {
     //create conversation if not created yet.
     //add sms to conversation
@@ -256,25 +259,62 @@ export class SmsService {
       const sms = await this.client.messages;
       //parse sms here to fill in details.
       console.log('=================outbound', body, type);
-      sms.create(
-        {
-          body: body,
-          to: contact.phoneNumber, //recipient(s)
-          from: influencerNumber.number,
-        },
-        (error, res) => {
-          if (error) {
-            //failure case
-            console.log(error);
-            return true;
-          } else {
-            //save sms here.
-            console.log(res);
-            //success scenario
-          }
-        },
+
+      const checkThreshold = await this.paymentHistory.getDues(
+        'sms',
+        influencerNumber.user,
       );
-      await this.saveSms(contact, influencerNumber, body, new Date(), type);
+
+      const country = await this.countryService.countryRepo.findOne({
+        where: { code: influencerNumber.country },
+      });
+      const plan = await this.subService.planService.repository.findOne();
+      if (
+        checkThreshold &&
+        checkThreshold.cost + country.smsCost < plan.threshold
+      ) {
+        sms.create(
+          {
+            body: body,
+            to: contact.phoneNumber, //recipient(s)
+            from: influencerNumber.number,
+          },
+          async (error, res) => {
+            if (error) {
+              //failure case
+
+              await this.saveSms(
+                contact,
+                influencerNumber,
+                body,
+                new Date(),
+                type,
+                'failed',
+              );
+              return true;
+            } else {
+              await this.paymentHistory.updateDues({
+                cost: country.smsCost,
+                costType: 'sms',
+                user: influencerNumber.user,
+              });
+              await this.saveSms(
+                contact,
+                influencerNumber,
+                body,
+                new Date(),
+                type,
+                'sent',
+              );
+              //success scenario
+            }
+          },
+        );
+      } else {
+        throw new BadRequestException(
+          'Threshold value reached. Expedite your due payments.',
+        );
+      }
     } catch (e) {
       throw e;
     }

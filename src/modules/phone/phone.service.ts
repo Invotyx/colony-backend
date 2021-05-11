@@ -272,8 +272,15 @@ export class PhoneService {
   public async getPurchasedPhoneNumbers(user: UserEntity) {
     try {
       const numbers = await this.repo.find({ where: { user: user } });
+      let num = [];
       if (numbers) {
-        return numbers;
+        numbers.forEach(async number => {
+          num.push({
+            country: await this.cityCountry.countryRepo.findOne({ where: { code: number.country } }),
+            number: number
+          });
+        });
+        return num;
       } else {
         throw new BadRequestException(
           'You have not purchased any numbers yet.',

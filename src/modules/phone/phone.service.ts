@@ -44,16 +44,22 @@ export class PhoneService {
     const country = cc.toUpperCase();
     //
     try {
-      const numbers = await this.client
+      let numbers = await this.client
         .availablePhoneNumbers(country)
-        .mobile.list({
+        .local.list({
           contains: number_must_have,
           smsEnabled: true,
           limit: limit,
         });
+      if (!numbers) {
+        numbers = await this.client.availablePhoneNumbers(country).mobile.list({
+          contains: number_must_have,
+          smsEnabled: true,
+          limit: limit,
+        });
+      }
       return { numbers };
     } catch (e) {
-      
       throw new HttpException(e, HttpStatus.BAD_GATEWAY);
     }
   }

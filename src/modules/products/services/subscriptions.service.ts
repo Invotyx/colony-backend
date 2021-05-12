@@ -78,14 +78,17 @@ export class SubscriptionsService {
         }
 
         // charge client here
-        const charge = await this.stripe.charges.create({
+        const charge = await this.stripe.paymentIntents.create({
           amount: _plan.amount_decimal * 100,
-          capture: true,
           currency: 'GBP',
-          source: customer_payments.id,
+          capture_method: 'automatic',
+          confirm: true,
+          confirmation_method: 'automatic',
           customer: customer.customerId,
           description: 'Base Package subscription charge!',
+          payment_method: customer_payments.id,
         });
+
 
         if (charge.status == 'succeeded') {
           // add charge details to history
@@ -135,8 +138,8 @@ export class SubscriptionsService {
           //fail if unsuccessful.
           throw new BadRequestException(
             'Payment against your default card is failed. Details: ' +
-              charge.failure_code +
-              charge.failure_message,
+              charge.cancellation_reason +
+              charge.canceled_at,
           );
         }
       } else {

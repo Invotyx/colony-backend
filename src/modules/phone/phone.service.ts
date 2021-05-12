@@ -2,7 +2,7 @@ import {
   BadRequestException,
   HttpException,
   HttpStatus,
-  Injectable
+  Injectable,
 } from '@nestjs/common';
 import e from 'express';
 import { env } from 'process';
@@ -41,25 +41,21 @@ export class PhoneService {
     limit: number,
     number_must_have: string = '',
   ) {
-    const data: any = {
-      type: 'mobile',
-      search_pattern: 'start',
-      limit: limit,
-      number: number_must_have,
-    };
     const country = cc.toUpperCase();
     //
     try {
+      let mobile;
       const numbers = await this.client
         .availablePhoneNumbers(country)
-        .mobile.list({
+        .mobile.list({          
           contains: number_must_have,
           smsEnabled: true,
-          limit: 20,
-        });
-      return { numbers: numbers };
+          limit: limit,
+        }).then(mobile=mobile);
+      return { numbers: mobile };
     } catch (e) {
-      throw e;
+      
+      throw new HttpException(e, HttpStatus.BAD_GATEWAY);
     }
   }
 
@@ -83,13 +79,16 @@ export class PhoneService {
                 where: { default: true, user: user },
               });
               if (default_pm) {
-                //create charge
-                const charge = await this.stripe.charges.create({
+                // charge client here
+                const charge = await this.stripe.paymentIntents.create({
                   amount: country.phoneCost * 100,
                   currency: 'GBP',
+                  capture_method: 'automatic',
+                  confirm: true,
+                  confirmation_method: 'automatic',
                   customer: user.customerId,
-                  capture: true,
-                  source: default_pm.id,
+                  description: 'Phone Number purchase!',
+                  payment_method: default_pm.id,
                 });
 
                 if (charge.status == 'succeeded') {
@@ -97,15 +96,15 @@ export class PhoneService {
                   const number = await this.client.incomingPhoneNumbers.create({
                     phoneNumber: num,
                   });
-                  
-                    await this.paymentHistory.addRecordToHistory({
-                      user: user,
-                      description:
-                        'Phone number: ' + number.phoneNumber + ' purchased.',
-                      cost: country.phoneCost,
-                      costType: 'number-purchase',
-                      chargeId: charge.id,
-                    });
+
+                  await this.paymentHistory.addRecordToHistory({
+                    user: user,
+                    description:
+                      'Phone number: ' + number.phoneNumber + ' purchased.',
+                    cost: country.phoneCost,
+                    costType: 'number-purchase',
+                    chargeId: charge.id,
+                  });
                   // save to database;
                   if (number) {
                     const date = new Date(); // Now
@@ -121,7 +120,6 @@ export class PhoneService {
                       type: 'extra',
                     });
 
-
                     return {
                       number,
                       message:
@@ -136,8 +134,8 @@ export class PhoneService {
                   //fail if unsuccessful.
                   throw new BadRequestException(
                     'Payment against your default card is failed. Details: ' +
-                      charge.failure_code +
-                      charge.failure_message,
+                      charge.cancellation_reason +
+                      charge.canceled_at,
                   );
                 }
               } else {
@@ -274,10 +272,12 @@ export class PhoneService {
       const numbers = await this.repo.find({ where: { user: user } });
       let num = [];
       if (numbers) {
-        numbers.forEach(async number => {
+        numbers.forEach(async (number) => {
           num.push({
-            country: await this.cityCountry.countryRepo.findOne({ where: { code: number.country } }),
-            number: number
+            country: await this.cityCountry.countryRepo.findOne({
+              where: { code: number.country },
+            }),
+            number: number,
           });
         });
         return num;

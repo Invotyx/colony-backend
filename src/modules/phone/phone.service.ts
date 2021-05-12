@@ -44,14 +44,16 @@ export class PhoneService {
     const country = cc.toUpperCase();
     //
     try {
-      let numbers = await this.client
-        .availablePhoneNumbers(country)
-        .local.list({
-          contains: number_must_have,
-          smsEnabled: true,
-          limit: limit,
-        });
-      if (!numbers) {
+      let numbers;
+      if (country == 'US' || country == 'CA') {
+        numbers = await this.client
+          .availablePhoneNumbers(country)
+          .local.list({
+            contains: number_must_have,
+            smsEnabled: true,
+            limit: limit,
+          });
+      } else {
         numbers = await this.client.availablePhoneNumbers(country).mobile.list({
           contains: number_must_have,
           smsEnabled: true,
@@ -101,6 +103,11 @@ export class PhoneService {
                   //proceed if charge is successful.
                   const number = await this.client.incomingPhoneNumbers.create({
                     phoneNumber: num,
+                    smsMethod: 'POST',
+                    smsUrl: 'https://colony.invotyx.gq/api/receive-sms/webhook',
+                    statusCallback:
+                      'https://colony.invotyx.gq/api/receive-sms-status-callback/webhook',
+                    statusCallbackMethod: 'POST',
                   });
 
                   await this.paymentHistory.addRecordToHistory({
@@ -117,7 +124,7 @@ export class PhoneService {
                     date.setDate(date.getDate() + 30);
                     await this.repo.save({
                       country: cc.toUpperCase(),
-                      features: number.capabilities.join(','),
+                      features: 'sms',
                       number: number.phoneNumber,
                       renewalDate: date,
                       status: number.status,
@@ -165,7 +172,7 @@ export class PhoneService {
               date.setDate(date.getDate() + 30);
               await this.repo.save({
                 country: cc.toUpperCase(),
-                features: number.capabilities.join(','),
+                features: 'sms',
                 number: number.phoneNumber,
                 renewalDate: date,
                 status: number.status,

@@ -15,10 +15,16 @@ export class InboundSmsProcessor {
 
     const body = job.data;
     await this.service.receiveSms(
-      body.sender,
-      body.receiver,
+      body.from,
+      body.to,
       body.body,
-      body.receivedAt,
+      body.date_created,
+      body.sid
     );
+  }
+
+  @Process('outBoundSmsStatus')
+  async handleOutboundSmsStatus(job: Job) {
+    this.logger.debug(job.data);
   }
 }

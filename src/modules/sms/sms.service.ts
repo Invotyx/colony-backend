@@ -49,6 +49,7 @@ export class SmsService {
     receiver: string,
     body: string,
     receivedAt: Date,
+    sid:string
   ) {
     try {
       const influencerNumber = await this.phoneService.repo.findOne({
@@ -91,6 +92,7 @@ export class SmsService {
               body,
               receivedAt,
               'inBound',
+              sid
             );
             //this is just a normal sms
           } else {
@@ -116,6 +118,7 @@ export class SmsService {
               body,
               receivedAt,
               'inBound',
+              sid
             );
 
             await this.sendSms(
@@ -163,6 +166,7 @@ export class SmsService {
             body,
             receivedAt,
             'inBound',
+            sid
           );
 
           await this.sendSms(
@@ -212,7 +216,9 @@ export class SmsService {
     body: string,
     receivedAt: Date,
     type: string,
+    sid:string,
     status?: string,
+
   ) {
     //create conversation if not created yet.
     //add sms to conversation
@@ -227,6 +233,7 @@ export class SmsService {
         status: '',
         type: type,
         receivedAt: receivedAt,
+        sid:sid
       });
 
       conversation.isActive = true;
@@ -244,6 +251,7 @@ export class SmsService {
         status: '',
         type: type,
         receivedAt: receivedAt,
+        sid: sid,
       });
     }
     return message;
@@ -289,6 +297,7 @@ export class SmsService {
                 body,
                 new Date(),
                 type,
+                res.sid,
                 'failed',
               );
               return true;
@@ -304,6 +313,7 @@ export class SmsService {
                 body,
                 new Date(),
                 type,
+                res.sid,
                 'sent',
               );
               //success scenario

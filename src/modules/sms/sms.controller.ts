@@ -47,6 +47,22 @@ export class SmsController {
     }
   }
 
+  @Post('receive-sms-status-callback/webhook')
+  @HttpCode(200)
+  async receiveSmsStatusCallback(@Body() body: any, @Res() res: Response) {
+    try {
+      await this.queue.add('outBoundSmsStatus', body, {
+        removeOnComplete: true,
+        removeOnFail: true,
+        attempts: 2,
+      });
+
+      res.status(200).send('OK');
+    } catch (e) {
+      throw e;
+    }
+  }
+
   //#region  conversation
   @Auth({})
   @Get('/conversation/:contact')

@@ -86,7 +86,8 @@ export class PhoneService {
               if (default_pm) {
                 // charge client here
                 const charge = await this.stripe.paymentIntents.create({
-                  amount: country.phoneCost * 100,
+                  amount: Math.round(country.phoneCost * 100),
+                  
                   currency: 'GBP',
                   capture_method: 'automatic',
                   confirm: true,

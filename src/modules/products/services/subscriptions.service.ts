@@ -79,7 +79,7 @@ export class SubscriptionsService {
 
         // charge client here
         const charge = await this.stripe.paymentIntents.create({
-          amount: _plan.amount_decimal * 100,
+          amount: Math.round(_plan.amount_decimal * 100),
           currency: 'GBP',
           capture_method: 'automatic',
           confirm: true,

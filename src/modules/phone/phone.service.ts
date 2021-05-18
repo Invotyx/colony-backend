@@ -77,9 +77,12 @@ export class PhoneService {
         try {
           if (type != 'sub') {
             //get phone costing from country...
+            console.log('==================');
+            console.log('here check');
             const country = await this.cityCountry.countryRepo.findOne({
               where: { code: cc.toUpperCase() },
             });
+            console.log(country)
             if (country) {
               //get default payment method
               const default_pm = await this.payment.repository.findOne({

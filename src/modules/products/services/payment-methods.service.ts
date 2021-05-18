@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { env, exit } from 'process';
+import { env } from 'process';
 import { UserEntity } from 'src/entities/user.entity';
 import Stripe from 'stripe';
 import { PaymentMethodDto } from '../dto/payment-methods.dto';
@@ -29,50 +29,30 @@ export class PaymentMethodsService {
         });
         await this.stripe.paymentMethods.attach(pm.id, {
           customer: customer.customerId,
-
         });
-
+        const def = await this.repository.findOne({
+          where: { default: true, user: customer },
+        });
+        if (def) {
+          def.default = false;
+          await this.repository.save(def);
+        }
         const check = await this.repository.findOne({
           where: { fingerprint: pm.card.fingerprint, user: customer },
         });
 
-        if (check) {
-          await this.stripe.paymentMethods.detach(check.id);
-          await this.repository.delete(check);
-          check.name = methodDetails.name;
-          check.last4_card = pm.card.last4;
-          check.type = pm.card.brand;
-          check.user = customer;
-          check.fingerprint = pm.card.fingerprint;
-          check.default = true;
-          check.id = pm.id;
-          await this.repository.insert(check);
-          await this.stripe.customers.update(customer.customerId, {
-            invoice_settings: { default_payment_method: pm.id },
-          });
-          return { message: 'Payment method added' };
-        } else {
-          const def = await this.repository.findOne({
-            where: { default: true, user: customer },
-          });
-          if (def) {
-            def.default = false;
-            await this.repository.save(def);
-          }
-          await this.repository.save({
-            id: pm.id,
-            last4_card: pm.card.last4,
-            type: pm.card.brand,
-            user: customer,
-            fingerprint: pm.card.fingerprint,
-            name: methodDetails.name,
-            default: true,
-          });
-          await this.stripe.customers.update(customer.customerId, {
-            invoice_settings: { default_payment_method: pm.id },
-          });
-          return { message: 'Payment method added' };
-        }
+        check.name = methodDetails.name;
+        check.last4_card = pm.card.last4;
+        check.type = pm.card.brand;
+        check.user = customer;
+        check.fingerprint = pm.card.fingerprint;
+        check.default = true;
+        check.id = pm.id;
+        await this.repository.save(check);
+        await this.stripe.customers.update(customer.customerId, {
+          invoice_settings: { default_payment_method: pm.id },
+        });
+        return { message: 'Payment method added' };
       } else {
         throw new BadRequestException('Invalid Data entered');
       }

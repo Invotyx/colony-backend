@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDecimal, IsIn, IsNotEmpty, IsNumber, Min } from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, Min } from 'class-validator';
 
 export class CountryCost {
   @ApiProperty()

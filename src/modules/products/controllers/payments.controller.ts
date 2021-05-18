@@ -50,7 +50,10 @@ export class PaymentsController {
           user.customerId = stripe_user.id;
           user.isActive = true;
           user.isApproved = true;
-          user = await this.userService.repository.save(user);
+          await this.userService.repository.update(
+            { id: user.id as any },
+            user,
+          );
         }
         const pm = await this.paymentService.createPaymentMethod(user, data);
         return pm;

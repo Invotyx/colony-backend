@@ -1,6 +1,7 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { ApiCallingService } from 'src/services/api-calling/api-calling.service';
 import { CityCountryModule } from 'src/services/city-country/city-country.module';
+import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { MainMysqlModule } from 'src/shared/main-mysql.module';
 import { ApiCallingModule } from '../../services/api-calling/api-calling.module';
 import { PaymentHistoryModule } from '../payment-history/payment-history.module';
@@ -15,12 +16,12 @@ import { PhoneService } from './phone.service';
     MainMysqlModule,
     ApiCallingModule,
     UsersModule,
-    CityCountryModule,
+    forwardRef(() => CityCountryModule),
     forwardRef(() => ProductsModule),
     forwardRef(() => PaymentHistoryModule),
   ],
   controllers: [PhoneController],
-  providers: [PhoneService, ApiCallingService, PaymentMethodsService],
+  providers: [PhoneService, ApiCallingService, PaymentMethodsService, CityCountryService],
   exports: [PhoneService],
 })
 export class PhoneModule {}

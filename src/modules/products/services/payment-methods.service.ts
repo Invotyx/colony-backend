@@ -57,6 +57,7 @@ export class PaymentMethodsService {
         throw new BadRequestException('Invalid Data entered');
       }
     } catch (e) {
+      console.log(e);
       throw e;
     }
   }

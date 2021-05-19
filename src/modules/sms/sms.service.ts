@@ -50,14 +50,15 @@ export class SmsService {
     body: string,
     receivedAt: Date,
     sid: string,
+    fromCountry:string
   ) {
     try {
-      console.log(sender,receiver,body,receivedAt,sid);
+      
       const influencerNumber = await this.phoneService.repo.findOne({
-        where: { number: receiver, status: 'in-use' },
+        where: { number: receiver, status: 'in-use', country: fromCountry },
         relations: ['user'],
       });
-      console.log(influencerNumber);
+      
       if (influencerNumber) {
         let contact = await this.contactService.repository.findOne({
           where: { phoneNumber: sender },

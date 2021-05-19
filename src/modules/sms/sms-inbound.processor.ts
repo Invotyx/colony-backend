@@ -20,6 +20,7 @@ export class InboundSmsProcessor {
       body.Body,
       new Date(),
       body.MessageSid,
+      body.FromCountry,
     );
   }
 

@@ -107,9 +107,9 @@ export class PhoneService {
                   const number = await this.client.incomingPhoneNumbers.create({
                     phoneNumber: num,
                     smsMethod: 'POST',
-                    smsUrl: 'https://colony.invotyx.gq/api/receive-sms/webhook',
+                    smsUrl: 'https://colony.invotyx.gq/api/sms/receive-sms/webhook',
                     statusCallback:
-                      'https://colony.invotyx.gq/api/receive-sms-status-callback/webhook',
+                      'https://colony.invotyx.gq/api/sms/receive-sms-status-callback/webhook',
                     statusCallbackMethod: 'POST',
                   });
 
@@ -167,6 +167,11 @@ export class PhoneService {
           } else {
             const number = await this.client.incomingPhoneNumbers.create({
               phoneNumber: num,
+              smsMethod: 'POST',
+              smsUrl: 'https://colony.invotyx.gq/api/sms/receive-sms/webhook',
+              statusCallback:
+                'https://colony.invotyx.gq/api/sms/receive-sms-status-callback/webhook',
+              statusCallbackMethod: 'POST',
             });
 
             // save to database;

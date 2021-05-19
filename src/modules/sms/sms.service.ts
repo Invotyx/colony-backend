@@ -61,15 +61,6 @@ export class SmsService {
           where: { phoneNumber: sender },
         });
 
-        let preset_onboard: any = await this.presetRepo.findOne({
-          where: { trigger: 'onBoard', user: influencerNumber.user },
-        });
-
-        if (!preset_onboard) {
-          preset_onboard = {
-            body: 'Welcome by ${inf_name}.',
-          };
-        }
         let preset_welcome: any = await this.presetRepo.findOne({
           where: { trigger: 'welcome', user: influencerNumber.user },
         });
@@ -124,21 +115,6 @@ export class SmsService {
             await this.sendSms(
               contact,
               influencerNumber,
-              tagReplace(preset_onboard.body, {
-                name: contact.name ? contact.name : '',
-                inf_name:
-                  influencerNumber.user.firstName +
-                  ' ' +
-                  influencerNumber.user.firstName,
-                link:
-                  env.PUBLIC_APP_URL + '/contacts/enroll/' + contact.urlMapper,
-              }),
-              'outBound',
-            );
-            delay(1000);
-            await this.sendSms(
-              contact,
-              influencerNumber,
               tagReplace(preset_welcome.body, {
                 name: contact.name ? contact.name : '',
                 inf_name:
@@ -172,21 +148,6 @@ export class SmsService {
           await this.sendSms(
             contact,
             influencerNumber,
-            tagReplace(preset_onboard.body, {
-              name: contact.name ? contact.name : '',
-              inf_name:
-                influencerNumber.user.firstName +
-                ' ' +
-                influencerNumber.user.firstName,
-              link:
-                env.PUBLIC_APP_URL + '/contacts/enroll/' + contact.urlMapper,
-            }),
-            'outBound',
-          );
-          delay(1000);
-          await this.sendSms(
-            contact,
-            influencerNumber,
             tagReplace(preset_welcome.body, {
               name: contact.name ? contact.name : '',
               inf_name:
@@ -201,7 +162,7 @@ export class SmsService {
         }
       } else {
         logger.error(
-          'Influencer not found. Error generated. Returned 200 to messagebird hook.',
+          'Influencer not found. Error generated. Returned 200 to twillio hook.',
         );
         return 200;
       }

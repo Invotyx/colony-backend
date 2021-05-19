@@ -11,15 +11,14 @@ export class InboundSmsProcessor {
 
   @Process('inboundSms')
   async handleInboundSms(job: Job) {
-    this.logger.debug(job.data);
-
+    
     const body = job.data;
     await this.service.receiveSms(
-      body.from,
-      body.to,
-      body.body,
-      body.date_created,
-      body.sid
+      body.From,
+      body.To,
+      body.Body,
+      new Date(),
+      body.MessageSid,
     );
   }
 

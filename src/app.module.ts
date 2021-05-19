@@ -42,7 +42,7 @@ import { PaymentHistoryModule } from './modules/payment-history/payment-history.
     BullModule.forRoot({
       redis: {
         host: process.env.REDIS_HOST,
-        port: +process.env.REDIS_PORT,
+        port: 6379,
       },
     }),
     AuthModule,

@@ -54,7 +54,7 @@ export class SmsService {
     try {
       console.log(sender,receiver,body,receivedAt,sid);
       const influencerNumber = await this.phoneService.repo.findOne({
-        where: { number: receiver, status: 'active' },
+        where: { number: receiver, status: 'in-use' },
         relations: ['user'],
       });
       console.log(influencerNumber);
@@ -163,7 +163,7 @@ export class SmsService {
           );
         }
       } else {
-        logger.error(
+        console.log(
           'Influencer not found. Error generated. Returned 200 to twillio hook.',
         );
         return 200;

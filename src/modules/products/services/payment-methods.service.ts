@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { env } from 'process';
+import { PaymentMethodsEntity } from 'src/entities/payment-methods.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import Stripe from 'stripe';
 import { PaymentMethodDto } from '../dto/payment-methods.dto';
@@ -37,9 +38,7 @@ export class PaymentMethodsService {
           def.default = false;
           await this.repository.save(def);
         }
-        const check = await this.repository.findOne({
-          where: { fingerprint: pm.card.fingerprint, user: customer },
-        });
+        let check = new PaymentMethodsEntity();
 
         check.name = methodDetails.name;
         check.last4_card = pm.card.last4;

@@ -65,6 +65,16 @@ export class SmsController {
 
   //#region  conversation
   @Auth({})
+  @Get('/conversations')
+  async getConversations(@LoginUser() inf: UserEntity) {
+    try {
+      return await this.service.getConversations(inf);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({})
   @Get('/conversation/:contact')
   async getConversation(
     @LoginUser() inf: UserEntity,
@@ -101,12 +111,12 @@ export class SmsController {
   }
 
   @Auth({})
-  @Post('/conversation/:contact')
+  @Post('/conversation')
   async sendSms(
     @LoginUser() inf: UserEntity,
-    @Param('contact') contact: string,
+    @Body('to') contact: string,
     @Body('message') message: string,
-    @Body('phoneNumber') phoneNumber: string,
+    @Body('from') phoneNumber: string,
   ) {
     try {
       const _contact = await this.service.contactService.repository.findOne({

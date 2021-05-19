@@ -89,7 +89,6 @@ export class SubscriptionsService {
           payment_method: customer_payments.id,
         });
 
-
         if (charge.status == 'succeeded') {
           // add charge details to history
 

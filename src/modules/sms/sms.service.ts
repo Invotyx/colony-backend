@@ -52,10 +52,12 @@ export class SmsService {
     sid: string,
   ) {
     try {
+      console.log(sender,receiver,body,receivedAt,sid);
       const influencerNumber = await this.phoneService.repo.findOne({
         where: { number: receiver, status: 'active' },
         relations: ['user'],
       });
+      console.log(influencerNumber);
       if (influencerNumber) {
         let contact = await this.contactService.repository.findOne({
           where: { phoneNumber: sender },
@@ -241,6 +243,7 @@ export class SmsService {
         checkThreshold &&
         checkThreshold.cost + country.smsCost < plan.threshold
       ) {
+        console.log(body, "to", "from");
         sms.create(
           {
             body: body,
@@ -281,6 +284,7 @@ export class SmsService {
           },
         );
       } else {
+        console.log("Threshold reached");
         throw new BadRequestException(
           'Threshold value reached. Expedite your due payments.',
         );

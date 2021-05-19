@@ -13,6 +13,7 @@ export class InboundSmsProcessor {
   async handleInboundSms(job: Job) {
     
     const body = job.data;
+    console.log(body);
     await this.service.receiveSms(
       body.From,
       body.To,

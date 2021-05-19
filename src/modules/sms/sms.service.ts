@@ -1,12 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { env } from 'process';
-import { delay } from 'rxjs/operators';
 import { ContactsEntity } from 'src/entities/contacts.entity';
 import { PhonesEntity } from 'src/entities/phone.entity';
 import { presetTrigger } from 'src/entities/preset-message.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
-import { logger } from 'src/services/logs/log.storage';
 import { tagReplace } from 'src/shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
@@ -50,15 +48,14 @@ export class SmsService {
     body: string,
     receivedAt: Date,
     sid: string,
-    fromCountry:string
+    fromCountry: string,
   ) {
     try {
-      
       const influencerNumber = await this.phoneService.repo.findOne({
         where: { number: receiver, status: 'in-use', country: fromCountry },
         relations: ['user'],
       });
-      console.log(influencerNumber, "influencer number for country exists");
+      console.log(influencerNumber, 'influencer number for country exists');
       if (influencerNumber) {
         let contact = await this.contactService.repository.findOne({
           where: { phoneNumber: sender },
@@ -88,7 +85,7 @@ export class SmsService {
               'inBound',
               sid,
             );
-            console.log("saved as regular inbound sms")
+            console.log('saved as regular inbound sms');
             //this is just a normal sms
           } else {
             // contact already exists but not subscribed to this influencer
@@ -116,7 +113,9 @@ export class SmsService {
               sid,
               'received',
             );
-            console.log('saved as existing subscriber inbound sms and sent message');
+            console.log(
+              'saved as existing subscriber inbound sms and sent message',
+            );
 
             await this.sendSms(
               contact,
@@ -246,10 +245,10 @@ export class SmsService {
       });
       const plan = await this.subService.planService.repository.findOne();
       if (
-        checkThreshold &&
-        checkThreshold.cost + country.smsCost < plan.threshold
+        !checkThreshold || checkThreshold.cost + country.smsCost <
+        plan.threshold
       ) {
-        console.log(body, "to", "from");
+        console.log(body, 'to', 'from');
         sms.create(
           {
             body: body,
@@ -290,7 +289,7 @@ export class SmsService {
           },
         );
       } else {
-        console.log("Threshold reached");
+        console.log('Threshold reached');
         throw new BadRequestException(
           'Threshold value reached. Expedite your due payments.',
         );
@@ -312,11 +311,9 @@ export class SmsService {
       if (conversations) {
         return conversations;
       } else {
-        return { message: "No conversations created yet." };
+        return { message: 'No conversations created yet.' };
       }
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }
 
   async getConversation(inf: UserEntity, contact: string) {

@@ -46,14 +46,10 @@ export class PaymentsController {
             name: user.firstName + ' ' + user.lastName,
             phone: user.mobile,
           });
-
           user.customerId = stripe_user.id;
           user.isActive = true;
           user.isApproved = true;
-          await this.userService.repository.update(
-            { id: user.id as any },
-            user,
-          );
+          await this.userService.repository.save(user);
         }
         const pm = await this.paymentService.createPaymentMethod(user, data);
         return pm;
@@ -61,7 +57,7 @@ export class PaymentsController {
         throw new BadRequestException('Incomplete data provided.');
       }
     } catch (e) {
-      console.log(e);
+      console.log(e,"exp === 1");
       throw new BadRequestException(e, 'An Exception Occurred');
     }
   }

@@ -17,7 +17,7 @@ import { SubscriptionsService } from './services/subscriptions.service';
 @Module({
   imports: [
     MainMysqlModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
     forwardRef(() => PhoneModule),
     ApiCallingModule,
     CityCountryModule,

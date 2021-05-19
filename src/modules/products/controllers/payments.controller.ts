@@ -61,6 +61,7 @@ export class PaymentsController {
         throw new BadRequestException('Incomplete data provided.');
       }
     } catch (e) {
+      console.log(e);
       throw new BadRequestException(e, 'An Exception Occurred');
     }
   }

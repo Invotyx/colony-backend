@@ -58,7 +58,7 @@ export class SmsService {
         where: { number: receiver, status: 'in-use', country: fromCountry },
         relations: ['user'],
       });
-      
+      console.log(influencerNumber, "influencer number for country exists");
       if (influencerNumber) {
         let contact = await this.contactService.repository.findOne({
           where: { phoneNumber: sender },
@@ -88,6 +88,7 @@ export class SmsService {
               'inBound',
               sid,
             );
+            console.log("saved as regular inbound sms")
             //this is just a normal sms
           } else {
             // contact already exists but not subscribed to this influencer
@@ -113,7 +114,9 @@ export class SmsService {
               receivedAt,
               'inBound',
               sid,
+              'received',
             );
+            console.log('saved as existing subscriber inbound sms and sent message');
 
             await this.sendSms(
               contact,
@@ -146,6 +149,7 @@ export class SmsService {
             receivedAt,
             'inBound',
             sid,
+            'received',
           );
 
           await this.sendSms(
@@ -162,6 +166,7 @@ export class SmsService {
             }),
             'outBound',
           );
+          console.log('saved as new subscriber inbound sms and sent message');
         }
       } else {
         console.log(

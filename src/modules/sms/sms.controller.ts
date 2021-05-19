@@ -41,8 +41,6 @@ export class SmsController {
         attempts: 2,
       });
 
-      console.log(body,"added to queue");
-
       res.status(200).send();
     } catch (e) {
       throw e;

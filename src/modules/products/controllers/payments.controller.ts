@@ -47,8 +47,6 @@ export class PaymentsController {
             phone: user.mobile,
           });
           user.customerId = stripe_user.id;
-          user.isActive = true;
-          user.isApproved = true;
           await this.userService.repository.save(user);
         }
         const pm = await this.paymentService.createPaymentMethod(user, data);

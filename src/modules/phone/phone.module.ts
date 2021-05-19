@@ -16,12 +16,18 @@ import { PhoneService } from './phone.service';
     MainMysqlModule,
     ApiCallingModule,
     UsersModule,
+    forwardRef(() => ProductsModule),
     forwardRef(() => CityCountryModule),
     forwardRef(() => ProductsModule),
     forwardRef(() => PaymentHistoryModule),
   ],
   controllers: [PhoneController],
-  providers: [PhoneService, ApiCallingService, PaymentMethodsService, CityCountryService],
+  providers: [
+    PhoneService,
+    ApiCallingService,
+    PaymentMethodsService,
+    CityCountryService,
+  ],
   exports: [PhoneService],
 })
 export class PhoneModule {}

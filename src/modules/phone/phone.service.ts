@@ -11,6 +11,7 @@ import { CityCountryService } from 'src/services/city-country/city-country.servi
 import Stripe from 'stripe';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PaymentMethodsService } from '../products/services/payment-methods.service';
+import { SubscriptionsService } from '../products/services/subscriptions.service';
 import { PhonesRepository } from './phone.repo';
 
 @Injectable()
@@ -76,9 +77,6 @@ export class PhoneService {
       if (env.NODE_ENV !== 'development') {
         try {
           if (type != 'sub') {
-            //get phone costing from country...
-            console.log('==================');
-            console.log('here check');
             const country = await this.cityCountry.countryRepo.findOne({
               where: { code: cc.toUpperCase() },
             });

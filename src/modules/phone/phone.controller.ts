@@ -14,6 +14,9 @@ import { LoginUser } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entities/user.entity';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
+import { collection_method } from '../products/dto/subscriptions.dto';
+import { PlansService } from '../products/services/plans.service';
+import { SubscriptionsService } from '../products/services/subscriptions.service';
 import { PhoneService } from './phone.service';
 
 @Injectable()
@@ -23,6 +26,8 @@ export class PhoneController {
   constructor(
     private readonly service: PhoneService,
     private readonly countryRepo: CountryRepository,
+    private readonly subscriptionService: SubscriptionsService,
+    private readonly planService: PlansService,
   ) {}
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
@@ -81,17 +86,31 @@ export class PhoneController {
     @Body('number') number: string,
   ) {
     try {
-      if (country.length !== 2) {
-        throw new BadRequestException(
-          'Country Code should be in ISO 2 Code Format eg. GB for United Kingdom',
-        );
+      const subscription = await this.subscriptionService.repository.findOne({
+        where: { user: user },
+      });
+      if (subscription) {
+        if (country.length !== 2) {
+          throw new BadRequestException(
+            'Country Code should be in ISO 2 Code Format eg. GB for United Kingdom',
+          );
+        }
+        if (number.length < 10 || number.length > 20) {
+          throw new BadRequestException(
+            'Number should be in international format and length should be between 10 to 20 characters.',
+          );
+        }
+        return await this.service.purchasePhoneNumber(country, number, user);
+      } else {
+        const plan = await this.planService.repository.findOne();
+        const sub: any = {
+          country: country,
+          collectionMethod: collection_method.charge_automatically,
+          number: number,
+          planId: plan.id,
+        };
+        return await this.subscriptionService.createSubscription(user, sub);
       }
-      if (number.length < 10 || number.length > 20) {
-        throw new BadRequestException(
-          'Number should be in international format and length should be between 10 to 20 characters.',
-        );
-      }
-      return await this.service.purchasePhoneNumber(country, number, user);
     } catch (e) {
       throw e;
     }

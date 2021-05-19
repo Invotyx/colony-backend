@@ -126,6 +126,14 @@ export class SubscriptionsService {
             ),
             phone: purchasedNumberDb,
           });
+          
+          const influencer = await this.userService.repository.findOne({
+            where: { id: customer.id },
+          });
+          influencer.isActive = true;
+          influencer.isApproved = true;
+
+          await this.userService.repository.save(influencer);
 
           return {
             message:

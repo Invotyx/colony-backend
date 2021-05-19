@@ -55,7 +55,7 @@ export class SmsService {
         where: { number: receiver, status: 'in-use', country: fromCountry },
         relations: ['user'],
       });
-      console.log(influencerNumber, 'influencer number for country exists');
+      
       if (influencerNumber) {
         let contact = await this.contactService.repository.findOne({
           where: { phoneNumber: sender },
@@ -75,7 +75,7 @@ export class SmsService {
           const rel = await this.contactService.influencerContactRepo.findOne({
             where: { contact: contact, user: influencerNumber.user },
           });
-
+          console.log("======contact subscriber relation=====",rel);
           if (rel) {
             await this.saveSms(
               contact,
@@ -231,9 +231,8 @@ export class SmsService {
     type: string,
   ) {
     try {
-      const sms = await this.client.messages;
       //parse sms here to fill in details.
-      console.log('=================outbound', body, type);
+      console.log('=========outbound========');
 
       const checkThreshold = await this.paymentHistory.getDues(
         'sms',
@@ -244,12 +243,13 @@ export class SmsService {
         where: { code: influencerNumber.country },
       });
       const plan = await this.subService.planService.repository.findOne();
+      console.log(checkThreshold, country, plan);
       if (
         !checkThreshold || checkThreshold.cost + country.smsCost <
         plan.threshold
       ) {
         console.log(body, 'to', 'from');
-        sms.create(
+        await this.client.messages.create(
           {
             body: body,
             to: contact.phoneNumber, //recipient(s)
@@ -258,7 +258,7 @@ export class SmsService {
           async (error, res) => {
             if (error) {
               //failure case
-
+              console.log(error);
               await this.saveSms(
                 contact,
                 influencerNumber,

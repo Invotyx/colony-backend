@@ -193,9 +193,11 @@ export class PhoneService {
                   'Number purchased and linked to your account successfully.',
               };
             } else {
-              throw new BadRequestException(
-                'An error ocurred while number purchasing, try again later.',
-              );
+              return {
+                number:null,
+                message:
+                  'Subscribed! Number cannot be acquired.',
+              };
             }
           }
         } catch (ex) {

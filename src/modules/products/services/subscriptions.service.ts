@@ -101,46 +101,50 @@ export class SubscriptionsService {
 
           await this.paymentHistory.addRecordToHistory({
             user: customer,
-            description:
-              'Base Plan purchased with number: ' +
-              purchasedNumber.number.number,
+            description: 'Base Plan purchased',
             cost: _plan.amount_decimal,
             costType: 'base-plan-purchase',
             chargeId: charge.id,
           });
+          if (purchasedNumber.number != null) {
+            const purchasedNumberDb = await this.phoneService.repo.findOne({
+              where: { number: purchasedNumber.number.number },
+            });
 
-          const purchasedNumberDb = await this.phoneService.repo.findOne({
-            where: { number: purchasedNumber.number.number },
-          });
+            await this.repository.save({
+              rId: nanoid(),
+              plan: _plan,
+              user: customer,
+              cancelled: false,
+              collection_method: sub.collectionMethod,
+              paymentType: 'recurring',
+              currentStartDate: new Date(),
+              currentEndDate: new Date(
+                new Date().setDate(new Date().getDate() + 30),
+              ),
+              phone: purchasedNumberDb,
+            });
 
-          await this.repository.save({
-            rId: nanoid(),
-            plan: _plan,
-            user: customer,
-            cancelled: false,
-            collection_method: sub.collectionMethod,
-            paymentType: 'recurring',
-            currentStartDate: new Date(),
-            currentEndDate: new Date(
-              new Date().setDate(new Date().getDate() + 30),
-            ),
-            phone: purchasedNumberDb,
-          });
-          
-          const influencer = await this.userService.repository.findOne({
-            where: { id: customer.id },
-          });
-          influencer.isActive = true;
-          influencer.isApproved = true;
+            const influencer = await this.userService.repository.findOne({
+              where: { id: customer.id },
+            });
+            influencer.isActive = true;
+            influencer.isApproved = true;
 
-          await this.userService.repository.save(influencer);
+            await this.userService.repository.save(influencer);
 
-          return {
-            message:
-              'Subscribed to selected plan successfully.' +
-              purchasedNumber.message,
-            number: purchasedNumber.number,
-          };
+            return {
+              message:
+                'Subscribed to selected plan successfully.' +
+                purchasedNumber.message,
+              number: purchasedNumber.number,
+            };
+          } else {
+            return {
+              message: purchasedNumber.message,
+              number: purchasedNumber.number,
+            };
+          }
         } else {
           //fail if unsuccessful.
           throw new BadRequestException(

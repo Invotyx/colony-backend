@@ -33,7 +33,7 @@ export class SubscriptionsController {
     @Body() subscription: SubscriptionsDto,
   ) {
     try {
-      if (customer.isActive && customer.isApproved) {
+      
         const result = await this.subscriptionService.createSubscription(
           customer,
           subscription,
@@ -43,11 +43,6 @@ export class SubscriptionsController {
         } else {
           throw new BadRequestException('An error occurred');
         }
-      } else {
-        throw new BadRequestException(
-          'Influencer is has not activated his/her account yet.',
-        );
-      }
     } catch (e) {
       throw new BadRequestException(e, 'An exception occurred');
     }

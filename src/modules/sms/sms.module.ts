@@ -4,6 +4,7 @@ import { CityCountryModule } from 'src/services/city-country/city-country.module
 import { MainMysqlModule } from 'src/shared/main-mysql.module';
 import { ContactsModule } from '../contacts/contacts.module';
 import { PaymentHistoryModule } from '../payment-history/payment-history.module';
+import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhoneModule } from '../phone/phone.module';
 import { ProductsModule } from '../products/products.module';
 import { UsersModule } from '../users/users.module';
@@ -26,7 +27,7 @@ import { SmsService } from './sms.service';
     forwardRef(() => CityCountryModule)
   ],
   controllers: [SmsController],
-  providers: [SmsService, BroadcastService, InboundSmsProcessor],
+  providers: [SmsService, BroadcastService, InboundSmsProcessor,PaymentHistoryService],
   exports: [SmsService],
 })
 export class SmsModule {}

@@ -34,10 +34,27 @@ export class PhoneController {
   @Get('my-numbers')
   async getPurchasedPhoneNumbers(@LoginUser() user: UserEntity) {
     try {
+      const countries = await this.countryRepo.find({
+        where: { active: true },
+      });
       const numbers = await this.service.getPurchasedPhoneNumbers(user);
-      return numbers;
+      let nums=[];
+      for (let number of numbers) {
+        var country = this.search(number.country, countries);
+        number.country = country as any;
+        nums.push(number);
+      }
+      return nums;
     } catch (e) {
       throw e;
+    }
+  }
+
+  search(nameKey, myArray) {
+    for (var i = 0; i < myArray.length; i++) {
+      if (myArray[i].code === nameKey) {
+        return myArray[i];
+      }
     }
   }
 

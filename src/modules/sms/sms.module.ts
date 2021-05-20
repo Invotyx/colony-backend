@@ -1,6 +1,7 @@
 import { BullModule } from '@nestjs/bull';
 import { forwardRef, Module } from '@nestjs/common';
 import { CityCountryModule } from 'src/services/city-country/city-country.module';
+import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { MainMysqlModule } from 'src/shared/main-mysql.module';
 import { ContactsModule } from '../contacts/contacts.module';
 import { PaymentHistoryModule } from '../payment-history/payment-history.module';
@@ -24,10 +25,16 @@ import { SmsService } from './sms.service';
     PhoneModule,
     ProductsModule,
     forwardRef(() => PaymentHistoryModule),
-    forwardRef(() => CityCountryModule)
+    forwardRef(() => CityCountryModule),
   ],
   controllers: [SmsController],
-  providers: [SmsService, BroadcastService, InboundSmsProcessor,PaymentHistoryService],
+  providers: [
+    SmsService,
+    BroadcastService,
+    InboundSmsProcessor,
+    PaymentHistoryService,
+    CityCountryService,
+  ],
   exports: [SmsService],
 })
 export class SmsModule {}

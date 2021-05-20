@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -25,8 +26,8 @@ export class InfluencerLinksController {
   @Post('')
   async addLink(
     @LoginUser() influencer: UserEntity,
-    @Query('link') link: string,
-    @Query('title') title: string,
+    @Body('link') link: string,
+    @Body('title') title: string,
   ) {
     try {
       return {
@@ -55,9 +56,9 @@ export class InfluencerLinksController {
   @Put('')
   async updateLink(
     @LoginUser() influencer: UserEntity,
-    @Query('link') id: number,
-    @Query('link') link: string,
-    @Query('title') title: string,
+    @Body('linkId') id: number,
+    @Body('link') link: string,
+    @Body('title') title: string,
   ) {
     try {
       return {
@@ -70,10 +71,10 @@ export class InfluencerLinksController {
   }
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
-  @Delete('')
+  @Delete(':id')
   async deleteLink(
     @LoginUser() influencer: UserEntity,
-    @Query('id') id: number,
+    @Param('id') id: number,
   ) {
     try {
       return {

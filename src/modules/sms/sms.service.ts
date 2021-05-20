@@ -72,11 +72,11 @@ export class SmsService {
         }
 
         if (contact) {
-          const rel = await this.contactService.influencerContactRepo.findOne({
-            where: { contact: contact, user: influencerNumber.user },
-          });
-          console.log('======contact subscriber relation=====', rel);
-          if (rel) {
+          
+          const conversation = await this.conversationsRepo.findOne({ where: { contact: contact,phone:influencerNumber } });
+          const messages = await this.conversationsMessagesRepo.find({ where: { conversations: conversation } });
+          
+          if (messages && messages.length>0) {
             await this.saveSms(
               contact,
               influencerNumber,

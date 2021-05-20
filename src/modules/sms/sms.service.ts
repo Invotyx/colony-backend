@@ -72,11 +72,14 @@ export class SmsService {
         }
 
         if (contact) {
-          
-          const conversation = await this.conversationsRepo.findOne({ where: { contact: contact,phone:influencerNumber } });
-          const messages = await this.conversationsMessagesRepo.find({ where: { conversations: conversation } });
-          
-          if (messages && messages.length>0) {
+          const conversation = await this.conversationsRepo.findOne({
+            where: { contact: contact, phone: influencerNumber },
+          });
+          const messages = await this.conversationsMessagesRepo.find({
+            where: { conversations: conversation },
+          });
+
+          if (messages && messages.length > 0) {
             await this.saveSms(
               contact,
               influencerNumber,
@@ -238,54 +241,54 @@ export class SmsService {
         'sms',
         influencerNumber.user,
       );
-
+      console.log(checkThreshold, 'ThresHold');
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },
       });
+      console.log(country, 'country');
       const plan = await this.subService.planService.repository.findOne();
-      console.log(checkThreshold, country, plan);
+
+      console.log(plan, 'plan');
       if (
         !checkThreshold ||
         checkThreshold.cost + country.smsCost < plan.threshold
       ) {
-        console.log(body, 'to', 'from');
-        await this.client.messages.create({
+        const message = await this.client.messages.create({
           body: body,
           to: contact.phoneNumber, //recipient(s)
           from: influencerNumber.number,
-        }).then(async message => {
-          if (message.status != 'sent') {
-            //failure case
-            await this.saveSms(
-              contact,
-              influencerNumber,
-              body,
-              new Date(),
-              type,
-              message.sid,
-              'failed',
-            );
-            return true;
-          } else {
-            await this.paymentHistory.updateDues({
-              cost: country.smsCost,
-              costType: 'sms',
-              user: influencerNumber.user,
-            });
-            await this.saveSms(
-              contact,
-              influencerNumber,
-              body,
-              new Date(),
-              type,
-              message.sid,
-              'sent',
-            );
-            //success scenario
-          }
-        })
+        });
 
-        
+        if (message.status != 'sent') {
+          //failure case
+          await this.saveSms(
+            contact,
+            influencerNumber,
+            body,
+            new Date(),
+            type,
+            message.sid,
+            'failed',
+          );
+          return true;
+        } else {
+          await this.paymentHistory.updateDues({
+            cost: country.smsCost,
+            costType: 'sms',
+            user: influencerNumber.user,
+          });
+          await this.saveSms(
+            contact,
+            influencerNumber,
+            body,
+            new Date(),
+            type,
+            message.sid,
+            'sent',
+          );
+          return true;
+          //success scenario
+        }
       } else {
         console.log('Threshold reached');
         throw new BadRequestException(
@@ -293,6 +296,7 @@ export class SmsService {
         );
       }
     } catch (e) {
+      console.error('sendSms', e);
       throw e;
     }
   }

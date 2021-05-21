@@ -58,7 +58,7 @@ export class ContactsEntity {
   public state: string;
 
   @Column({ length: 2, nullable: true })
-  public countryCode: string;
+  public cCode: string;
 
   @Column({ length: 100, nullable: true })
   public timezone: string;

@@ -56,7 +56,7 @@ export class ContactsService {
           contact.phoneNumber = phoneNumber;
           contact.user = [user];
           contact.urlMapper = nanoid();
-          contact.countryCode = fromCountry;
+          contact.cCode = fromCountry;
           contact = await this.repository.save(
             await this.repository.create(contact),
           );
@@ -221,7 +221,7 @@ export class ContactsService {
       }
 
       let infNum = await this.phoneService.repo.findOne({
-        where: { country: contactDetails.countryCode, user: user },
+        where: { country: contactDetails.cCode, user: user },
       });
 
       await this.repository.save(contactDetails);

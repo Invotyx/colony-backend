@@ -1,7 +1,7 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class change1621600485120 implements MigrationInterface {
-    name = 'change1621600485120'
+export class change1621601253571 implements MigrationInterface {
+    name = 'change1621601253571'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP CONSTRAINT "FK_8ed56ad1ba2bd0dacfd6ba93166"`);
@@ -23,7 +23,7 @@ export class change1621600485120 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "influencer_contacts" ADD "createdAt" TIMESTAMP NOT NULL DEFAULT now()`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" ADD "updatedAt" TIMESTAMP NOT NULL DEFAULT now()`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" ADD "deletedAt" TIMESTAMP`);
-        await queryRunner.query(`ALTER TABLE "contacts" ADD "countryCode" character varying(2)`);
+        await queryRunner.query(`ALTER TABLE "contacts" ADD "cCode" character varying(2)`);
         await queryRunner.query(`ALTER TABLE "user_role" ADD "meta" json`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP CONSTRAINT "PK_3a91f61fd35430b525cea602d3c"`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" ADD CONSTRAINT "PK_45170f07127ff6f89c97d2d64b2" PRIMARY KEY ("contactId", "userId")`);
@@ -57,7 +57,7 @@ export class change1621600485120 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP CONSTRAINT "PK_45170f07127ff6f89c97d2d64b2"`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" ADD CONSTRAINT "PK_3a91f61fd35430b525cea602d3c" PRIMARY KEY ("userId", "contactId", "id")`);
         await queryRunner.query(`ALTER TABLE "user_role" DROP COLUMN "meta"`);
-        await queryRunner.query(`ALTER TABLE "contacts" DROP COLUMN "countryCode"`);
+        await queryRunner.query(`ALTER TABLE "contacts" DROP COLUMN "cCode"`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP COLUMN "deletedAt"`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP COLUMN "updatedAt"`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP COLUMN "createdAt"`);

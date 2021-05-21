@@ -2,6 +2,7 @@ import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nest
 import { env } from 'process';
 import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/entities/contacts.entity';
+import { nanoid } from 'src/shared/random-keygen';
 import { tagReplace } from 'src/shared/tag-replace';
 import { SmsService } from '../sms/sms.service';
 import { UsersService } from '../users/services/users.service';
@@ -39,13 +40,14 @@ export class ContactsService {
       if (user) {
         const con = await this.repository.findOne({
           where: { phoneNumber: phoneNumber },
+          relations: ["user"]
         });
 
         if (!con) {
           let contact = new ContactsEntity();
           contact.phoneNumber = phoneNumber;
           contact.user = [user];
-          contact.urlMapper = user.urlId;
+          contact.urlMapper = nanoid();
           contact = await this.repository.save(
             await this.repository.create(contact),
           );
@@ -59,7 +61,6 @@ export class ContactsService {
             where: { contactId: con.id, userId: user.id },
           });
           if (!rel) {
-            con.urlMapper = user.urlId;
             con.user.push(user);
             await this.repository.save(con);
           }

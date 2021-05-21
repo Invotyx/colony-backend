@@ -81,13 +81,11 @@ export class SmsService {
           const conversation = await this.conversationsRepo.findOne({
             where: { contact: contact, phone: influencerNumber },
           });
-          console.log(conversation, "=====check=====");
+          console.log('conversation found');
           if (conversation) {
             const messages = await this.conversationsMessagesRepo.find({
               where: { conversations: conversation },
             });
-
-            console.log(messages, '=====check 2=====');
 
             if (messages && messages.length > 0) {
               await this.saveSms(
@@ -101,6 +99,7 @@ export class SmsService {
               console.log('saved as regular inbound sms');
               //this is just a normal sms
             } else {
+              console.log('conversation found but sms count is 0');
               // contact already exists but not subscribed to this influencer
               // send welcome sms
               // send profile completion sms if not completed yet
@@ -114,6 +113,7 @@ export class SmsService {
               );
             }
           } else {
+            console.log('conversation not found but contact exists');
             //contact already exists, subscribed to new influencer.
             await this.contactOnboarding(
               sender,
@@ -128,6 +128,7 @@ export class SmsService {
           // new contact onboarding.
           // send welcome sms
           // send profile completion sms
+          console.log('new contact onboard.');
           await this.contactOnboarding(
             sender,
             influencerNumber,
@@ -144,7 +145,7 @@ export class SmsService {
         return 200;
       }
     } catch (e) {
-      console.log("receive SMS",e);
+      console.log('Receive SMS', e);
       throw e;
     }
   }
@@ -170,13 +171,14 @@ export class SmsService {
       sid,
       'received',
     );
-
+    console.log('in bound sms saved');
     const plan = await this.subService.planService.repository.findOne();
     await this.paymentHistory.updateDues({
       cost: plan.subscriberCost,
       costType: 'contacts',
       user: influencerNumber.user,
     });
+    console.log('subscription log added to dues');
     await this.sendSms(
       contact,
       influencerNumber,
@@ -190,6 +192,7 @@ export class SmsService {
       }),
       'outBound',
     );
+    console.log('outbound sms sent');
   }
 
   async saveSms(
@@ -494,14 +497,15 @@ export class SmsService {
       let _preset = await this.presetRepo.find({ where: { user: user } });
       if (!_preset || _preset.length == 0) {
         await this.presetRepo.save({
-          body: 'Welcome to Colony Systems.',
+          body:
+            'Hi, You have subscribed to ${inf_name}. Please complete your profile using this link ${link}',
           name: 'Welcome',
           trigger: presetTrigger.welcome,
           user: user,
         });
         await this.presetRepo.save({
           body:
-            'Hi ${name}, You have subscribe to to ${inf_name}. Please complete your profile using this link ${link}',
+            'Welcome ${name}! Glad to have you onboard.  Regards ${inf_name}. ',
           name: 'OnBoard',
           trigger: presetTrigger.onBoard,
           user: user,
@@ -509,7 +513,7 @@ export class SmsService {
 
         await this.presetRepo.save({
           body:
-            'Hi ${name}, You recently subscribed me on Colony Systems. Please complete your profile using this link ${link}',
+            'Hi! This is ${inf_name}. You recently sent an sms to my number. Please complete your profile using this link ${link} so that I can get to know my fans better!',
           name: 'NoResponse',
           trigger: presetTrigger.noResponse,
           user: user,

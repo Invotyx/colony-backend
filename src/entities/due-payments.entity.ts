@@ -1,19 +1,19 @@
-import { ApiHideProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../consts/tables.const';
 import { UserEntity } from './user.entity';
 @Entity({ name: TABLES.DUE_PAYMENTS.name })
 export class PaymentDuesEntity {
-  @Column({ length: 100, unique: true, primary: true })
-  public id: string;
+  [x: string]: any;
+  @PrimaryGeneratedColumn({ unsigned: true })
+  public id: number;
 
   @ManyToOne(() => UserEntity, (user) => user.paymentMethod, {
     eager: false,
@@ -33,4 +33,10 @@ export class PaymentDuesEntity {
     nullable: false,
   })
   public costType: string;
+
+  @UpdateDateColumn()
+  public updatedAt: Date;
+
+  @CreateDateColumn()
+  public createdAt: Date;
 }

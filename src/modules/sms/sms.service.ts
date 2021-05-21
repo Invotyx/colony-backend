@@ -81,10 +81,13 @@ export class SmsService {
           const conversation = await this.conversationsRepo.findOne({
             where: { contact: contact, phone: influencerNumber },
           });
+          console.log(conversation, "=====check=====");
           if (conversation) {
             const messages = await this.conversationsMessagesRepo.find({
               where: { conversations: conversation },
             });
+
+            console.log(messages, '=====check 2=====');
 
             if (messages && messages.length > 0) {
               await this.saveSms(
@@ -141,6 +144,7 @@ export class SmsService {
         return 200;
       }
     } catch (e) {
+      console.log("receive SMS",e);
       throw e;
     }
   }

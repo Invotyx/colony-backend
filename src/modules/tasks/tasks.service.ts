@@ -20,38 +20,36 @@ export class TasksService {
   }
 
   // check if user has not completed profile yet.
+  @Cron('0 0 16 * * *')
   async checkIfContactHasCompletedProfile() {
     const contacts = await this.contactService.repository.find({
       where: { isComplete: false },
       relations: ['user'],
     });
 
-    let tempInfluencer;
     let influencer;
 
     for (let contact of contacts) {
       influencer = contact.user;
-      // get user threshold
-      // check if reminders are enabled or not
-      // get incomplete preset sms
-      // send sms
-      // save sms cost to history
-      //
 
       const noResponseMessage = this.search(
         'noResponse',
         await this.smsService.getPresetMessage(influencer),
       );
 
-      const threshold = 5;
+      const threshold = 1;
       const remindersFlag = true;
 
       if (remindersFlag) {
         if (this.dateDifference(new Date(), contact.createdAt) <= threshold) {
-
+          await this.smsService.sendSms(
+            contact,
+            influencer,
+            noResponseMessage.body,
+            'outBound',
+          );
         }
       }
-      tempInfluencer = contact.user;
     }
   }
 

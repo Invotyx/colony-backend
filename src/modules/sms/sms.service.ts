@@ -198,7 +198,9 @@ export class SmsService {
           '/contacts/enroll/' +
           influencerNumber.user.id +
           ':::' +
-          contact.urlMapper,
+          contact.urlMapper +
+          ':::' +
+          influencerNumber.id,
       }),
       'outBound',
     );

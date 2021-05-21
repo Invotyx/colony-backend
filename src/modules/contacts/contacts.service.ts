@@ -164,6 +164,7 @@ export class ContactsService {
     const consolidatedIds = urlId.split(':::');
     const userId = consolidatedIds[0];
     const contactUniqueMapper = consolidatedIds[1];
+    const number = consolidatedIds[2];
     let contactDetails = await this.repository.findOne({
       where: { urlMapper: contactUniqueMapper },
     });
@@ -221,7 +222,7 @@ export class ContactsService {
       }
 
       let infNum = await this.phoneService.repo.findOne({
-        where: { country: contactDetails.cCode, user: user },
+        where: { id: number },
       });
 
       await this.repository.save(contactDetails);

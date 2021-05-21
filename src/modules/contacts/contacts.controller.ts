@@ -59,8 +59,11 @@ export class ContactsController {
   @Get(':urlId/check')
   async checkContact(@Param('urlId') urlId: string) {
     try {
+      const consolidatedIds = urlId.split(':::');
+      const userId = consolidatedIds[0];
+      const contactUniqueMapper = consolidatedIds[1];
       const contact = await this.service.repository.findOne({
-        where: { urlMapper: urlId },
+        where: { urlMapper: contactUniqueMapper },
       });
       if (contact) {
         return contact;

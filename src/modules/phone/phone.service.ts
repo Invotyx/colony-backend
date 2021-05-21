@@ -290,7 +290,10 @@ export class PhoneService {
 
   public async getPurchasedPhoneNumbers(user: UserEntity) {
     try {
-      const numbers = await this.repo.find({ where: { user: user } });
+      const numbers = await this.repo.find({
+        where: { user: user },
+        order: { createdAt: 'DESC' },
+      });
       if (numbers) {
         return numbers;
       } else {

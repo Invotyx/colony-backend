@@ -309,6 +309,7 @@ export class SmsService {
     try {
       const conversations = await this.conversationsRepo.findOne({
         where: { user: inf },
+        order: { createdAt: 'DESC' },
       });
       if (conversations) {
         return conversations;
@@ -506,7 +507,10 @@ export class SmsService {
           trigger: presetTrigger.noResponse,
           user: user,
         });
-        _preset = await this.presetRepo.find({ where: { user: user } });
+        _preset = await this.presetRepo.find({
+          where: { user: user },
+          order: { createdAt: 'ASC' },
+        });
       }
       return { preset: _preset };
     } catch (e) {

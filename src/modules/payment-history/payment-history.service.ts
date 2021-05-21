@@ -12,7 +12,10 @@ export class PaymentHistoryService {
 
   public async history(user: UserEntity) {
     try {
-      return await this.repository.find({ where: { user: user } });
+      return await this.repository.find({
+        where: { user: user },
+        order: { createdAt: 'DESC' },
+      });
     } catch (e) {
       throw e;
     }

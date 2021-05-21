@@ -121,6 +121,7 @@ export class PaymentMethodsService {
     try {
       const paymentMethods: any = await this.repository.find({
         where: { user: customer.id },
+        order: { createdAt: 'DESC' },
       });
       return { paymentMethods };
     } catch (e) {

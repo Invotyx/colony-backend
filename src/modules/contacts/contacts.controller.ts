@@ -4,7 +4,6 @@ import {
   Controller,
   Get,
   Param,
-  Post,
   Put,
   Query,
 } from '@nestjs/common';
@@ -19,14 +18,14 @@ import { ContactsService } from './contacts.service';
 @ApiTags('contacts')
 export class ContactsController {
   constructor(private readonly service: ContactsService) {}
-
+  /* 
   @Post('')
   async addContact(
     @Query('phone') phone: string,
     @Query('user') user: number,
   ): Promise<any> {
     return await this.service.addContact(phone, user);
-  }
+  } */
 
   @Get('/get-url')
   async getUrlMapper(@Query('phone') phone: string) {

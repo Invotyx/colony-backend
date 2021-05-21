@@ -110,6 +110,7 @@ export class SmsService {
                 receivedAt,
                 sid,
                 preset_welcome,
+                fromCountry,
               );
             }
           } else {
@@ -122,6 +123,7 @@ export class SmsService {
               receivedAt,
               sid,
               preset_welcome,
+              fromCountry,
             );
           }
         } else {
@@ -136,6 +138,7 @@ export class SmsService {
             receivedAt,
             sid,
             preset_welcome,
+            fromCountry,
           );
         }
       } else {
@@ -157,10 +160,12 @@ export class SmsService {
     receivedAt,
     sid,
     preset_welcome,
+    fromCountry,
   ) {
     let contact = await this.contactService.addContact(
       sender,
       influencerNumber.user.id,
+      fromCountry,
     );
     await this.saveSms(
       contact,
@@ -187,8 +192,13 @@ export class SmsService {
         inf_name:
           influencerNumber.user.firstName +
           ' ' +
-          influencerNumber.user.firstName,
-        link: env.PUBLIC_APP_URL + '/contacts/enroll/' + contact.urlMapper,
+          influencerNumber.user.lastName,
+        link:
+          env.PUBLIC_APP_URL +
+          '/contacts/enroll/' +
+          influencerNumber.user.id +
+          ':::' +
+          contact.urlMapper,
       }),
       'outBound',
     );

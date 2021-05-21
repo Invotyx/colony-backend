@@ -1,9 +1,15 @@
-import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { env } from 'process';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/entities/contacts.entity';
 import { nanoid } from 'src/shared/random-keygen';
 import { tagReplace } from 'src/shared/tag-replace';
+import { PhoneService } from '../phone/phone.service';
 import { SmsService } from '../sms/sms.service';
 import { UsersService } from '../users/services/users.service';
 import { ContactDto, ContactFilter } from './contact.dto';
@@ -17,8 +23,9 @@ export class ContactsService {
     public readonly repository: ContactsRepository,
     public readonly influencerContactRepo: InfluencerContactRepository,
     public readonly users: UsersService,
-    @Inject(forwardRef (() => SmsService))
+    @Inject(forwardRef(() => SmsService))
     public readonly smsService: SmsService,
+    public readonly phoneService: PhoneService,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -32,6 +39,7 @@ export class ContactsService {
   async addContact(
     phoneNumber: string,
     userId: number,
+    fromCountry: string,
   ): Promise<ContactsEntity> {
     try {
       const user = await this.users.repository.findOne({
@@ -40,7 +48,7 @@ export class ContactsService {
       if (user) {
         const con = await this.repository.findOne({
           where: { phoneNumber: phoneNumber },
-          relations: ["user"]
+          relations: ['user'],
         });
 
         if (!con) {
@@ -48,6 +56,7 @@ export class ContactsService {
           contact.phoneNumber = phoneNumber;
           contact.user = [user];
           contact.urlMapper = nanoid();
+          contact.countryCode = fromCountry;
           contact = await this.repository.save(
             await this.repository.create(contact),
           );
@@ -152,7 +161,12 @@ export class ContactsService {
   }
 
   async updateContact(urlId: string, data: ContactDto) {
-    let contactDetails = new ContactsEntity();
+    const consolidatedIds = urlId.split(':::');
+    const userId = consolidatedIds[0];
+    const contactUniqueMapper = consolidatedIds[1];
+    let contactDetails = await this.repository.findOne({
+      where: { urlMapper: contactUniqueMapper },
+    });
     let flag = 0;
     if (data.name) {
       contactDetails.name = data.name;
@@ -190,14 +204,14 @@ export class ContactsService {
     }
 
     try {
-      const contact = await this.repository.findOne({
-        where: { urlMapper: urlId, user: { where: { urlId: urlId } } },
-        relations: ['user'],
+      const user = await this.users.repository.findOne({
+        where: {
+          id: userId,
+        },
       });
 
-      const influencer = contact.user[0];
       let preset_onboard: any = await this.smsService.presetRepo.findOne({
-        where: { trigger: 'onBoard', user: influencer },
+        where: { trigger: 'onBoard', user: user },
       });
 
       if (!preset_onboard) {
@@ -206,17 +220,21 @@ export class ContactsService {
         };
       }
 
-      await this.repository.update({ urlMapper: urlId }, contactDetails);
+      let infNum = await this.phoneService.repo.findOne({
+        where: { country: contactDetails.countryCode, user: user },
+      });
+
+      await this.repository.save(contactDetails);
       await this.smsService.sendSms(
         contactDetails,
-        influencer as any,
+        infNum,
         tagReplace(preset_onboard.body, {
-          name: contact.name ? contact.name : '',
-          inf_name: influencer.firstName + ' ' + influencer.firstName,
-          link: env.PUBLIC_APP_URL + '/contacts/enroll/' + contact.urlMapper,
+          name: contactDetails.name ? contactDetails.name : '',
+          inf_name: user.firstName + ' ' + user.lastName,
         }),
         'outBound',
-      ); 
+      );
+
       return { message: 'Contact details updated.', data: contactDetails };
     } catch (e) {
       throw e;

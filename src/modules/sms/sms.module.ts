@@ -7,6 +7,7 @@ import { ContactsModule } from '../contacts/contacts.module';
 import { PaymentHistoryModule } from '../payment-history/payment-history.module';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhoneModule } from '../phone/phone.module';
+import { PhoneService } from '../phone/phone.service';
 import { ProductsModule } from '../products/products.module';
 import { UsersModule } from '../users/users.module';
 import { BroadcastService } from './broadcast.service';
@@ -20,10 +21,10 @@ import { SmsService } from './sms.service';
       name: 'receive_sms_and_send_welcome',
     }),
     MainMysqlModule,
-    UsersModule,
-    ContactsModule,
-    PhoneModule,
-    ProductsModule,
+    forwardRef(() => UsersModule),
+    forwardRef(() => ContactsModule),
+    forwardRef(() => PhoneModule),
+    forwardRef(() => ProductsModule),
     forwardRef(() => PaymentHistoryModule),
     forwardRef(() => CityCountryModule),
   ],
@@ -34,6 +35,7 @@ import { SmsService } from './sms.service';
     InboundSmsProcessor,
     PaymentHistoryService,
     CityCountryService,
+    PhoneService,
   ],
   exports: [SmsService],
 })

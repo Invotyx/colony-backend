@@ -19,8 +19,8 @@ import { SubscriptionsService } from './services/subscriptions.service';
     MainMysqlModule,
     forwardRef(() => UsersModule),
     forwardRef(() => PhoneModule),
-    ApiCallingModule,
-    CityCountryModule,
+    forwardRef(() => ApiCallingModule),
+    forwardRef(() => CityCountryModule),
     forwardRef(() => PaymentHistoryModule),
   ],
   controllers: [

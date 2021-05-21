@@ -11,7 +11,6 @@ import { CityCountryService } from 'src/services/city-country/city-country.servi
 import Stripe from 'stripe';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PaymentMethodsService } from '../products/services/payment-methods.service';
-import { SubscriptionsService } from '../products/services/subscriptions.service';
 import { PhonesRepository } from './phone.repo';
 
 @Injectable()
@@ -47,13 +46,11 @@ export class PhoneService {
     try {
       let numbers;
       if (country == 'US' || country == 'CA') {
-        numbers = await this.client
-          .availablePhoneNumbers(country)
-          .local.list({
-            contains: number_must_have,
-            smsEnabled: true,
-            limit: limit,
-          });
+        numbers = await this.client.availablePhoneNumbers(country).local.list({
+          contains: number_must_have,
+          smsEnabled: true,
+          limit: limit,
+        });
       } else {
         numbers = await this.client.availablePhoneNumbers(country).mobile.list({
           contains: number_must_have,
@@ -80,82 +77,112 @@ export class PhoneService {
             const country = await this.cityCountry.countryRepo.findOne({
               where: { code: cc.toUpperCase() },
             });
-            console.log(country)
+            console.log(country);
             if (country) {
-              //get default payment method
-              const default_pm = await this.payment.repository.findOne({
-                where: { default: true, user: user },
+              const existingNumbers = await this.repo.findOne({
+                where: { user: user, type: 'default' },
               });
-              if (default_pm) {
-                // charge client here
-                const charge = await this.stripe.paymentIntents.create({
-                  amount: Math.round(country.phoneCost * 100),
-                  
-                  currency: 'GBP',
-                  capture_method: 'automatic',
-                  confirm: true,
-                  confirmation_method: 'automatic',
-                  customer: user.customerId,
-                  description: 'Phone Number purchase!',
-                  payment_method: default_pm.id,
+              if (!existingNumbers) {
+                const number = await this.client.incomingPhoneNumbers.create({
+                  phoneNumber: num,
+                  smsMethod: 'POST',
+                  smsUrl:
+                    'https://colony.invotyx.gq/api/sms/receive-sms/webhook',
+                  statusCallback:
+                    'https://colony.invotyx.gq/api/sms/receive-sms-status-callback/webhook',
+                  statusCallbackMethod: 'POST',
                 });
+                const date = new Date(); // Now
+                date.setDate(date.getDate() + 30);
+                await this.repo.save({
+                  country: cc.toUpperCase(),
+                  features: 'sms',
+                  number: number.phoneNumber,
+                  renewalDate: date,
+                  status: number.status,
+                  sid: number.sid,
+                  user: user,
+                  type: 'default',
+                });
+              } else {
+                //get default payment method
+                const default_pm = await this.payment.repository.findOne({
+                  where: { default: true, user: user },
+                });
+                if (default_pm) {
+                  // charge client here
+                  const charge = await this.stripe.paymentIntents.create({
+                    amount: Math.round(country.phoneCost * 100),
 
-                if (charge.status == 'succeeded') {
-                  //proceed if charge is successful.
-                  const number = await this.client.incomingPhoneNumbers.create({
-                    phoneNumber: num,
-                    smsMethod: 'POST',
-                    smsUrl: 'https://colony.invotyx.gq/api/sms/receive-sms/webhook',
-                    statusCallback:
-                      'https://colony.invotyx.gq/api/sms/receive-sms-status-callback/webhook',
-                    statusCallbackMethod: 'POST',
+                    currency: 'GBP',
+                    capture_method: 'automatic',
+                    confirm: true,
+                    confirmation_method: 'automatic',
+                    customer: user.customerId,
+                    description: 'Phone Number purchase!',
+                    payment_method: default_pm.id,
                   });
 
-                  await this.paymentHistory.addRecordToHistory({
-                    user: user,
-                    description:
-                      'Phone number: ' + number.phoneNumber + ' purchased.',
-                    cost: country.phoneCost,
-                    costType: 'number-purchase',
-                    chargeId: charge.id,
-                  });
-                  // save to database;
-                  if (number) {
-                    const date = new Date(); // Now
-                    date.setDate(date.getDate() + 30);
-                    await this.repo.save({
-                      country: cc.toUpperCase(),
-                      features: 'sms',
-                      number: number.phoneNumber,
-                      renewalDate: date,
-                      status: number.status,
-                      sid: number.sid,
+                  if (charge.status == 'succeeded') {
+                    //proceed if charge is successful.
+                    const number = await this.client.incomingPhoneNumbers.create(
+                      {
+                        phoneNumber: num,
+                        smsMethod: 'POST',
+                        smsUrl:
+                          'https://colony.invotyx.gq/api/sms/receive-sms/webhook',
+                        statusCallback:
+                          'https://colony.invotyx.gq/api/sms/receive-sms-status-callback/webhook',
+                        statusCallbackMethod: 'POST',
+                      },
+                    );
+
+                    await this.paymentHistory.addRecordToHistory({
                       user: user,
-                      type: 'extra',
+                      description:
+                        'Phone number: ' + number.phoneNumber + ' purchased.',
+                      cost: country.phoneCost,
+                      costType: 'number-purchase',
+                      chargeId: charge.id,
                     });
+                    // save to database;
+                    if (number) {
+                      const date = new Date(); // Now
+                      date.setDate(date.getDate() + 30);
+                      await this.repo.save({
+                        country: cc.toUpperCase(),
+                        features: 'sms',
+                        number: number.phoneNumber,
+                        renewalDate: date,
+                        status: number.status,
+                        sid: number.sid,
+                        user: user,
+                        type: 'extra',
+                      });
 
-                    return {
-                      number,
-                      message:
-                        'Number purchased and linked to your account successfully.',
-                    };
+                      return {
+                        number,
+                        message:
+                          'Number purchased and linked to your account successfully.',
+                      };
+                    } else {
+                      throw new BadRequestException(
+                        'An error ocurred while number purchasing, try again later.',
+                      );
+                    }
                   } else {
+                    //fail if unsuccessful.
                     throw new BadRequestException(
-                      'An error ocurred while number purchasing, try again later.',
+                      'Payment against your default card is failed. Details: ' +
+                        charge.cancellation_reason +
+                        charge.canceled_at,
                     );
                   }
                 } else {
-                  //fail if unsuccessful.
                   throw new BadRequestException(
-                    'Payment against your default card is failed. Details: ' +
-                      charge.cancellation_reason +
-                      charge.canceled_at,
+                    'Please add a payment method or set one of your payment methods as default.',
                   );
                 }
-              } else {
-                throw new BadRequestException(
-                  'Please add a payment method or set one of your payment methods as default.',
-                );
               }
             } else {
               throw new BadRequestException(
@@ -194,9 +221,8 @@ export class PhoneService {
               };
             } else {
               return {
-                number:null,
-                message:
-                  'Subscribed! Number cannot be acquired.',
+                number: null,
+                message: 'Subscribed! Number cannot be acquired.',
               };
             }
           }

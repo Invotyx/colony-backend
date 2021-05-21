@@ -11,6 +11,7 @@ import { ContactsModule } from './modules/contacts/contacts.module';
 import { ContentModule } from './modules/content/content.module';
 import { InfluencerLinksModule } from './modules/influencer-links/influencer-links.module';
 import { LanguageModule } from './modules/language/language.module';
+import { PaymentHistoryModule } from './modules/payment-history/payment-history.module';
 import { PhoneModule } from './modules/phone/phone.module';
 import { ProductsModule } from './modules/products/products.module';
 import { SmsModule } from './modules/sms/sms.module';
@@ -27,7 +28,6 @@ import { CompressionInterceptor } from './services/common/compression/compressio
 import { AppLogger } from './services/logs/log.service';
 import { MailModule } from './services/mail/mail.module';
 import { MainMysqlModule } from './shared/main-mysql.module';
-import { PaymentHistoryModule } from './modules/payment-history/payment-history.module';
 
 @Module({
   imports: [

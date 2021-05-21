@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { env } from 'process';
 import { ContactsEntity } from 'src/entities/contacts.entity';
 import { PhonesEntity } from 'src/entities/phone.entity';
@@ -23,6 +28,7 @@ export class SmsService {
   constructor(
     public readonly smsTemplateRepo: SMSTemplatesRepository,
     public readonly presetRepo: PresetMessagesRepository,
+    @Inject(forwardRef(() => ContactsService))
     public readonly contactService: ContactsService,
     public readonly phoneService: PhoneService,
     public readonly conversationsRepo: ConversationsRepository,
@@ -75,100 +81,58 @@ export class SmsService {
           const conversation = await this.conversationsRepo.findOne({
             where: { contact: contact, phone: influencerNumber },
           });
-          const messages = await this.conversationsMessagesRepo.find({
-            where: { conversations: conversation },
-          });
-
-          if (messages && messages.length > 0) {
-            await this.saveSms(
-              contact,
-              influencerNumber,
-              body,
-              receivedAt,
-              'inBound',
-              sid,
-            );
-            console.log('saved as regular inbound sms');
-            //this is just a normal sms
-          } else {
-            // contact already exists but not subscribed to this influencer
-            // send welcome sms
-            // send profile completion sms if not completed yet
-
-            contact = await this.contactService.addContact(
-              sender,
-              influencerNumber.user.id,
-            );
-
-            const plan = await this.subService.planService.repository.findOne();
-            await this.paymentHistory.updateDues({
-              cost: plan.subscriberCost,
-              costType: 'contacts',
-              user: influencerNumber.user,
+          if (conversation) {
+            const messages = await this.conversationsMessagesRepo.find({
+              where: { conversations: conversation },
             });
 
-            await this.saveSms(
-              contact,
+            if (messages && messages.length > 0) {
+              await this.saveSms(
+                contact,
+                influencerNumber,
+                body,
+                receivedAt,
+                'inBound',
+                sid,
+              );
+              console.log('saved as regular inbound sms');
+              //this is just a normal sms
+            } else {
+              // contact already exists but not subscribed to this influencer
+              // send welcome sms
+              // send profile completion sms if not completed yet
+              await this.contactOnboarding(
+                sender,
+                influencerNumber,
+                body,
+                receivedAt,
+                sid,
+                preset_welcome,
+              );
+            }
+          } else {
+            //contact already exists, subscribed to new influencer.
+            await this.contactOnboarding(
+              sender,
               influencerNumber,
               body,
               receivedAt,
-              'inBound',
               sid,
-              'received',
-            );
-            console.log(
-              'saved as existing subscriber inbound sms and sent message',
-            );
-
-            await this.sendSms(
-              contact,
-              influencerNumber,
-              tagReplace(preset_welcome.body, {
-                name: contact.name ? contact.name : '',
-                inf_name:
-                  influencerNumber.user.firstName +
-                  ' ' +
-                  influencerNumber.user.firstName,
-                link:
-                  env.PUBLIC_APP_URL + '/contacts/enroll/' + contact.urlMapper,
-              }),
-              'outBound',
+              preset_welcome,
             );
           }
         } else {
           // new contact onboarding.
           // send welcome sms
           // send profile completion sms
-
-          contact = await this.contactService.addContact(
+          await this.contactOnboarding(
             sender,
-            influencerNumber.user.id,
-          );
-          await this.saveSms(
-            contact,
             influencerNumber,
             body,
             receivedAt,
-            'inBound',
             sid,
-            'received',
+            preset_welcome,
           );
-
-          await this.sendSms(
-            contact,
-            influencerNumber,
-            tagReplace(preset_welcome.body, {
-              name: contact.name ? contact.name : '',
-              inf_name:
-                influencerNumber.user.firstName +
-                ' ' +
-                influencerNumber.user.firstName,
-              link:
-                env.PUBLIC_APP_URL + '/contacts/enroll/' + contact.urlMapper,
-            }),
-            'outBound',
-          );
-          console.log('saved as new subscriber inbound sms and sent message');
         }
       } else {
         console.log(
@@ -179,6 +143,49 @@ export class SmsService {
     } catch (e) {
       throw e;
     }
+  }
+
+  private async contactOnboarding(
+    sender,
+    influencerNumber,
+    body,
+    receivedAt,
+    sid,
+    preset_welcome,
+  ) {
+    let contact = await this.contactService.addContact(
+      sender,
+      influencerNumber.user.id,
+    );
+    await this.saveSms(
+      contact,
+      influencerNumber,
+      body,
+      receivedAt,
+      'inBound',
+      sid,
+      'received',
+    );
+
+    const plan = await this.subService.planService.repository.findOne();
+    await this.paymentHistory.updateDues({
+      cost: plan.subscriberCost,
+      costType: 'contacts',
+      user: influencerNumber.user,
+    });
+    await this.sendSms(
+      contact,
+      influencerNumber,
+      tagReplace(preset_welcome.body, {
+        name: contact.name ? contact.name : '',
+        inf_name:
+          influencerNumber.user.firstName +
+          ' ' +
+          influencerNumber.user.firstName,
+        link: env.PUBLIC_APP_URL + '/contacts/enroll/' + contact.urlMapper,
+      }),
+      'outBound',
+    );
   }
 
   async saveSms(
@@ -234,21 +241,17 @@ export class SmsService {
     type: string,
   ) {
     try {
-      //parse sms here to fill in details.
-      console.log('=========outbound========');
-
       const checkThreshold = await this.paymentHistory.getDues(
         'sms',
         influencerNumber.user,
       );
-      console.log(checkThreshold, 'ThresHold');
+
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },
       });
-      console.log(country, 'country');
+
       const plan = await this.subService.planService.repository.findOne();
 
-      console.log(plan, 'plan');
       if (
         !checkThreshold ||
         checkThreshold.cost + country.smsCost < plan.threshold

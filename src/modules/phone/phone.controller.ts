@@ -106,7 +106,9 @@ export class PhoneController {
       const subscription = await this.subscriptionService.repository.findOne({
         where: { user: user },
       });
+      
       if (subscription) {
+        
         if (country.length !== 2) {
           throw new BadRequestException(
             'Country Code should be in ISO 2 Code Format eg. GB for United Kingdom',

@@ -1,7 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { env } from 'process';
 import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/entities/contacts.entity';
-import { nanoid } from 'src/shared/random-keygen';
+import { tagReplace } from 'src/shared/tag-replace';
+import { SmsService } from '../sms/sms.service';
 import { UsersService } from '../users/services/users.service';
 import { ContactDto, ContactFilter } from './contact.dto';
 import { ContactsRepository } from './repo/contact.repo';
@@ -9,11 +11,22 @@ import { InfluencerContactRepository } from './repo/influencer-contact.repo';
 
 @Injectable()
 export class ContactsService {
+  private client;
   constructor(
     public readonly repository: ContactsRepository,
     public readonly influencerContactRepo: InfluencerContactRepository,
     public readonly users: UsersService,
-  ) {}
+    @Inject(forwardRef (() => SmsService))
+    public readonly smsService: SmsService,
+  ) {
+    this.client = require('twilio')(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN,
+      {
+        lazyLoading: true,
+      },
+    );
+  }
 
   async addContact(
     phoneNumber: string,
@@ -32,7 +45,7 @@ export class ContactsService {
           let contact = new ContactsEntity();
           contact.phoneNumber = phoneNumber;
           contact.user = [user];
-          contact.urlMapper = nanoid();
+          contact.urlMapper = user.urlId;
           contact = await this.repository.save(
             await this.repository.create(contact),
           );
@@ -46,6 +59,7 @@ export class ContactsService {
             where: { contactId: con.id, userId: user.id },
           });
           if (!rel) {
+            con.urlMapper = user.urlId;
             con.user.push(user);
             await this.repository.save(con);
           }
@@ -175,8 +189,33 @@ export class ContactsService {
     }
 
     try {
-      await this.repository.update({ urlMapper: urlId }, contactDetails);
+      const contact = await this.repository.findOne({
+        where: { urlMapper: urlId, user: { where: { urlId: urlId } } },
+        relations: ['user'],
+      });
 
+      const influencer = contact.user[0];
+      let preset_onboard: any = await this.smsService.presetRepo.findOne({
+        where: { trigger: 'onBoard', user: influencer },
+      });
+
+      if (!preset_onboard) {
+        preset_onboard = {
+          body: 'Welcome onboard ${inf_name}.',
+        };
+      }
+
+      await this.repository.update({ urlMapper: urlId }, contactDetails);
+      await this.smsService.sendSms(
+        contactDetails,
+        influencer as any,
+        tagReplace(preset_onboard.body, {
+          name: contact.name ? contact.name : '',
+          inf_name: influencer.firstName + ' ' + influencer.firstName,
+          link: env.PUBLIC_APP_URL + '/contacts/enroll/' + contact.urlMapper,
+        }),
+        'outBound',
+      ); 
       return { message: 'Contact details updated.', data: contactDetails };
     } catch (e) {
       throw e;

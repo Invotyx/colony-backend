@@ -31,6 +31,9 @@ export class PaymentMethodsEntity {
   @Column({ length: 15, nullable: false })
   public name: string;
 
+  @Column({ length: 15, nullable: true })
+  public expiry: string;
+
   @Column({ default: false, nullable: false })
   public default: boolean;
 

@@ -15,10 +15,9 @@ import { PhoneService } from './phone.service';
   imports: [
     MainMysqlModule,
     ApiCallingModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
     forwardRef(() => ProductsModule),
     forwardRef(() => CityCountryModule),
-    forwardRef(() => ProductsModule),
     forwardRef(() => PaymentHistoryModule),
   ],
   controllers: [PhoneController],

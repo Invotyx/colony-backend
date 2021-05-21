@@ -111,7 +111,7 @@ export class UsersService {
         }
 
         user.password = await PasswordHashEngine.make(user.password);
-        user.urlId = nanoid();
+        user.urlId = nanoid(10);
         const newUser: UserEntity = await this.repository.save(user);
         await this.updateRoles(newUser.id, { userId: newUser.id, roleId: [2] });
         /* await this.createEmailToken(user.email);

@@ -22,7 +22,7 @@ export class TasksService {
   // check if user has not completed profile yet.
   @Cron('0 0 16 * * *')
   async checkIfContactHasCompletedProfile() {
-    const contacts = await this.contactService.repository.find({
+    const contacts = await this.contactService.find({
       where: { isComplete: false },
       relations: ['user'],
     });
@@ -53,7 +53,7 @@ export class TasksService {
     }
   }
 
-  search(nameKey, myArray) {
+  private search(nameKey, myArray) {
     for (var i = 0; i < myArray.length; i++) {
       if (myArray[i].trigger === nameKey) {
         return myArray[i];
@@ -61,7 +61,7 @@ export class TasksService {
     }
   }
 
-  dateDifference(start, end) {
+  private dateDifference(start, end) {
     let firstDate = new Date(start),
       secondDate = new Date(end),
       timeDifference = Math.abs(secondDate.getTime() - firstDate.getTime());

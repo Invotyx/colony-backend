@@ -9,7 +9,7 @@ import { PermissionAlreadyExistError } from '../errors/permissions.error';
 @Injectable()
 export class PermissionsService {
   constructor(
-    public readonly repository: PermissionRepository,
+    private readonly repository: PermissionRepository,
     private readonly roleRepository: RoleRepository,
   ) {}
 

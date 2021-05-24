@@ -11,7 +11,7 @@ import {
 import { TABLES } from '../../../consts/tables.const';
 import { CountryEntity } from '../../../services/city-country/entities/country.entity';
 import { PhonesEntity } from '../../phone/entities/phone.entity';
-import { PlansEntity } from '../../products/entities/plans.entity';
+import { PlansEntity } from '../plan/plans.entity';
 import { UserEntity } from '../../users/entities/user.entity';
 
 enum collection_method {

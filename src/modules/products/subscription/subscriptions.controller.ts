@@ -11,11 +11,11 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../../decorators/auth.decorator';
 import { LoginUser } from '../../../decorators/user.decorator';
-import { UserEntity } from '../../../modules/users/entities/user.entity';
-import { UsersService } from '../../../modules/users/services/users.service';
+import { UserEntity } from '../../users/entities/user.entity';
+import { UsersService } from '../../users/services/users.service';
 import { ROLES } from '../../../services/access-control/consts/roles.const';
-import { SubscriptionsDto } from '../dto/subscriptions.dto';
-import { SubscriptionsService } from '../services/subscriptions.service';
+import { SubscriptionsDto } from './subscriptions.dto';
+import { SubscriptionsService } from './subscriptions.service';
 
 @Injectable()
 @Controller('subscriptions')

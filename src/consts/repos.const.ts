@@ -11,9 +11,9 @@ import { InfluencerLinksRepository } from '../modules/influencer-links/repo/infl
 import { LanguageRepository } from '../modules/language/languages.repo';
 import { PhonesRepository } from '../modules/phone/phone.repo';
 import { PaymentHistoryRepository } from '../modules/payment-history/payment-history.repo';
-import { PaymentMethodsRepository } from '../modules/products/repos/payment-methods.repo';
-import { PlansRepository } from '../modules/products/repos/plans.repo';
-import { SubscriptionsRepository } from '../modules/products/repos/subscriptions.repo';
+import { PaymentMethodsRepository } from '../modules/products/payments/payment-methods.repo';
+import { PlansRepository } from '../modules/products/plan/plans.repo';
+import { SubscriptionsRepository } from '../modules/products/subscription/subscriptions.repo';
 import { BroadcastContactsRepository } from '../modules/sms/repo/broadcast-contact.repo';
 import { BroadcastsRepository } from '../modules/sms/repo/broadcast.repo';
 import { ConversationsRepository } from '../modules/sms/repo/conversation-messages.repo';

@@ -3,22 +3,16 @@ import {
   Controller,
   Get,
   Injectable,
-  Param,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { throws } from 'assert';
-import { Auth } from 'src/decorators/auth.decorator';
-import { CountryRepository } from 'src/services/city-country/repos/country.repo';
-import { PlansService } from '../services/plans.service';
+import { Auth } from '../../../decorators/auth.decorator';
+import { PlansService } from './plans.service';
 
 @Injectable()
 @Controller('plans')
 @ApiTags('plans')
 export class ProductsController {
-  constructor(
-    public readonly planService: PlansService,
-    
-  ) {}
+  constructor(public readonly planService: PlansService) {}
 
   /* @Auth({ roles: [ROLES.ADMIN] })
   @Post('')
@@ -54,7 +48,6 @@ export class ProductsController {
   @Auth({})
   @Get('countries')
   public async planActivatedCountries() {
-    
     return this.planService.planActivatedCountries();
   }
   /* 

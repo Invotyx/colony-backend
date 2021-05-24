@@ -6,8 +6,8 @@ import { PaymentHistoryRepository } from './payment-history.repo';
 @Injectable()
 export class PaymentHistoryService {
   constructor(
-    public readonly repository: PaymentHistoryRepository,
-    public readonly duesRepo: PaymentDuesRepository,
+    private readonly repository: PaymentHistoryRepository,
+    private readonly duesRepo: PaymentDuesRepository,
   ) {}
 
   public async history(user: UserEntity) {

@@ -21,12 +21,12 @@ import { InfluencerContactRepository } from './repo/influencer-contact.repo';
 export class ContactsService {
   private client;
   constructor(
-    public readonly repository: ContactsRepository,
-    public readonly influencerContactRepo: InfluencerContactRepository,
-    public readonly users: UsersService,
+    private readonly repository: ContactsRepository,
+    private readonly influencerContactRepo: InfluencerContactRepository,
+    private readonly users: UsersService,
     @Inject(forwardRef(() => SmsService))
-    public readonly smsService: SmsService,
-    public readonly phoneService: PhoneService,
+    private readonly smsService: SmsService,
+    private readonly phoneService: PhoneService,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -37,13 +37,23 @@ export class ContactsService {
     );
   }
 
+  public async findOne(condition?: any) {
+    if (condition) return await this.repository.findOne(condition);
+    else return await this.repository.findOne();
+  }
+
+  public async find(condition?: any) {
+    if (condition) return await this.repository.find(condition);
+    else return await this.repository.find();
+  }
+
   async addContact(
     phoneNumber: string,
     userId: number,
     fromCountry: string,
   ): Promise<ContactsEntity> {
     try {
-      const user = await this.users.repository.findOne({
+      const user = await this.users.findOne({
         where: { id: userId, isActive: true, isApproved: true },
       });
       if (user) {
@@ -206,13 +216,13 @@ export class ContactsService {
     }
 
     try {
-      const user = await this.users.repository.findOne({
+      const user = await this.users.findOne({
         where: {
           id: userId,
         },
       });
 
-      let preset_onboard: any = await this.smsService.presetRepo.findOne({
+      let preset_onboard: any = await this.smsService.findOneInPreSets({
         where: { trigger: 'onBoard', user: user },
       });
 
@@ -222,7 +232,7 @@ export class ContactsService {
         };
       }
 
-      let infNum = await this.phoneService.repo.findOne({
+      let infNum = await this.phoneService.findOne({
         where: { id: number },
       });
 
@@ -258,7 +268,7 @@ export class ContactsService {
     }
   }
 
-  async checkContact( urlId: string) {
+  async checkContact(urlId: string) {
     try {
       const consolidatedIds = urlId.split(':::');
       const userId = consolidatedIds[0];

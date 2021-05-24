@@ -26,11 +26,13 @@ import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
 import { UserRepository } from '../repos/user.repo';
 import { EmailVerificationsRepository } from '../repos/verifyemail.repo';
 import { CreateUserDto, UpdateProfileDto, UpdateRole } from '../users.dto';
+import { TABLES } from 'src/consts/tables.const';
+import { columnListToSelect, dataViewer, mapColumns, paginateQuery, PaginatorError, PaginatorErrorHandler } from 'src/shared/paginator';
 
 @Injectable()
 export class UsersService {
   constructor(
-    public readonly repository: UserRepository,
+    private readonly repository: UserRepository,
     private readonly roleRepository: RoleRepository,
     private readonly emailVerfications: EmailVerificationsRepository,
     private readonly password: ForgotPasswordRepository,
@@ -46,8 +48,12 @@ export class UsersService {
     });
   }
 
-  findOne(id: number): Promise<UserEntity> {
-    return this.repository.findOne(id);
+  async save(user: any) {
+    return await this.repository.save(user);
+  }
+
+  async findOne(condition?:any): Promise<UserEntity> {
+    return await this.repository.findOne(condition);
   }
 
   findUserByEmail(email: string): Promise<UserEntity> {
@@ -68,6 +74,63 @@ export class UsersService {
 
   async isPhoneExists(val: any) {
     return isExist(this.repository, 'mobile', val);
+  }
+
+  async getAllUsers(data: any) {
+    try {
+      const userTable = TABLES.USERS.name;
+      const columnList: any = {
+        id: { table: userTable, column: 'id' },
+        firstName: { table: userTable, column: 'firstName' },
+        lastName: { table: userTable, column: 'lastName' },
+        username: { table: userTable, column: 'username' },
+        email: { table: userTable, column: 'email' },
+        createdAt: { table: userTable, column: 'createdAt' },
+        gender: { table: userTable, column: 'gender' },
+        mobile: { table: userTable, column: 'mobile' },
+        //password: { table: userTable, column: 'password' },
+        image: { table: userTable, column: 'image' },
+        isActive: {
+          table: userTable,
+          column: 'isActive',
+          valueMapper: (v: any) => (v ? 'YES' : 'NO'),
+        },
+      };
+      const sortList = {
+        firstName: { table: userTable, column: 'firstName' },
+      };
+      const filterList = {
+        firstName: { table: userTable, column: 'firstName' },
+        isActive: {
+          table: userTable,
+          column: 'isActive',
+          valueMapper: (v: any) => Number(v === 'YES'),
+        },
+      };
+      const { filters, configs } = dataViewer({
+        data,
+        filterList,
+        sortList,
+        columnList,
+      });
+      const query = await this.repository
+        .createQueryBuilder(TABLES.USERS.name)
+        .select(columnListToSelect(columnList))
+        .where(filters.sql);
+
+      const paginatedData = await paginateQuery(query, configs, userTable);
+      if (paginatedData.data.length) {
+        paginatedData.data = paginatedData.data.map(
+          mapColumns(paginatedData.data[0], columnList),
+        );
+      }
+      return { data: paginatedData.data, meta: paginatedData.meta };
+    } catch (error) {
+      if (error instanceof PaginatorError) {
+        throw PaginatorErrorHandler(error);
+      }
+      throw error;
+    }
   }
 
   makeid(length: any) {

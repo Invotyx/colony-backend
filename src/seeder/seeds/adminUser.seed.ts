@@ -6,12 +6,13 @@ import { UserEntity } from '../../modules/users/entities/user.entity';
 import { UpdateRole } from '../../modules/users/users.dto';
 import { PasswordHashEngine } from 'src/shared/hash.service';
 import { nanoid } from 'nanoid';
+import { RoleRepository } from 'src/repos/roles.repo';
 
 @Seeder()
 export class CreateAdminSeed implements ISeed {
   constructor(
-    private readonly rolesService: RolesService,
     private readonly usersService: UsersService,
+    private readonly rolesRepo: RoleRepository
   ) {}
   async up() {
     const admin = new UserEntity();
@@ -25,28 +26,28 @@ export class CreateAdminSeed implements ISeed {
     admin.isApproved = true;
     admin.statusMessage = "I'm system admin";
     admin.urlId = nanoid();
-    const check = await this.usersService.repository.findOne({
+    const check = await this.usersService.findOne({
       where: { username: 'admin' },
     });
 
     if (!check) {
-      const saved = await this.usersService.repository.save(admin);
+      const saved = await this.usersService.save(admin);
       const role = new UpdateRole();
       role.userId = saved.id;
       role.roleId = [
         await (
-          await this.rolesService.repository.findOne({
+          await this.rolesRepo.findOne({
             where: { role: 'admin' },
           })
         ).id,
       ];
       const RoleId = role.roleId;
-      const allRoles = await this.rolesService.repository
+      const allRoles = await this.rolesRepo
         .createQueryBuilder('s')
         .where(' s.id IN (:...RoleId)', { RoleId })
         .getMany();
       admin.roles = allRoles;
-      await this.usersService.repository.save(admin);
+      await this.usersService.save(admin);
     }
   }
   async down() {

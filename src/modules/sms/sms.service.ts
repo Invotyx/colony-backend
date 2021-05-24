@@ -12,9 +12,8 @@ import { ContactsEntity } from '../contacts/entities/contacts.entity';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhonesEntity } from '../phone/entities/phone.entity';
 import { PhoneService } from '../phone/phone.service';
-import { SubscriptionsService } from '../products/services/subscriptions.service';
+import { SubscriptionsService } from '../products/subscription/subscriptions.service';
 import { UserEntity } from '../users/entities/user.entity';
-import { UsersService } from '../users/services/users.service';
 import { presetTrigger } from './entities/preset-message.entity';
 import { PresetsDto, PresetsUpdateDto } from './preset.dto';
 import { ConversationsRepository } from './repo/conversation-messages.repo';
@@ -26,17 +25,16 @@ import { SMSTemplatesRepository } from './repo/sms-templates.repo';
 export class SmsService {
   private client;
   constructor(
-    public readonly smsTemplateRepo: SMSTemplatesRepository,
-    public readonly presetRepo: PresetMessagesRepository,
+    private readonly smsTemplateRepo: SMSTemplatesRepository,
+    private readonly presetRepo: PresetMessagesRepository,
     @Inject(forwardRef(() => ContactsService))
-    public readonly contactService: ContactsService,
-    public readonly phoneService: PhoneService,
-    public readonly conversationsRepo: ConversationsRepository,
-    public readonly conversationsMessagesRepo: ConversationMessagesRepository,
-    public readonly userService: UsersService,
-    public readonly subService: SubscriptionsService,
-    public readonly paymentHistory: PaymentHistoryService,
-    public readonly countryService: CityCountryService,
+    private readonly contactService: ContactsService,
+    private readonly phoneService: PhoneService,
+    private readonly conversationsRepo: ConversationsRepository,
+    private readonly conversationsMessagesRepo: ConversationMessagesRepository,
+    private readonly subService: SubscriptionsService,
+    private readonly paymentHistory: PaymentHistoryService,
+    private readonly countryService: CityCountryService,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -45,6 +43,34 @@ export class SmsService {
         lazyLoading: true,
       },
     );
+  }
+
+  public async findOneInPreSets(condition?: any) {
+    if (condition) return await this.presetRepo.findOne(condition);
+    else return await this.presetRepo.findOne();
+  }
+
+  public async findInPreSets(condition?: any) {
+    if (condition) return await this.presetRepo.find(condition);
+    else return await this.presetRepo.find();
+  }
+  public async findOneConversations(condition?: any) {
+    if (condition) return await this.conversationsRepo.findOne(condition);
+    else return await this.conversationsRepo.findOne();
+  }
+
+  public async findConversations(condition?: any) {
+    if (condition) return await this.conversationsRepo.find(condition);
+    else return await this.conversationsRepo.find();
+  }
+  public async findOneConversationsMessages(condition?: any) {
+    if (condition) return await this.conversationsMessagesRepo.findOne(condition);
+    else return await this.conversationsMessagesRepo.findOne();
+  }
+
+  public async findConversationsMessages(condition?: any) {
+    if (condition) return await this.conversationsMessagesRepo.find(condition);
+    else return await this.conversationsMessagesRepo.find();
   }
 
   //#region sms
@@ -57,13 +83,13 @@ export class SmsService {
     fromCountry: string,
   ) {
     try {
-      const influencerNumber = await this.phoneService.repo.findOne({
+      const influencerNumber = await this.phoneService.findOne({
         where: { number: receiver, status: 'in-use', country: fromCountry },
         relations: ['user'],
       });
 
       if (influencerNumber) {
-        let contact = await this.contactService.repository.findOne({
+        let contact = await this.contactService.findOne({
           where: { phoneNumber: sender },
         });
 
@@ -177,7 +203,7 @@ export class SmsService {
       'received',
     );
     console.log('in bound sms saved');
-    const plan = await this.subService.planService.repository.findOne();
+    const plan = await this.subService.planService.findOne();
     await this.paymentHistory.updateDues({
       cost: plan.subscriberCost,
       costType: 'contacts',
@@ -260,11 +286,11 @@ export class SmsService {
     phoneNumber: string,
   ) {
     try {
-      const _contact = await this.contactService.repository.findOne({
+      const _contact = await this.contactService.findOne({
         where: { phoneNumber: contact, user: inf },
       });
       if (_contact) {
-        const _inf_phone = await this.phoneService.repo.findOne({
+        const _inf_phone = await this.phoneService.findOne({
           where: { user: inf, number: phoneNumber },
         });
         if (_inf_phone)
@@ -299,7 +325,7 @@ export class SmsService {
         where: { code: influencerNumber.country },
       });
 
-      const plan = await this.subService.planService.repository.findOne();
+      const plan = await this.subService.planService.findOne();
 
       if (
         !checkThreshold ||
@@ -373,7 +399,7 @@ export class SmsService {
 
   async getConversation(inf: UserEntity, contact: string) {
     try {
-      const contactNumber = await this.contactService.repository.findOne({
+      const contactNumber = await this.contactService.findOne({
         where: { phoneNumber: contact, user: inf },
       });
       if (contactNumber) {
@@ -395,7 +421,7 @@ export class SmsService {
 
   async deleteConversation(inf: UserEntity, contact: string) {
     try {
-      const contactNumber = await this.contactService.repository.findOne({
+      const contactNumber = await this.contactService.findOne({
         where: { phoneNumber: contact, user: inf },
       });
       if (contactNumber) {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { interval } from '../../modules/products/dto/plans.dto';
-import { PlansService } from '../../modules/products/services/plans.service';
+import { interval } from '../../modules/products/plan/plans.dto';
+import { PlansService } from '../../modules/products/plan/plans.service';
 import { nanoid } from '../../shared/random-keygen';
 import { Seeder } from '../../decorators/common.decorator';
 import { ISeed } from '../seeds.interface';
@@ -10,7 +10,7 @@ import { ISeed } from '../seeds.interface';
 export class PlanSeed implements ISeed {
   constructor(private readonly service: PlansService) {}
   async up() {
-    const check = await this.service.repository.findOne();
+    const check = await this.service.findOne();
 
     if (!check) {
       await this.service.createPlanInDb({

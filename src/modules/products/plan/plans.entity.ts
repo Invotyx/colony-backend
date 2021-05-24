@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../../../consts/tables.const';
-import { SubscriptionsEntity } from './subscriptions.entity';
+import { SubscriptionsEntity } from '../subscription/subscriptions.entity';
 enum interval {
   month = 'month',
   year = 'year',

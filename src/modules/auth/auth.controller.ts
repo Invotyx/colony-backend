@@ -85,7 +85,7 @@ export class AuthController {
     @LoginUser() _user: UserEntity,
   ) {
     try {
-      const allData = await this.userService.repository.findOne({
+      const allData = await this.userService.findOne({
         where: { id: _user.id },
       });
       const oldPassword = await PasswordHashEngine.check(

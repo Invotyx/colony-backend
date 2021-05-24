@@ -12,11 +12,11 @@ import { ApiTags } from '@nestjs/swagger';
 import { env } from 'process';
 import { Auth } from '../../../decorators/auth.decorator';
 import { LoginUser } from '../../../decorators/user.decorator';
-import { UserEntity } from '../../../modules/users/entities/user.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 import Stripe from 'stripe';
 import { UsersService } from '../../users/services/users.service';
-import { PaymentMethodDto } from '../dto/payment-methods.dto';
-import { PaymentMethodsService } from '../services/payment-methods.service';
+import { PaymentMethodDto } from './payment-methods.dto';
+import { PaymentMethodsService } from './payment-methods.service';
 
 @Injectable()
 @Controller('payment-methods')
@@ -47,7 +47,7 @@ export class PaymentsController {
             phone: user.mobile,
           });
           user.customerId = stripe_user.id;
-          await this.userService.repository.save(user);
+          await this.userService.save(user);
         }
         const pm = await this.paymentService.createPaymentMethod(user, data);
         return pm;

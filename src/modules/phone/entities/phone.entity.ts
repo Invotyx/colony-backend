@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../../../consts/tables.const';
-import { SubscriptionsEntity } from '../../products/entities/subscriptions.entity';
+import { SubscriptionsEntity } from '../../products/subscription/subscriptions.entity';
 import { ConversationsEntity } from '../../sms/entities/conversations.entity';
 import { UserEntity } from '../../users/entities/user.entity';
 

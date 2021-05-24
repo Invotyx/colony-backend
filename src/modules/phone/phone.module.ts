@@ -6,7 +6,7 @@ import { MainMysqlModule } from 'src/shared/main-mysql.module';
 import { ApiCallingModule } from '../../services/api-calling/api-calling.module';
 import { PaymentHistoryModule } from '../payment-history/payment-history.module';
 import { ProductsModule } from '../products/products.module';
-import { PaymentMethodsService } from '../products/services/payment-methods.service';
+import { PaymentMethodsService } from '../products/payments/payment-methods.service';
 import { UsersModule } from '../users/users.module';
 import { PhoneController } from './phone.controller';
 import { PhoneService } from './phone.service';

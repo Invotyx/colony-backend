@@ -17,9 +17,9 @@ import { InfluencerLinksRepository } from './repo/influencer-links.repo';
 @Injectable()
 export class InfluencerLinksService {
   constructor(
-    public readonly repository: InfluencerLinksRepository,
-    public readonly trackingRepo: InfluencerLinksTrackingRepository,
-    public readonly contactService: ContactsService,
+    private readonly repository: InfluencerLinksRepository,
+    private readonly trackingRepo: InfluencerLinksTrackingRepository,
+    private readonly contactService: ContactsService,
   ) {}
 
   async addLink(link: string, title: string, user: UserEntity) {
@@ -83,7 +83,7 @@ export class InfluencerLinksService {
 
   async getUniqueLinkForContact(id: number, contact: string) {
     try {
-      const contactUrl = await this.contactService.repository.findOne({
+      const contactUrl = await this.contactService.findOne({
         where: { phoneNumber: contact },
       });
       const linkUrl = await this.repository.findOne({ where: { id: id } });
@@ -111,7 +111,7 @@ export class InfluencerLinksService {
       }
       const link = parts[0];
       const contact = parts[1];
-      const contactUrl = await this.contactService.repository.findOne({
+      const contactUrl = await this.contactService.findOne({
         where: { urlMapper: contact },
       });
       if (!contactUrl) {
@@ -158,7 +158,7 @@ export class InfluencerLinksService {
       }
       const link = parts[0];
       const contact = parts[1];
-      const contactUrl = await this.contactService.repository.findOne({
+      const contactUrl = await this.contactService.findOne({
         where: { urlMapper: contact },
       });
       if (!contactUrl) {

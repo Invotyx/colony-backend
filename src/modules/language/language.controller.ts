@@ -25,6 +25,7 @@ import { inValidDataRes } from '../../shared/res.fun';
 import { LanguageService } from './language.service';
 import { LanguageDto } from './language.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { LanguageRepository } from './languages.repo';
 
 // const idToPath = (x, data) => {
 //   return `APP/${data.orgId}/${TABLES.USERS.id}/${data.id}/${path}`;
@@ -32,7 +33,9 @@ import { ApiTags } from '@nestjs/swagger';
 @Controller('language')
 @ApiTags('language')
 export class LanguageController {
-  constructor(private readonly languageService: LanguageService) {}
+  constructor(private readonly languageService: LanguageService,
+  private readonly repository:LanguageRepository
+  ) { }
   @Get('')
   @CompressJSON()
   async getAllLanguages(@Body('jData') data: any) {
@@ -57,7 +60,7 @@ export class LanguageController {
         sortList,
         columnList,
       });
-      const query = await this.languageService.repository
+      const query = await this.repository
         .createQueryBuilder(TABLES.LANGUAGE.name)
         .select(columnListToSelect(columnList))
         .where(filters.sql);
@@ -81,7 +84,7 @@ export class LanguageController {
   @Get(':id')
   async getLanguage(@Param('id') id: number) {
     try {
-      const Language = await this.languageService.repository.findOne(id);
+      const Language = await this.languageService.findOne(id);
       return { data: Language };
     } catch (error) {
       if (error instanceof PaginatorError) {

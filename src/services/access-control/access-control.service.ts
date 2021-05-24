@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { oneLine } from 'common-tags';
+import { UserRepository } from 'src/modules/users/repos/user.repo';
+import { PermissionRepository } from 'src/repos/permission.repo';
+import { RoleRepository } from 'src/repos/roles.repo';
 import { TABLES } from '../../consts/tables.const';
 import { UserToRoleEntity } from '../../modules/users/entities/user-to-role.entity';
 import { UserHasPermissionEntity } from '../../modules/users/entities/users-has-permissions.entity';
@@ -13,12 +16,14 @@ import { genActiveUser } from './active-user.model';
 export class AccessControlService {
   constructor(
     private readonly permissionsService: PermissionsService,
-    private readonly rolesService: RolesService,
+    private readonly permissionRepo: PermissionRepository,
     private readonly usersService: UsersService,
+    private readonly rolesRepo: RoleRepository,
+    private readonly userRepo: UserRepository,
   ) {}
 
   public async getUser(userId: any) {
-    const query = await this.usersService.repository
+    const query = await this.userRepo
       .createQueryBuilder(TABLES.USERS.name)
       .where('users.id = :userId', { userId })
       .getOne();
@@ -26,7 +31,7 @@ export class AccessControlService {
   }
 
   public async getUserRoles(userId: any) {
-    const query = await this.rolesService.repository
+    const query = await this.rolesRepo
       .createQueryBuilder(TABLES.ROLES.name)
       .innerJoinAndSelect(
         UserToRoleEntity,
@@ -45,7 +50,7 @@ export class AccessControlService {
   }
 
   public async getUserPermissions(userId: any) {
-    const query = await this.permissionsService.repository
+    const query = await this.permissionRepo
       .createQueryBuilder(TABLES.PERMISSIONS.name)
       .innerJoinAndSelect(
         UserHasPermissionEntity,

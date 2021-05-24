@@ -7,7 +7,7 @@ import { isExist } from '../../shared/repo.fun';
 
 @Injectable()
 export class LanguageService {
-  constructor(public readonly repository: LanguageRepository) {}
+  constructor(private readonly repository: LanguageRepository) {}
 
   findAll(): Promise<LanguageEntity[]> {
     return this.repository.find();
@@ -15,6 +15,16 @@ export class LanguageService {
 
   findOneById(id: number): Promise<LanguageEntity> {
     return this.repository.findOne(id);
+  }
+
+  public async findOne(condition?: any) {
+    if (condition) return await this.repository.findOne(condition);
+    else return await this.repository.findOne();
+  }
+
+  public async find(condition?: any) {
+    if (condition) return await this.repository.find(condition);
+    else return await this.repository.find();
   }
 
   async remove(id: string): Promise<void> {

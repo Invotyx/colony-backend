@@ -6,8 +6,17 @@ import { RoleAlreadyExistError } from '../errors/roles.error';
 
 @Injectable()
 export class RolesService {
-  constructor(public readonly repository: RoleRepository) {}
+  constructor(private readonly repository: RoleRepository) {}
 
+  public async findOne(condition?: any) {
+    if (condition) return await this.repository.findOne(condition);
+    else return await this.repository.findOne();
+  }
+
+  public async find(condition?: any) {
+    if (condition) return await this.repository.find(condition);
+    else return await this.repository.find();
+  }
   async isRoleExists(val: any) {
     return isExist(this.repository, 'role', val);
   }
@@ -25,9 +34,6 @@ export class RolesService {
     }
   }
 
-  findOne(id: number): Promise<RoleEntity> {
-    return this.repository.findOne(id);
-  }
 
   findAll(): Promise<RoleEntity[]> {
     return this.repository.find();

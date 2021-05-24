@@ -10,7 +10,7 @@ export class RolesSeed implements ISeed {
     const Roles = Object.values(ROLES);
     Roles.forEach(async (role) => {
       try {
-        const r = await this.rolesService.repository.findOne({
+        const r = await this.rolesService.findOne({
           where: { role: role },
         });
         if (!r) {

@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { TABLES } from '../../../consts/tables.const';
-import { SubscriptionsEntity } from '../../../modules/products/entities/subscriptions.entity';
+import { SubscriptionsEntity } from '../../../modules/products/subscription/subscriptions.entity';
 import { CityEntity } from './city.entity';
 
 @Entity({ name: TABLES.COUNTRY.name })

@@ -10,9 +10,9 @@ import { InfluencerLinksEntity } from '../modules/influencer-links/entities/infl
 import { LanguageEntity } from '../modules/language/entities/language.entity';
 import { PaymentDuesEntity } from '../modules/payment-history/entities/due-payments.entity';
 import { PhonesEntity } from '../modules/phone/entities/phone.entity';
-import { PaymentMethodsEntity } from '../modules/products/entities/payment-methods.entity';
-import { PlansEntity } from '../modules/products/entities/plans.entity';
-import { SubscriptionsEntity } from '../modules/products/entities/subscriptions.entity';
+import { PaymentMethodsEntity } from '../modules/products/payments/payment-methods.entity';
+import { PlansEntity } from '../modules/products/plan/plans.entity';
+import { SubscriptionsEntity } from '../modules/products/subscription/subscriptions.entity';
 import { BroadcastsContactsEntity } from '../modules/sms/entities/broadcast-contacts.entity';
 import { BroadcastsEntity } from '../modules/sms/entities/broadcast.entity';
 import { ConversationMessagesEntity } from '../modules/sms/entities/conversation-messages.entity';

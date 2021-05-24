@@ -1,21 +1,31 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { env } from 'process';
-import { CountryRepository } from 'src/services/city-country/repos/country.repo';
-import { nanoid } from 'src/shared/random-keygen';
 import Stripe from 'stripe';
-import { interval, PlansDto } from '../dto/plans.dto';
-import { PlansRepository } from '../repos/plans.repo';
+import { CountryRepository } from '../../../services/city-country/repos/country.repo';
+import { nanoid } from '../../../shared/random-keygen';
+import { interval, PlansDto } from './plans.dto';
+import { PlansRepository } from './plans.repo';
 
 @Injectable()
 export class PlansService {
   private stripe: Stripe;
   constructor(
-    public readonly repository: PlansRepository,
-    public readonly country: CountryRepository,
+    private readonly repository: PlansRepository,
+    private readonly country: CountryRepository,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
     });
+  }
+
+  public async findOne(condition?: any) {
+    if (condition) return await this.repository.findOne(condition);
+    else return await this.repository.findOne();
+  }
+
+  public async find(condition?: any) {
+    if (condition) return await this.repository.find(condition);
+    else return await this.repository.find();
   }
 
   public async getPlanDetails() {

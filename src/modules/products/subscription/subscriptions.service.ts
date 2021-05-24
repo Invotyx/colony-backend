@@ -4,39 +4,51 @@ import Stripe from 'stripe';
 import { nanoid } from '../../../shared/random-keygen';
 import { PaymentHistoryService } from '../../payment-history/payment-history.service';
 import { PhoneService } from '../../phone/phone.service';
-import { PlansEntity } from '../../products/entities/plans.entity';
-import { SubscriptionsEntity } from '../../products/entities/subscriptions.entity';
+import { PlansEntity } from '../plan/plans.entity';
+import { SubscriptionsEntity } from './subscriptions.entity';
 import { UserEntity } from '../../users/entities/user.entity';
 import { UsersService } from '../../users/services/users.service';
-import { collection_method, SubscriptionsDto } from '../dto/subscriptions.dto';
-import { SubscriptionsRepository } from '../repos/subscriptions.repo';
-import { PaymentMethodsService } from './payment-methods.service';
-import { PlansService } from './plans.service';
+import { collection_method, SubscriptionsDto } from './subscriptions.dto';
+import { SubscriptionsRepository } from './subscriptions.repo';
+import { PaymentMethodsService } from '../payments/payment-methods.service';
+import { PlansService } from '../plan/plans.service';
 
 @Injectable()
 export class SubscriptionsService {
   private stripe: Stripe;
   constructor(
-    public readonly repository: SubscriptionsRepository,
+    private readonly repository: SubscriptionsRepository,
     public readonly planService: PlansService,
-    public readonly paymentService: PaymentMethodsService,
-    public readonly userService: UsersService,
+    private readonly paymentService: PaymentMethodsService,
+    private readonly userService: UsersService,
     @Inject(forwardRef(() => PhoneService))
-    public readonly phoneService: PhoneService,
-    public readonly paymentHistory: PaymentHistoryService,
+    private readonly phoneService: PhoneService,
+    private readonly paymentHistory: PaymentHistoryService,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
     });
   }
 
+  
+
+  public async findOne(condition?: any) {
+    if (condition) return await this.repository.findOne(condition);
+    else return await this.repository.findOne();
+  }
+
+  public async find(condition?: any) {
+    if (condition) return await this.repository.find(condition);
+    else return await this.repository.find();
+  }
+
   public async createSubscription(customer: UserEntity, sub: SubscriptionsDto) {
     try {
-      const _plan = await this.planService.repository.findOne({
+      const _plan = await this.planService.findOne({
         where: { id: sub.planId },
       });
       if (_plan) {
-        const phone = await this.phoneService.repo.findOne({
+        const phone = await this.phoneService.findOne({
           where: { number: sub.number },
         });
         if (phone) {
@@ -68,7 +80,7 @@ export class SubscriptionsService {
         where: { user: customer, default: true },
       });
       if (customer_payments) {
-        const checkNumber = await this.phoneService.repo.findOne({
+        const checkNumber = await this.phoneService.findOne({
           number: sub.number,
           status: 'active',
         });
@@ -108,7 +120,7 @@ export class SubscriptionsService {
             chargeId: charge.id,
           });
           if (purchasedNumber.number != null) {
-            const purchasedNumberDb = await this.phoneService.repo.findOne({
+            const purchasedNumberDb = await this.phoneService.findOne({
               where: { number: purchasedNumber.number.number },
             });
 
@@ -126,13 +138,13 @@ export class SubscriptionsService {
               phone: purchasedNumberDb,
             });
 
-            const influencer = await this.userService.repository.findOne({
+            const influencer = await this.userService.findOne({
               where: { id: customer.id },
             });
             influencer.isActive = true;
             influencer.isApproved = true;
 
-            await this.userService.repository.save(influencer);
+            await this.userService.save(influencer);
 
             return {
               message:
@@ -196,7 +208,7 @@ export class SubscriptionsService {
           relations: ['plan', 'country', 'phone'],
         });
         if (checkSub) {
-          let plans = await this.planService.repository.find({
+          let plans = await this.planService.find({
             where: { country: checkSub.country },
           });
           if (plans.length > 0) {

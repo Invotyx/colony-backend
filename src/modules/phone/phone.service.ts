@@ -12,10 +12,10 @@ import Stripe from 'stripe';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { CityCountryService } from '../../services/city-country/city-country.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
-import { collection_method } from '../products/dto/subscriptions.dto';
-import { PaymentMethodsService } from '../products/services/payment-methods.service';
-import { PlansService } from '../products/services/plans.service';
-import { SubscriptionsService } from '../products/services/subscriptions.service';
+import { collection_method } from '../products/subscription/subscriptions.dto';
+import { PaymentMethodsService } from '../products/payments/payment-methods.service';
+import { PlansService } from '../products/plan/plans.service';
+import { SubscriptionsService } from '../products/subscription/subscriptions.service';
 import { PhonesRepository } from './phone.repo';
 
 @Injectable()
@@ -23,10 +23,10 @@ export class PhoneService {
   private client;
   private stripe: Stripe;
   constructor(
-    public readonly repo: PhonesRepository,
-    public readonly cityCountry: CityCountryService,
-    public readonly payment: PaymentMethodsService,
-    public readonly paymentHistory: PaymentHistoryService,
+    private readonly repo: PhonesRepository,
+    private readonly cityCountry: CityCountryService,
+    private readonly payment: PaymentMethodsService,
+    private readonly paymentHistory: PaymentHistoryService,
     @Inject(forwardRef(() => SubscriptionsService))
     private readonly subscriptionService: SubscriptionsService,
     private readonly planService: PlansService,
@@ -42,6 +42,16 @@ export class PhoneService {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
     });
+  }
+
+  public async findOne(condition?: any) {
+    if (condition) return await this.repo.findOne(condition);
+    else return await this.repo.findOne();
+  }
+
+  public async find(condition?: any) {
+    if (condition) return await this.repo.find(condition);
+    else return await this.repo.find();
   }
 
   public async cancelPhoneNumber(num: string, user: UserEntity) {
@@ -198,7 +208,7 @@ export class PhoneService {
     number: string,
   ) {
     try {
-      const subscription = await this.subscriptionService.repository.findOne({
+      const subscription = await this.subscriptionService.findOne({
         where: { user: user },
       });
 
@@ -215,7 +225,7 @@ export class PhoneService {
         }
         return await this.purchasePhoneNumber(country, number, user);
       } else {
-        const plan = await this.planService.repository.findOne();
+        const plan = await this.planService.findOne();
         const sub: any = {
           country: country,
           collectionMethod: collection_method.charge_automatically,

@@ -16,21 +16,13 @@ import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
-import { TABLES } from '../../consts/tables.const';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { EmailTokenSender } from '../../mails/users/emailtoken.mailer';
 import { ROLES } from '../../services/access-control/consts/roles.const';
 import { CompressJSON } from '../../services/common/compression/compression.interceptor';
 import { PasswordHashEngine } from '../../shared/hash.service';
-import {
-  columnListToSelect,
-  dataViewer,
-  mapColumns,
-  paginateQuery,
-  PaginatorError,
-  PaginatorErrorHandler,
-} from '../../shared/paginator';
+import { PaginatorError, PaginatorErrorHandler } from '../../shared/paginator';
 import { inValidDataRes } from '../../shared/res.fun';
 import { UserEntity } from './entities/user.entity';
 import { InValidDataError, UserNotExistError } from './errors/users.error';
@@ -55,66 +47,13 @@ export class UsersController {
   @Get('')
   @CompressJSON()
   async getAllUsers(@Body('jData') data: any) {
-    try {
-      const userTable = TABLES.USERS.name;
-      const columnList: any = {
-        id: { table: userTable, column: 'id' },
-        firstName: { table: userTable, column: 'firstName' },
-        lastName: { table: userTable, column: 'lastName' },
-        username: { table: userTable, column: 'username' },
-        email: { table: userTable, column: 'email' },
-        createdAt: { table: userTable, column: 'createdAt' },
-        gender: { table: userTable, column: 'gender' },
-        mobile: { table: userTable, column: 'mobile' },
-        //password: { table: userTable, column: 'password' },
-        image: { table: userTable, column: 'image' },
-        isActive: {
-          table: userTable,
-          column: 'isActive',
-          valueMapper: (v: any) => (v ? 'YES' : 'NO'),
-        },
-      };
-      const sortList = {
-        firstName: { table: userTable, column: 'firstName' },
-      };
-      const filterList = {
-        firstName: { table: userTable, column: 'firstName' },
-        isActive: {
-          table: userTable,
-          column: 'isActive',
-          valueMapper: (v: any) => Number(v === 'YES'),
-        },
-      };
-      const { filters, configs } = dataViewer({
-        data,
-        filterList,
-        sortList,
-        columnList,
-      });
-      const query = await this.userService.repository
-        .createQueryBuilder(TABLES.USERS.name)
-        .select(columnListToSelect(columnList))
-        .where(filters.sql);
-
-      const paginatedData = await paginateQuery(query, configs, userTable);
-      if (paginatedData.data.length) {
-        paginatedData.data = paginatedData.data.map(
-          mapColumns(paginatedData.data[0], columnList),
-        );
-      }
-      return { data: paginatedData.data, meta: paginatedData.meta };
-    } catch (error) {
-      if (error instanceof PaginatorError) {
-        throw PaginatorErrorHandler(error);
-      }
-      throw error;
-    }
+    return this.userService.getAllUsers(data);
   }
 
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
   async getUserProfile(@LoginUser() user: UserEntity): Promise<UserEntity> {
-    return await this.userService.repository.findOne({
+    return await this.userService.findOne({
       where: { id: user.id },
       relations: ['paymentMethod'],
     });
@@ -173,7 +112,7 @@ export class UsersController {
   @Get(':id')
   async getUser(@Param('id') id: number) {
     try {
-      const user = await this.userService.repository.findOne(id);
+      const user = await this.userService.findOne({ where: { id: id } });
       return { data: user };
     } catch (error) {
       if (error instanceof PaginatorError) {
@@ -193,7 +132,7 @@ export class UsersController {
   @Auth({ roles: [ROLES.ADMIN] })
   @Get(':id/roleId')
   getRolesId(@Param('id') id: string) {
-    return this.userService.repository.findOne(id, { relations: ['roles'] });
+    return this.userService.findOne({ where: { id:id }, relations: ['roles'] });
     //return this.rolesService.repository.find();
   }
 
@@ -235,7 +174,7 @@ export class UsersController {
   @UsePipes(ValidationPipe)
   async updatePwd(@Body() data: PasswordChange) {
     try {
-      const user = await this.userService.repository.findOne({
+      const user = await this.userService.findOne({
         where: { email: data.email },
       });
       if (!user) {
@@ -243,7 +182,7 @@ export class UsersController {
       }
       user.password = await PasswordHashEngine.make(data.password);
 
-      await this.userService.repository.save(user);
+      await this.userService.save(user);
       return { message: 'Password updated successfully.' };
     } catch (error) {
       if (error instanceof InValidDataError) {

@@ -5,8 +5,8 @@ import { InfluencerLinksEntity } from 'src/modules/influencer-links/entities/inf
 import { LanguageEntity } from 'src/modules/language/entities/language.entity';
 import { PaymentHistoryEntity } from 'src/modules/payment-history/entities/purchaseHistory.entity';
 import { PhonesEntity } from 'src/modules/phone/entities/phone.entity';
-import { PaymentMethodsEntity } from 'src/modules/products/entities/payment-methods.entity';
-import { SubscriptionsEntity } from 'src/modules/products/entities/subscriptions.entity';
+import { PaymentMethodsEntity } from 'src/modules/products/payments/payment-methods.entity';
+import { SubscriptionsEntity } from 'src/modules/products/subscription/subscriptions.entity';
 import { BroadcastsEntity } from 'src/modules/sms/entities/broadcast.entity';
 import { ConversationsEntity } from 'src/modules/sms/entities/conversations.entity';
 import { PresetMessagesEntity } from 'src/modules/sms/entities/preset-message.entity';

@@ -11,17 +11,17 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { Auth } from '../../decorators/auth.decorator';
-import { LoginUser } from '../../decorators/user.decorator';
-import { UserEntity } from '../../entities/user.entity';
-import { AuthMailer } from '../../mails/users/auth.mailer';
-import { AuthService } from './auth.service';
-import { PasswordHashEngine } from '../../shared/hash.service';
-import { AppLogger } from '../../services/logs/log.service';
-import { UsersService } from '../users/services/users.service';
-import { CreateUserDto, UpdateProfileDto } from '../users/users.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
+import { Auth } from '../../decorators/auth.decorator';
+import { LoginUser } from '../../decorators/user.decorator';
+import { AuthMailer } from '../../mails/users/auth.mailer';
+import { AppLogger } from '../../services/logs/log.service';
+import { PasswordHashEngine } from '../../shared/hash.service';
+import { UserEntity } from '../users/entities/user.entity';
+import { UsersService } from '../users/services/users.service';
+import { CreateUserDto, UpdateProfileDto } from '../users/users.dto';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 @ApiTags('auth')

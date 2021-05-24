@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { env } from 'process';
-import { Auth } from 'src/decorators/auth.decorator';
-import { LoginUser } from 'src/decorators/user.decorator';
-import { UserEntity } from 'src/entities/user.entity';
+import { Auth } from '../../../decorators/auth.decorator';
+import { LoginUser } from '../../../decorators/user.decorator';
+import { UserEntity } from '../../../modules/users/entities/user.entity';
 import Stripe from 'stripe';
 import { UsersService } from '../../users/services/users.service';
 import { PaymentMethodDto } from '../dto/payment-methods.dto';

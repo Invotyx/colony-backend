@@ -13,11 +13,10 @@ import {
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Queue } from 'bull';
 import { Response } from 'express';
-import { Auth } from 'src/decorators/auth.decorator';
-import { LoginUser } from 'src/decorators/user.decorator';
-import { UserEntity } from 'src/entities/user.entity';
-import { ROLES } from 'src/services/access-control/consts/roles.const';
-import { tagReplace } from 'src/shared/tag-replace';
+import { Auth } from '../../decorators/auth.decorator';
+import { LoginUser } from '../../decorators/user.decorator';
+import { ROLES } from '../../services/access-control/consts/roles.const';
+import { UserEntity } from '../users/entities/user.entity';
 import { BroadcastService } from './broadcast.service';
 import { PresetsDto, PresetsUpdateDto, presetTrigger } from './preset.dto';
 import { SmsService } from './sms.service';
@@ -119,25 +118,7 @@ export class SmsController {
     @Body('from') phoneNumber: string,
   ) {
     try {
-      const _contact = await this.service.contactService.repository.findOne({
-        where: { phoneNumber: contact, user: inf },
-      });
-      if (_contact) {
-        const _inf_phone = await this.service.phoneService.repo.findOne({
-          where: { user: inf, number: phoneNumber },
-        });
-        if (_inf_phone)
-          await this.service.sendSms(
-            _contact,
-            _inf_phone,
-            tagReplace(message, {
-              name: _contact.name,
-              inf_name:
-                _inf_phone.user.firstName + ' ' + _inf_phone.user.firstName,
-            }),
-            'outBound',
-          );
-      }
+      return this.service.initiateSendSms(inf, contact, message, phoneNumber);
     } catch (e) {
       throw e;
     }

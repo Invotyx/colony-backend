@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CityCountryService } from 'src/services/city-country/city-country.service';
+import { CityCountryService } from '../../services/city-country/city-country.service';
 import { Seeder } from '../../decorators/common.decorator';
 import { ISeed } from '../seeds.interface';
 

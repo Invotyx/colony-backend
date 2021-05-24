@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { oneLine } from 'common-tags';
 import { TABLES } from '../../consts/tables.const';
-import { UserToRoleEntity } from '../../entities/user-to-role.entity';
-import { UserHasPermissionEntity } from '../../entities/users-has-permissions.entity';
+import { UserToRoleEntity } from '../../modules/users/entities/user-to-role.entity';
+import { UserHasPermissionEntity } from '../../modules/users/entities/users-has-permissions.entity';
 import { PermissionsService } from '../../modules/users/services/permissions.service';
 import { RolesService } from '../../modules/users/services/roles.service';
 import { UsersService } from '../../modules/users/services/users.service';

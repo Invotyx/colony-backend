@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, Length } from 'class-validator';
-import { SectionsEntity } from 'src/entities/sections.entity';
+import { SectionsEntity } from '../entities/sections.entity';
 
 export class ButtonsDto {
   @ApiPropertyOptional()

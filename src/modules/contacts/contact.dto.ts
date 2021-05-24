@@ -1,16 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
-  IsDate,
   IsIn,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Length,
 } from 'class-validator';
-import { CityEntity } from 'src/entities/city.entity';
-import { CountryEntity } from 'src/entities/country.entity';
+import { CityEntity } from '../../services/city-country/entities/city.entity';
+import { CountryEntity } from '../../services/city-country/entities/country.entity';
 
 export enum gender {
   male = 'male',

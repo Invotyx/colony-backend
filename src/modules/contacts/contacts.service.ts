@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   HttpException,
   HttpStatus,
@@ -6,7 +7,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { TABLES } from 'src/consts/tables.const';
-import { ContactsEntity } from 'src/entities/contacts.entity';
+import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
 import { nanoid } from 'src/shared/random-keygen';
 import { tagReplace } from 'src/shared/tag-replace';
 import { PhoneService } from '../phone/phone.service';
@@ -237,6 +238,39 @@ export class ContactsService {
       );
 
       return { message: 'Contact details updated.', data: contactDetails };
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async getUrlMapper(phone: string) {
+    try {
+      const con = await this.repository.findOne({
+        where: { phoneNumber: phone },
+      });
+      if (con) {
+        return { url: con.urlMapper };
+      } else {
+        return { message: 'No such contact exists with this number.' };
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async checkContact( urlId: string) {
+    try {
+      const consolidatedIds = urlId.split(':::');
+      const userId = consolidatedIds[0];
+      const contactUniqueMapper = consolidatedIds[1];
+      const contact = await this.repository.findOne({
+        where: { urlMapper: contactUniqueMapper },
+      });
+      if (contact) {
+        return contact;
+      } else {
+        throw new BadRequestException('Contact does not exist in our system.');
+      }
     } catch (e) {
       throw e;
     }

@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,14 +8,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Auth } from 'src/decorators/auth.decorator';
-import { LoginUser } from 'src/decorators/user.decorator';
-import { UserEntity } from 'src/entities/user.entity';
-import { ROLES } from 'src/services/access-control/consts/roles.const';
-import { CountryRepository } from 'src/services/city-country/repos/country.repo';
-import { collection_method } from '../products/dto/subscriptions.dto';
-import { PlansService } from '../products/services/plans.service';
-import { SubscriptionsService } from '../products/services/subscriptions.service';
+import { Auth } from '../../decorators/auth.decorator';
+import { LoginUser } from '../../decorators/user.decorator';
+import { UserEntity } from '../../modules/users/entities/user.entity';
+import { ROLES } from '../../services/access-control/consts/roles.const';
+import { CountryRepository } from '../../services/city-country/repos/country.repo';
 import { PhoneService } from './phone.service';
 
 @Injectable()
@@ -26,8 +22,6 @@ export class PhoneController {
   constructor(
     private readonly service: PhoneService,
     private readonly countryRepo: CountryRepository,
-    private readonly subscriptionService: SubscriptionsService,
-    private readonly planService: PlansService,
   ) {}
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
@@ -66,30 +60,7 @@ export class PhoneController {
     @Query('number_must_have') number_must_have: string = '',
   ) {
     try {
-      const cc = await this.countryRepo.findOne({
-        where: { id: country, active: true },
-      });
-      if (cc) {
-        if (limit < 1 || limit > 25) {
-          throw new BadRequestException(
-            'Limit should be greater then 0 and less then 25.',
-          );
-        }
-        if (number_must_have && number_must_have.length > 5) {
-          throw new BadRequestException(
-            'Number search parameter length should be less then 5 characters.',
-          );
-        }
-        return await this.service.searchPhoneNumbers(
-          cc.code.toUpperCase(),
-          limit,
-          number_must_have,
-        );
-      } else {
-        throw new BadRequestException(
-          'Country is not available for purchasing numbers.',
-        );
-      }
+      return this.service.searchNumbers(country, limit, number_must_have);
     } catch (e) {
       throw e;
     }
@@ -103,32 +74,7 @@ export class PhoneController {
     @Body('number') number: string,
   ) {
     try {
-      const subscription = await this.subscriptionService.repository.findOne({
-        where: { user: user },
-      });
-
-      if (subscription) {
-        if (country.length !== 2) {
-          throw new BadRequestException(
-            'Country Code should be in ISO 2 Code Format eg. GB for United Kingdom',
-          );
-        }
-        if (number.length < 10 || number.length > 20) {
-          throw new BadRequestException(
-            'Number should be in international format and length should be between 10 to 20 characters.',
-          );
-        }
-        return await this.service.purchasePhoneNumber(country, number, user);
-      } else {
-        const plan = await this.planService.repository.findOne();
-        const sub: any = {
-          country: country,
-          collectionMethod: collection_method.charge_automatically,
-          number: number,
-          planId: plan.id,
-        };
-        return await this.subscriptionService.createSubscription(user, sub);
-      }
+      return this.service.initiatePurchasePhoneNumber(user, country, number);
     } catch (e) {
       throw e;
     }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { interval } from 'src/modules/products/dto/plans.dto';
-import { PlansService } from 'src/modules/products/services/plans.service';
-import { nanoid } from 'src/shared/random-keygen';
+import { interval } from '../../modules/products/dto/plans.dto';
+import { PlansService } from '../../modules/products/services/plans.service';
+import { nanoid } from '../../shared/random-keygen';
 import { Seeder } from '../../decorators/common.decorator';
 import { ISeed } from '../seeds.interface';
 

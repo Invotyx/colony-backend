@@ -1,15 +1,7 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Param,
-  Put,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Auth } from 'src/decorators/auth.decorator';
-import { UserEntity } from 'src/entities/user.entity';
+import { Auth } from '../../decorators/auth.decorator';
+import { UserEntity } from '../users/entities/user.entity';
 import { GetUser } from '../users/get-user.decorator';
 import { ContactDto, ContactFilter } from './contact.dto';
 import { ContactsService } from './contacts.service';
@@ -30,14 +22,7 @@ export class ContactsController {
   @Get('/get-url')
   async getUrlMapper(@Query('phone') phone: string) {
     try {
-      const con = await this.service.repository.findOne({
-        where: { phoneNumber: phone },
-      });
-      if (con) {
-        return { url: con.urlMapper };
-      } else {
-        return { message: 'No such contact exists with this number.' };
-      }
+      return this.service.getUrlMapper(phone);
     } catch (e) {
       throw e;
     }
@@ -59,17 +44,7 @@ export class ContactsController {
   @Get(':urlId/check')
   async checkContact(@Param('urlId') urlId: string) {
     try {
-      const consolidatedIds = urlId.split(':::');
-      const userId = consolidatedIds[0];
-      const contactUniqueMapper = consolidatedIds[1];
-      const contact = await this.service.repository.findOne({
-        where: { urlMapper: contactUniqueMapper },
-      });
-      if (contact) {
-        return contact;
-      } else {
-        throw new BadRequestException('Contact does not exist in our system.');
-      }
+      return this.service.checkContact(urlId);
     } catch (e) {
       throw e;
     }

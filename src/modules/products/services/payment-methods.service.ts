@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { env } from 'process';
-import { PaymentMethodsEntity } from 'src/entities/payment-methods.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import Stripe from 'stripe';
+import { PaymentMethodsEntity } from '../../products/entities/payment-methods.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 import { PaymentMethodDto } from '../dto/payment-methods.dto';
 import { PaymentMethodsRepository } from '../repos/payment-methods.repo';
 

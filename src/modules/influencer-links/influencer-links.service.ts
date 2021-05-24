@@ -1,7 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { TABLES } from 'src/consts/tables.const';
-import { InfluencerLinksEntity } from 'src/entities/influencer-links.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import {
   dataViewer,
   mapColumns,
@@ -9,8 +6,11 @@ import {
   PaginatorError,
   PaginatorErrorHandler,
 } from 'src/shared/paginator';
-import { nanoid } from 'src/shared/random-keygen';
+import { TABLES } from '../../consts/tables.const';
+import { UserEntity } from '../../modules/users/entities/user.entity';
+import { nanoid } from '../../shared/random-keygen';
 import { ContactsService } from '../contacts/contacts.service';
+import { InfluencerLinksEntity } from './entities/influencer-links.entity';
 import { InfluencerLinksTrackingRepository } from './repo/influencer-links-tracking.repo';
 import { InfluencerLinksRepository } from './repo/influencer-links.repo';
 

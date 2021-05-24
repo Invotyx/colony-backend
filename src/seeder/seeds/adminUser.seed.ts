@@ -1,9 +1,9 @@
 import { Seeder } from '../../decorators/common.decorator';
 import { RolesService } from '../../modules/users/services/roles.service';
 import { ISeed } from '../seeds.interface';
-import { UsersService } from 'src/modules/users/services/users.service';
-import { UserEntity } from 'src/entities/user.entity';
-import { UpdateRole } from 'src/modules/users/users.dto';
+import { UsersService } from '../../modules/users/services/users.service';
+import { UserEntity } from '../../modules/users/entities/user.entity';
+import { UpdateRole } from '../../modules/users/users.dto';
 import { PasswordHashEngine } from 'src/shared/hash.service';
 import { nanoid } from 'nanoid';
 

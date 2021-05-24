@@ -265,49 +265,10 @@ export class ContentController {
       },
     };
 
-    return this.getAllFaqs(data);
+    return this.contentService.getAllFaqs(data);
   }
 
-  async getAllFaqs(data: any) {
-    try {
-      const faqsTable = TABLES.FAQS.name;
-      const columnList: any = {
-        id: { table: faqsTable, column: 'id' },
-        question: { table: faqsTable, column: 'question' },
-        answer: { table: faqsTable, column: 'answer' },
-      };
-      const sortList = {
-        id: { table: faqsTable, column: 'id' },
-        question: { table: faqsTable, column: 'question' },
-      };
-      const filterList = {
-        question: { table: faqsTable, column: 'question' },
-      };
-      const { filters, configs } = dataViewer({
-        data,
-        filterList,
-        sortList,
-        columnList,
-      });
-      const query = await this.faqsRepo
-        .createQueryBuilder(TABLES.FAQS.name)
-        .select()
-        .where(filters.sql);
-
-      const paginatedData = await paginateQuery(query, configs, faqsTable);
-      if (paginatedData.data.length) {
-        paginatedData.data = paginatedData.data.map(
-          mapColumns(paginatedData.data[0], columnList),
-        );
-      }
-      return { data: paginatedData.data, meta: paginatedData.meta };
-    } catch (error) {
-      if (error instanceof PaginatorError) {
-        throw PaginatorErrorHandler(error);
-      }
-      throw error;
-    }
-  }
+  
 
   @Post('faqs')
   async addFaq(@Body() faq: FaqsDto) {

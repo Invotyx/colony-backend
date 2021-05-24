@@ -6,6 +6,7 @@ import {
   Param,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { throws } from 'assert';
 import { Auth } from 'src/decorators/auth.decorator';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
 import { PlansService } from '../services/plans.service';
@@ -16,7 +17,7 @@ import { PlansService } from '../services/plans.service';
 export class ProductsController {
   constructor(
     public readonly planService: PlansService,
-    public readonly country: CountryRepository,
+    
   ) {}
 
   /* @Auth({ roles: [ROLES.ADMIN] })
@@ -53,12 +54,8 @@ export class ProductsController {
   @Auth({})
   @Get('countries')
   public async planActivatedCountries() {
-    const countries = await this.country.find({ where: { active: true } });
-    if (countries) {
-      return countries;
-    } else {
-      return { message: 'No records found.' };
-    }
+    
+    return this.planService.planActivatedCountries();
   }
   /* 
   @Auth({})
@@ -102,12 +99,7 @@ export class ProductsController {
   @Get('')
   public async getPlanDetails() {
     try {
-      const plan = await this.planService.repository.findOne();
-      if (plan) {
-        return [plan];
-      } else {
-        return 'No record found.';
-      }
+      return this.planService.getPlanDetails();
     } catch (e) {
       throw new BadRequestException(e, 'An Exception Occurred');
     }

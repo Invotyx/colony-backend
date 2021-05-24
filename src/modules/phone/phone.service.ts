@@ -1,16 +1,21 @@
 import {
   BadRequestException,
+  forwardRef,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import e from 'express';
 import { env } from 'process';
-import { UserEntity } from 'src/entities/user.entity';
-import { CityCountryService } from 'src/services/city-country/city-country.service';
 import Stripe from 'stripe';
+import { UserEntity } from '../../modules/users/entities/user.entity';
+import { CityCountryService } from '../../services/city-country/city-country.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
+import { collection_method } from '../products/dto/subscriptions.dto';
 import { PaymentMethodsService } from '../products/services/payment-methods.service';
+import { PlansService } from '../products/services/plans.service';
+import { SubscriptionsService } from '../products/services/subscriptions.service';
 import { PhonesRepository } from './phone.repo';
 
 @Injectable()
@@ -22,6 +27,9 @@ export class PhoneService {
     public readonly cityCountry: CityCountryService,
     public readonly payment: PaymentMethodsService,
     public readonly paymentHistory: PaymentHistoryService,
+    @Inject(forwardRef(() => SubscriptionsService))
+    private readonly subscriptionService: SubscriptionsService,
+    private readonly planService: PlansService,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -34,6 +42,126 @@ export class PhoneService {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
     });
+  }
+
+  public async cancelPhoneNumber(num: string, user: UserEntity) {
+    try {
+      if (env.NODE_ENV !== 'development') {
+        const numb = await this.repo.findOne({
+          where: { user: user, number: num, status: 'active' },
+        });
+        if (numb) {
+          const number = this.client.incomingPhoneNumbers(numb.sid).remove();
+
+          numb.status = 'canceled';
+          await this.repo.save(numb);
+
+          // save to database;
+          return {
+            number,
+            message: 'Phone number is cancelled and can no longer be useable.',
+          };
+        } else {
+          throw new HttpException(
+            'Phone number not found',
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      } else {
+        const numb = await this.repo.findOne({
+          where: { user: user, number: num, status: 'active' },
+        });
+        if (numb) {
+          numb.status = 'canceled';
+          await this.repo.save(numb);
+          return {
+            message: 'Phone number is cancelled and can no longer be useable.',
+          };
+        } else {
+          throw new HttpException(
+            'Phone number not found',
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  public async getPurchasedPhoneNumbers(user: UserEntity) {
+    try {
+      const numbers = await this.repo.find({
+        where: { user: user },
+        order: { createdAt: 'DESC' },
+      });
+      if (numbers) {
+        return numbers;
+      } else {
+        throw new BadRequestException(
+          'You have not purchased any numbers yet.',
+        );
+      }
+    } catch {
+      throw e;
+    }
+  }
+
+  private serialize(obj) {
+    const str =
+      '?' +
+      Object.keys(obj)
+        .reduce(function (a, k) {
+          if (Array.isArray(obj[k])) {
+            if (obj[k].length !== 0) {
+              obj[k] = obj[k].join('&' + k + '=');
+              a.push(k + '=' + obj[k]);
+            }
+          } else {
+            a.push(k + '=' + obj[k]);
+          }
+
+          return a;
+        }, [])
+        .join('&');
+
+    console.log(str);
+    return str;
+  }
+
+  async searchNumbers(
+    country: string,
+    limit: number,
+    number_must_have: string = '',
+  ) {
+    try {
+      const cc = await this.cityCountry.countryRepo.findOne({
+        where: { id: country, active: true },
+      });
+      if (cc) {
+        if (limit < 1 || limit > 25) {
+          throw new BadRequestException(
+            'Limit should be greater then 0 and less then 25.',
+          );
+        }
+        if (number_must_have && number_must_have.length > 5) {
+          throw new BadRequestException(
+            'Number search parameter length should be less then 5 characters.',
+          );
+        }
+        return await this.searchPhoneNumbers(
+          cc.code.toUpperCase(),
+          limit,
+          number_must_have,
+        );
+      } else {
+        throw new BadRequestException(
+          'Country is not available for purchasing numbers.',
+        );
+      }
+    } catch (e) {
+      throw e;
+    }
   }
 
   public async searchPhoneNumbers(
@@ -61,6 +189,43 @@ export class PhoneService {
       return { numbers };
     } catch (e) {
       throw new HttpException(e, HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  public async initiatePurchasePhoneNumber(
+    user: UserEntity,
+    country: string,
+    number: string,
+  ) {
+    try {
+      const subscription = await this.subscriptionService.repository.findOne({
+        where: { user: user },
+      });
+
+      if (subscription) {
+        if (country.length !== 2) {
+          throw new BadRequestException(
+            'Country Code should be in ISO 2 Code Format eg. GB for United Kingdom',
+          );
+        }
+        if (number.length < 10 || number.length > 20) {
+          throw new BadRequestException(
+            'Number should be in international format and length should be between 10 to 20 characters.',
+          );
+        }
+        return await this.purchasePhoneNumber(country, number, user);
+      } else {
+        const plan = await this.planService.repository.findOne();
+        const sub: any = {
+          country: country,
+          collectionMethod: collection_method.charge_automatically,
+          number: number,
+          planId: plan.id,
+        };
+        return await this.subscriptionService.createSubscription(user, sub);
+      }
+    } catch (e) {
+      throw e;
     }
   }
 
@@ -267,90 +432,5 @@ export class PhoneService {
         code: err.code,
       });
     }
-  }
-
-  public async cancelPhoneNumber(num: string, user: UserEntity) {
-    try {
-      if (env.NODE_ENV !== 'development') {
-        const numb = await this.repo.findOne({
-          where: { user: user, number: num, status: 'active' },
-        });
-        if (numb) {
-          const number = this.client.incomingPhoneNumbers(numb.sid).remove();
-
-          numb.status = 'canceled';
-          await this.repo.save(numb);
-
-          // save to database;
-          return {
-            number,
-            message: 'Phone number is cancelled and can no longer be useable.',
-          };
-        } else {
-          throw new HttpException(
-            'Phone number not found',
-            HttpStatus.NOT_FOUND,
-          );
-        }
-      } else {
-        const numb = await this.repo.findOne({
-          where: { user: user, number: num, status: 'active' },
-        });
-        if (numb) {
-          numb.status = 'canceled';
-          await this.repo.save(numb);
-          return {
-            message: 'Phone number is cancelled and can no longer be useable.',
-          };
-        } else {
-          throw new HttpException(
-            'Phone number not found',
-            HttpStatus.NOT_FOUND,
-          );
-        }
-      }
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  public async getPurchasedPhoneNumbers(user: UserEntity) {
-    try {
-      const numbers = await this.repo.find({
-        where: { user: user },
-        order: { createdAt: 'DESC' },
-      });
-      if (numbers) {
-        return numbers;
-      } else {
-        throw new BadRequestException(
-          'You have not purchased any numbers yet.',
-        );
-      }
-    } catch {
-      throw e;
-    }
-  }
-
-  private serialize(obj) {
-    const str =
-      '?' +
-      Object.keys(obj)
-        .reduce(function (a, k) {
-          if (Array.isArray(obj[k])) {
-            if (obj[k].length !== 0) {
-              obj[k] = obj[k].join('&' + k + '=');
-              a.push(k + '=' + obj[k]);
-            }
-          } else {
-            a.push(k + '=' + obj[k]);
-          }
-
-          return a;
-        }, [])
-        .join('&');
-
-    console.log(str);
-    return str;
   }
 }

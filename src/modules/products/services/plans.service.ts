@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { env } from 'process';
+import { CountryRepository } from 'src/services/city-country/repos/country.repo';
 import { nanoid } from 'src/shared/random-keygen';
 import Stripe from 'stripe';
 import { interval, PlansDto } from '../dto/plans.dto';
@@ -8,10 +9,39 @@ import { PlansRepository } from '../repos/plans.repo';
 @Injectable()
 export class PlansService {
   private stripe: Stripe;
-  constructor(public readonly repository: PlansRepository) {
+  constructor(
+    public readonly repository: PlansRepository,
+    public readonly country: CountryRepository,
+  ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
     });
+  }
+
+  public async getPlanDetails() {
+    try {
+      const plan = await this.repository.findOne();
+      if (plan) {
+        return [plan];
+      } else {
+        return 'No record found.';
+      }
+    } catch (e) {
+      throw new BadRequestException(e, 'An Exception Occurred');
+    }
+  }
+
+  public async planActivatedCountries() {
+    try {
+      const countries = await this.country.find({ where: { active: true } });
+      if (countries) {
+        return countries;
+      } else {
+        return { message: 'No records found.' };
+      }
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
   }
 
   async createPlanInDb(plan: PlansDto): Promise<any> {

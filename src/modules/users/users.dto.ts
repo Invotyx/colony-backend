@@ -10,9 +10,9 @@ import {
   Length,
   MaxLength,
 } from 'class-validator';
-import { CityEntity } from 'src/entities/city.entity';
-import { CountryEntity } from 'src/entities/country.entity';
-import { LanguageEntity } from 'src/entities/language.entity';
+import { LanguageEntity } from '../../modules/language/entities/language.entity';
+import { CityEntity } from '../../services/city-country/entities/city.entity';
+import { CountryEntity } from '../../services/city-country/entities/country.entity';
 
 export enum gender {
   male = 'male',

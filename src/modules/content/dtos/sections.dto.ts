@@ -8,7 +8,7 @@ import {
   IsOptional,
   Length,
 } from 'class-validator';
-import { PagesEntity } from 'src/entities/pages.entity';
+import { PagesEntity } from '../entities/pages.entity';
 
 export enum sectionType {
   regular = 'regular',

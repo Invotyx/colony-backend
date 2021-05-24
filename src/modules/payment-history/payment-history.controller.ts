@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
-import { Auth } from 'src/decorators/auth.decorator';
-import { LoginUser } from 'src/decorators/user.decorator';
-import { UserEntity } from 'src/entities/user.entity';
-import { ROLES } from 'src/services/access-control/consts/roles.const';
+import { Auth } from '../../decorators/auth.decorator';
+import { LoginUser } from '../../decorators/user.decorator';
+import { UserEntity } from '../../modules/users/entities/user.entity';
+import { ROLES } from '../../services/access-control/consts/roles.const';
 import { PaymentHistoryService } from './payment-history.service';
 
 @Controller('payment-history')

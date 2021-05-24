@@ -9,11 +9,11 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Auth } from 'src/decorators/auth.decorator';
-import { LoginUser } from 'src/decorators/user.decorator';
-import { UserEntity } from 'src/entities/user.entity';
-import { UsersService } from 'src/modules/users/services/users.service';
-import { ROLES } from 'src/services/access-control/consts/roles.const';
+import { Auth } from '../../../decorators/auth.decorator';
+import { LoginUser } from '../../../decorators/user.decorator';
+import { UserEntity } from '../../../modules/users/entities/user.entity';
+import { UsersService } from '../../../modules/users/services/users.service';
+import { ROLES } from '../../../services/access-control/consts/roles.const';
 import { SubscriptionsDto } from '../dto/subscriptions.dto';
 import { SubscriptionsService } from '../services/subscriptions.service';
 

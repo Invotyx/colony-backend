@@ -1,13 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { env } from 'process';
-import { PlansEntity } from 'src/entities/plans.entity';
-import { SubscriptionsEntity } from 'src/entities/subscriptions.entity';
-import { UserEntity } from 'src/entities/user.entity';
-import { PaymentHistoryService } from 'src/modules/payment-history/payment-history.service';
-import { PhoneService } from 'src/modules/phone/phone.service';
-import { UsersService } from 'src/modules/users/services/users.service';
-import { nanoid } from 'src/shared/random-keygen';
 import Stripe from 'stripe';
+import { nanoid } from '../../../shared/random-keygen';
+import { PaymentHistoryService } from '../../payment-history/payment-history.service';
+import { PhoneService } from '../../phone/phone.service';
+import { PlansEntity } from '../../products/entities/plans.entity';
+import { SubscriptionsEntity } from '../../products/entities/subscriptions.entity';
+import { UserEntity } from '../../users/entities/user.entity';
+import { UsersService } from '../../users/services/users.service';
 import { collection_method, SubscriptionsDto } from '../dto/subscriptions.dto';
 import { SubscriptionsRepository } from '../repos/subscriptions.repo';
 import { PaymentMethodsService } from './payment-methods.service';
@@ -21,6 +21,7 @@ export class SubscriptionsService {
     public readonly planService: PlansService,
     public readonly paymentService: PaymentMethodsService,
     public readonly userService: UsersService,
+    @Inject(forwardRef(() => PhoneService))
     public readonly phoneService: PhoneService,
     public readonly paymentHistory: PaymentHistoryService,
   ) {

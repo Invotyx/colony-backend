@@ -1,25 +1,28 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   Param,
   Post,
+  Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
-  UseGuards,
-  Query,
-  BadRequestException,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags } from '@nestjs/swagger';
+import { diskStorage } from 'multer';
 import { TABLES } from '../../consts/tables.const';
 import { Auth } from '../../decorators/auth.decorator';
-import { PasswordHashEngine } from '../../shared/hash.service';
+import { LoginUser } from '../../decorators/user.decorator';
+import { EmailTokenSender } from '../../mails/users/emailtoken.mailer';
+import { ROLES } from '../../services/access-control/consts/roles.const';
 import { CompressJSON } from '../../services/common/compression/compression.interceptor';
-import { RolesService } from './services/roles.service';
-import { InValidDataError, UserNotExistError } from './errors/users.error';
-import { UsersService } from './services/users.service';
+import { PasswordHashEngine } from '../../shared/hash.service';
 import {
   columnListToSelect,
   dataViewer,
@@ -29,20 +32,12 @@ import {
   PaginatorErrorHandler,
 } from '../../shared/paginator';
 import { inValidDataRes } from '../../shared/res.fun';
-import {
-  CreateUserDto,
-  PasswordChange,
-  UpdateProfileDto,
-  UpdateRole,
-} from './users.dto';
-import { ROLES } from '../../services/access-control/consts/roles.const';
-import { AuthGuard } from '@nestjs/passport';
-import { UserEntity } from 'src/entities/user.entity';
-import { EmailTokenSender } from 'src/mails/users/emailtoken.mailer';
-import { diskStorage } from 'multer';
+import { UserEntity } from './entities/user.entity';
+import { InValidDataError, UserNotExistError } from './errors/users.error';
 import { editFileName, imageFileFilter } from './imageupload.service';
-import { LoginUser } from 'src/decorators/user.decorator';
-import { ApiTags } from '@nestjs/swagger';
+import { RolesService } from './services/roles.service';
+import { UsersService } from './services/users.service';
+import { PasswordChange, UpdateProfileDto, UpdateRole } from './users.dto';
 
 // const idToPath = (x, data) => {
 //   return `APP/${data.orgId}/${TABLES.USERS.id}/${data.id}/${path}`;

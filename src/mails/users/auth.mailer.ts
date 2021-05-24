@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AppConfig } from '../../configs/app.config';
-import { UserEntity } from '../../entities/user.entity';
+import { UserEntity } from '../../modules/users/entities/user.entity';
 import { MailBuilder, MailClient } from '../../services/mail/mail.service';
 import { MarkDown } from '../../shared/marked';
 

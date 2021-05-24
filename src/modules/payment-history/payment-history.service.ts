@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserEntity } from 'src/entities/user.entity';
+import { UserEntity } from '../../modules/users/entities/user.entity';
 import { PaymentDuesRepository } from './due-payment.repo';
 import { PaymentHistoryRepository } from './payment-history.repo';
 

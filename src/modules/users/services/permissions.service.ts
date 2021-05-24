@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PermissionEntity } from '../../../entities/permissions.entity';
+import { PermissionEntity } from '../entities/permissions.entity';
 import { isExist } from '../../../shared/repo.fun';
 import { PermissionRepository } from '../../../repos/permission.repo';
 import { RoleRepository } from '../../../repos/roles.repo';

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { MessageBird } from 'messagebird/types';
 import { env } from 'process';
-import { ContactsEntity } from 'src/entities/contacts.entity';
-import { PhonesEntity } from 'src/entities/phone.entity';
-import { UserEntity } from 'src/entities/user.entity';
+import { ContactsEntity } from '../contacts/entities/contacts.entity';
+import { PhonesEntity } from '../phone/entities/phone.entity';
+import { UserEntity } from '../users/entities/user.entity';
 import { BroadcastContactsRepository } from './repo/broadcast-contact.repo';
 import { BroadcastsRepository } from './repo/broadcast.repo';
 import { SmsService } from './sms.service';

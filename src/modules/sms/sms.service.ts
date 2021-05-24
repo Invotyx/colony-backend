@@ -5,17 +5,17 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { env } from 'process';
-import { ContactsEntity } from 'src/entities/contacts.entity';
-import { PhonesEntity } from 'src/entities/phone.entity';
-import { presetTrigger } from 'src/entities/preset-message.entity';
-import { UserEntity } from 'src/entities/user.entity';
-import { CityCountryService } from 'src/services/city-country/city-country.service';
-import { tagReplace } from 'src/shared/tag-replace';
+import { CityCountryService } from '../../services/city-country/city-country.service';
+import { tagReplace } from '../../shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
+import { ContactsEntity } from '../contacts/entities/contacts.entity';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
+import { PhonesEntity } from '../phone/entities/phone.entity';
 import { PhoneService } from '../phone/phone.service';
 import { SubscriptionsService } from '../products/services/subscriptions.service';
+import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/services/users.service';
+import { presetTrigger } from './entities/preset-message.entity';
 import { PresetsDto, PresetsUpdateDto } from './preset.dto';
 import { ConversationsRepository } from './repo/conversation-messages.repo';
 import { ConversationMessagesRepository } from './repo/conversation.repo';
@@ -253,6 +253,36 @@ export class SmsService {
     return message;
   }
 
+  async initiateSendSms(
+    inf: UserEntity,
+    contact: string,
+    message: string,
+    phoneNumber: string,
+  ) {
+    try {
+      const _contact = await this.contactService.repository.findOne({
+        where: { phoneNumber: contact, user: inf },
+      });
+      if (_contact) {
+        const _inf_phone = await this.phoneService.repo.findOne({
+          where: { user: inf, number: phoneNumber },
+        });
+        if (_inf_phone)
+          await this.sendSms(
+            _contact,
+            _inf_phone,
+            tagReplace(message, {
+              name: _contact.name,
+              inf_name:
+                _inf_phone.user.firstName + ' ' + _inf_phone.user.firstName,
+            }),
+            'outBound',
+          );
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
   async sendSms(
     contact: ContactsEntity,
     influencerNumber: PhonesEntity,

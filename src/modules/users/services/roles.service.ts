@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { RoleEntity } from '../../../entities/role.entity';
 import { RoleRepository } from '../../../repos/roles.repo';
 import { isExist } from '../../../shared/repo.fun';
+import { RoleEntity } from '../entities/role.entity';
 import { RoleAlreadyExistError } from '../errors/roles.error';
 
 @Injectable()

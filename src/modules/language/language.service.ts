@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { LanguageRepository } from './languages.repo';
-import { LanguageEntity } from '../../entities/language.entity';
+import { LanguageEntity } from './entities/language.entity';
 import { LanguageDto } from './language.dto';
 import { isExist } from '../../shared/repo.fun';
 

@@ -7,16 +7,16 @@ import {
 import * as fs from 'fs';
 import { nanoid } from 'nanoid';
 import { join } from 'path';
-import { ForgotPassword } from 'src/entities/forgottenpassword.entity';
+import { ForgotPassword } from 'src/modules/users/entities/forgottenpassword.entity';
 import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer';
 import { CityRepository } from 'src/services/city-country/repos/city.repo';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
-import { UserEntity } from '../../../entities/user.entity';
-import { EmailVerifications } from '../../../entities/verifyemail.entity';
 import { EmailTokenSender } from '../../../mails/users/emailtoken.mailer';
 import { RoleRepository } from '../../../repos/roles.repo';
 import { PasswordHashEngine } from '../../../shared/hash.service';
 import { isExist } from '../../../shared/repo.fun';
+import { UserEntity } from '../entities/user.entity';
+import { EmailVerifications } from '../entities/verifyemail.entity';
 import {
   EmailAlreadyExistError,
   PhoneAlreadyExistError,

@@ -20,8 +20,6 @@ export class ApiCallingService {
       Authorization: apiKey.key + ' ' + apiKey.value,
     };
 
-    
-
     if (method.toUpperCase() == 'GET') {
       try {
         const res = await this.httpService

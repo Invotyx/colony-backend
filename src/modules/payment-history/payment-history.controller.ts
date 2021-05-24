@@ -29,7 +29,6 @@ export class PaymentHistoryController {
     }
   }
 
-
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Get('')
   async purchaseHistory(@LoginUser() user: UserEntity) {

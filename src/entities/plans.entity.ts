@@ -30,7 +30,7 @@ export class PlansEntity {
   @Column({ default: false })
   public active: boolean;
 
-  @Column({ default: 50.0, type:'decimal' })
+  @Column({ default: 50.0, type: 'decimal' })
   public threshold: number;
 
   @Column({ length: 100, unique: false })

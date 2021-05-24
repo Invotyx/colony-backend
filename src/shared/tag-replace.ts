@@ -14,4 +14,4 @@ export const tagReplace = function template(literal, params) {
   return new Function(Object.keys(params) as any, 'return `' + literal + '`;')(
     ...Object.values(params),
   );
-}
+};

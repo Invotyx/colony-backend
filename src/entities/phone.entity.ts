@@ -42,7 +42,7 @@ export class PhonesEntity {
   @OneToMany(() => ConversationsEntity, (con) => con.phone)
   public conversations!: ConversationsEntity[];
 
-  @Column({ length: 50, default:'extra', nullable:true })
+  @Column({ length: 50, default: 'extra', nullable: true })
   public type: string;
 
   @Column()

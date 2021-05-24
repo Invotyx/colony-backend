@@ -23,6 +23,6 @@ import { LocalStrategy } from './local.strategy';
     }),
   ],
   providers: [AppLogger, AuthService, LocalStrategy, JwtStrategy, AuthMailer],
-  exports: [AuthService, UsersModule],
+  exports: [AuthService],
 })
 export class AuthModule {}

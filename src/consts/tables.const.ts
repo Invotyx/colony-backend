@@ -41,8 +41,7 @@ const TablesList: any = {
   CONVERSATIONS: new TableData(),
   CONVERSATION_MESSAGES: new TableData(),
   PAYMENT_HISTORY: new TableData(),
-  DUE_PAYMENTS: new TableData()
-
+  DUE_PAYMENTS: new TableData(),
 };
 
 const numHash = (t: string) =>

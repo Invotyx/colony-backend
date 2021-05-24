@@ -38,7 +38,7 @@ export class PhoneController {
         where: { active: true },
       });
       const numbers = await this.service.getPurchasedPhoneNumbers(user);
-      let nums=[];
+      let nums = [];
       for (let number of numbers) {
         var country = this.search(number.country, countries);
         number.country = country as any;
@@ -106,9 +106,8 @@ export class PhoneController {
       const subscription = await this.subscriptionService.repository.findOne({
         where: { user: user },
       });
-      
+
       if (subscription) {
-        
         if (country.length !== 2) {
           throw new BadRequestException(
             'Country Code should be in ISO 2 Code Format eg. GB for United Kingdom',

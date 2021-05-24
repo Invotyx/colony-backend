@@ -19,7 +19,6 @@ export enum sectionType {
 }
 
 export class SectionsDto {
-
   @ApiPropertyOptional()
   @IsOptional()
   @Length(3, 200)

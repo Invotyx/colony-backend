@@ -33,16 +33,15 @@ export class SubscriptionsController {
     @Body() subscription: SubscriptionsDto,
   ) {
     try {
-      
-        const result = await this.subscriptionService.createSubscription(
-          customer,
-          subscription,
-        );
-        if (result.message) {
-          return result;
-        } else {
-          throw new BadRequestException('An error occurred');
-        }
+      const result = await this.subscriptionService.createSubscription(
+        customer,
+        subscription,
+      );
+      if (result.message) {
+        return result;
+      } else {
+        throw new BadRequestException('An error occurred');
+      }
     } catch (e) {
       throw new BadRequestException(e, 'An exception occurred');
     }

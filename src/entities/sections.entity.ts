@@ -28,7 +28,7 @@ export class SectionsEntity {
   @Column({ length: 200, unique: false })
   public title: string;
 
-  @Column({ type:'text', unique: false, nullable: true })
+  @Column({ type: 'text', unique: false, nullable: true })
   public subTitle: string;
 
   @Column({ type: 'text', unique: false, nullable: true })

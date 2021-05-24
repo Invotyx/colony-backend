@@ -39,7 +39,9 @@ export class PaymentHistoryService {
 
   public async getDues(type: string, user: UserEntity) {
     try {
-      return await this.duesRepo.findOne({ where: { costType: type, user: user } });
+      return await this.duesRepo.findOne({
+        where: { costType: type, user: user },
+      });
     } catch (e) {
       throw e;
     }

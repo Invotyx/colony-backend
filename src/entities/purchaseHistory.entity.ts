@@ -38,7 +38,7 @@ export class PaymentHistoryEntity {
 
   @Column({
     length: 100,
-    nullable: false
+    nullable: false,
   })
   public chargeId: string;
 

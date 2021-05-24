@@ -45,7 +45,8 @@ export class PaymentMethodsService {
         check.type = pm.card.brand;
         check.user = customer;
         check.fingerprint = pm.card.fingerprint;
-        check.expiry = pm.card.exp_month.toString() + '/' + pm.card.exp_year.toString();
+        check.expiry =
+          pm.card.exp_month.toString() + '/' + pm.card.exp_year.toString();
         check.default = true;
         check.id = pm.id;
         await this.repository.save(check);

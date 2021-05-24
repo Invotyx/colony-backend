@@ -30,7 +30,7 @@ export class ConversationMessagesEntity {
   @Column({ length: 10 })
   public type: string;
 
-  @Column({ length: 100, nullable:true })
+  @Column({ length: 100, nullable: true })
   public sid: string;
 
   @Column({ default: null })

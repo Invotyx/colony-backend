@@ -9,10 +9,24 @@ import { PaymentMethodsRepository } from './payment-methods.repo';
 @Injectable()
 export class PaymentMethodsService {
   private stripe: Stripe;
-  constructor(public readonly repository: PaymentMethodsRepository) {
+  constructor(private readonly repository: PaymentMethodsRepository) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
     });
+  }
+
+  public async findOne(condition?: any) {
+    if (condition) return await this.repository.findOne(condition);
+    else return await this.repository.findOne();
+  }
+
+  public async find(condition?: any) {
+    if (condition) return await this.repository.find(condition);
+    else return await this.repository.find();
+  }
+
+  public async save(obj: PaymentMethodsEntity) {
+    return await this.repository.save(obj);
   }
 
   public async createPaymentMethod(

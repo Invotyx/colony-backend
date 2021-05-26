@@ -29,7 +29,7 @@ export class ContactsController {
   }
 
   @Auth({})
-  @Get(':infId/filter')
+  @Get('filter')
   async filterContactsByAge(
     @GetUser() user: UserEntity,
     @Query() data: ContactFilter,

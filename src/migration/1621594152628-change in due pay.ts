@@ -77,9 +77,9 @@ export class changeInDuePay1621594152628 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "due_payments" DROP CONSTRAINT "PK_323af4cf3922a5b7bfd9789a516"`,
     );
-    await queryRunner.query(
-      `ALTER TABLE "due_payments" DROP CONSTRAINT "UQ_323af4cf3922a5b7bfd9789a516"`,
-    );
+    // await queryRunner.query(
+    //   `ALTER TABLE "due_payments" DROP CONSTRAINT "UQ_323af4cf3922a5b7bfd9789a516"`,
+    // );
     await queryRunner.query(`ALTER TABLE "due_payments" DROP COLUMN "id"`);
     await queryRunner.query(
       `ALTER TABLE "due_payments" ADD "id" SERIAL NOT NULL`,
@@ -137,9 +137,9 @@ export class changeInDuePay1621594152628 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "due_payments" ADD "id" character varying(100) NOT NULL`,
     );
-    await queryRunner.query(
-      `ALTER TABLE "due_payments" ADD CONSTRAINT "UQ_323af4cf3922a5b7bfd9789a516" UNIQUE ("id")`,
-    );
+    // await queryRunner.query(
+    //   `ALTER TABLE "due_payments" ADD CONSTRAINT "UQ_323af4cf3922a5b7bfd9789a516" UNIQUE ("id")`,
+    // );
     await queryRunner.query(
       `ALTER TABLE "due_payments" ADD CONSTRAINT "PK_323af4cf3922a5b7bfd9789a516" PRIMARY KEY ("id")`,
     );

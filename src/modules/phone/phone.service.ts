@@ -12,9 +12,9 @@ import Stripe from 'stripe';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { CityCountryService } from '../../services/city-country/city-country.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
-import { collection_method } from '../products/subscription/subscriptions.dto';
 import { PaymentMethodsService } from '../products/payments/payment-methods.service';
 import { PlansService } from '../products/plan/plans.service';
+import { collection_method } from '../products/subscription/subscriptions.dto';
 import { SubscriptionsService } from '../products/subscription/subscriptions.service';
 import { PhonesRepository } from './phone.repo';
 
@@ -269,7 +269,7 @@ export class PhoneService {
                 });
                 const date = new Date(); // Now
                 date.setDate(date.getDate() + 30);
-                await this.repo.save({
+                const savedNumber = await this.repo.save({
                   country: cc.toUpperCase(),
                   features: 'sms',
                   number: number.phoneNumber,
@@ -279,9 +279,14 @@ export class PhoneService {
                   user: user,
                   type: 'default',
                 });
+                const sub = await this.subscriptionService.findOne({
+                  where: { user: user, cancelled: false },
+                });
+                sub.phone = savedNumber;
+                await this.subscriptionService.save(sub);
               } else {
                 //get default payment method
-                const default_pm = await this.payment.repository.findOne({
+                const default_pm = await this.payment.findOne({
                   where: { default: true, user: user },
                 });
                 if (default_pm) {
@@ -365,7 +370,7 @@ export class PhoneService {
               );
             }
           } else {
-            const number = await this.client.incomingPhoneNumbers.create({
+            let number = await this.client.incomingPhoneNumbers.create({
               phoneNumber: num,
               smsMethod: 'POST',
               smsUrl: 'https://colony.invotyx.gq/api/sms/receive-sms/webhook',
@@ -378,7 +383,7 @@ export class PhoneService {
             if (number) {
               const date = new Date(); // Now
               date.setDate(date.getDate() + 30);
-              await this.repo.save({
+              number = await this.repo.save({
                 country: cc.toUpperCase(),
                 features: 'sms',
                 number: number.phoneNumber,

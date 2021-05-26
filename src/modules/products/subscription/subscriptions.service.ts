@@ -1,17 +1,22 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { env } from 'process';
 import Stripe from 'stripe';
 import { nanoid } from '../../../shared/random-keygen';
 import { PaymentHistoryService } from '../../payment-history/payment-history.service';
 import { PhoneService } from '../../phone/phone.service';
-import { PlansEntity } from '../plan/plans.entity';
-import { SubscriptionsEntity } from './subscriptions.entity';
 import { UserEntity } from '../../users/entities/user.entity';
 import { UsersService } from '../../users/services/users.service';
-import { collection_method, SubscriptionsDto } from './subscriptions.dto';
-import { SubscriptionsRepository } from './subscriptions.repo';
 import { PaymentMethodsService } from '../payments/payment-methods.service';
+import { PlansEntity } from '../plan/plans.entity';
 import { PlansService } from '../plan/plans.service';
+import { collection_method, SubscriptionsDto } from './subscriptions.dto';
+import { SubscriptionsEntity } from './subscriptions.entity';
+import { SubscriptionsRepository } from './subscriptions.repo';
 
 @Injectable()
 export class SubscriptionsService {
@@ -30,8 +35,6 @@ export class SubscriptionsService {
     });
   }
 
-  
-
   public async findOne(condition?: any) {
     if (condition) return await this.repository.findOne(condition);
     else return await this.repository.findOne();
@@ -40,6 +43,14 @@ export class SubscriptionsService {
   public async find(condition?: any) {
     if (condition) return await this.repository.find(condition);
     else return await this.repository.find();
+  }
+
+  public async save(obj: SubscriptionsEntity) {
+    return await this.repository.save(obj);
+  }
+
+  public async qb(alias: string) {
+    return this.repository.createQueryBuilder(alias);
   }
 
   public async createSubscription(customer: UserEntity, sub: SubscriptionsDto) {
@@ -76,7 +87,7 @@ export class SubscriptionsService {
     _plan: PlansEntity,
   ) {
     try {
-      const customer_payments = await this.paymentService.repository.findOne({
+      const customer_payments = await this.paymentService.findOne({
         where: { user: customer, default: true },
       });
       if (customer_payments) {
@@ -120,10 +131,6 @@ export class SubscriptionsService {
             chargeId: charge.id,
           });
           if (purchasedNumber.number != null) {
-            const purchasedNumberDb = await this.phoneService.findOne({
-              where: { number: purchasedNumber.number.number },
-            });
-
             await this.repository.save({
               rId: nanoid(),
               plan: _plan,
@@ -135,7 +142,7 @@ export class SubscriptionsService {
               currentEndDate: new Date(
                 new Date().setDate(new Date().getDate() + 30),
               ),
-              phone: purchasedNumberDb,
+              phone: purchasedNumber.number,
             });
 
             const influencer = await this.userService.findOne({

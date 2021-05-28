@@ -46,6 +46,12 @@ export class ContactsEntity {
   @Column({ nullable: true })
   public dob: Date;
 
+  @Column({ nullable: true, type: 'json' })
+  public socialLinks: string;
+
+  @Column({ nullable: true })
+  public profileImage: string;
+
   @ManyToOne(() => CountryEntity, { nullable: true, eager: true })
   @JoinColumn({ name: 'countryId' })
   public country: CountryEntity;

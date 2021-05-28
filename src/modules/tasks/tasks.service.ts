@@ -70,7 +70,7 @@ export class TasksService {
             confirm: true,
             confirmation_method: 'automatic',
             customer: subscription.user.customerId,
-            description: 'Phone Number purchase!',
+            description: 'Plan resubscribed!',
             payment_method: default_pm.id,
           });
           if (charge.status == 'succeeded') {

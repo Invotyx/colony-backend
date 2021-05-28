@@ -20,6 +20,9 @@ export class SMSTemplatesEntity {
   @Column({ type: 'text' })
   public body: string;
 
+  @Column({ type: 'text' })
+  public title: string;
+
   @ApiHideProperty()
   @ManyToOne(() => UserEntity, (user) => user.smsTemplates, { eager: false })
   public user: UserEntity;

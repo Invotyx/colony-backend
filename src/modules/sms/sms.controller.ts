@@ -136,9 +136,14 @@ export class SmsController {
   async createSmsTemplate(
     @LoginUser() influencer: UserEntity,
     @Body('body') body: string,
+    @Body('title') title: string,
   ) {
     try {
-      const template = await this.service.createSmsTemplate(body, influencer);
+      const template = await this.service.createSmsTemplate(
+        title,
+        body,
+        influencer,
+      );
       return template;
     } catch (e) {
       throw e;
@@ -152,10 +157,12 @@ export class SmsController {
     @LoginUser() influencer: UserEntity,
     @Param('id') id: number,
     @Body('body') body: string,
+    @Body('title') title: string,
   ) {
     try {
       const template = await this.service.updateSmsTemplate(
         id,
+        title,
         body,
         influencer,
       );
@@ -181,6 +188,22 @@ export class SmsController {
   async getSmsTemplates(@LoginUser() influencer: UserEntity) {
     try {
       const templates = await this.service.getSmsTemplates(influencer);
+      return templates;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('template/:id')
+  async getSmsTemplate(
+    @LoginUser() influencer: UserEntity,
+    @Param('id') id: string,
+  ) {
+    try {
+      const templates = await this.service.findOneInTemplates({
+        where: { user: influencer, id: id },
+      });
       return templates;
     } catch (e) {
       throw e;

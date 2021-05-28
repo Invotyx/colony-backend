@@ -7,7 +7,8 @@
 
   LOGIN             POST  /api/auth/login
 
-  Complete POSTMAN COLLECTION https://documenter.getpostman.com/view/5721584/TW71jktC
+  Complete API Documentation https://documenter.getpostman.com/view/5721584/TW71jktC
+  POSTMAN Import Link: https://www.getpostman.com/collections/9262d0fde52b759b3346
   SWAGGER COLLECTION https://colony.invotyx.gq/api/docs/
 
 ```

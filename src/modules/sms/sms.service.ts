@@ -45,6 +45,11 @@ export class SmsService {
     );
   }
 
+  public async findOneInTemplates(condition?: any) {
+    if (condition) return await this.smsTemplateRepo.findOne(condition);
+    else return await this.smsTemplateRepo.findOne();
+  }
+
   public async findOneInPreSets(condition?: any) {
     if (condition) return await this.presetRepo.findOne(condition);
     else return await this.presetRepo.findOne();
@@ -54,6 +59,7 @@ export class SmsService {
     if (condition) return await this.presetRepo.find(condition);
     else return await this.presetRepo.find();
   }
+
   public async findOneConversations(condition?: any) {
     if (condition) return await this.conversationsRepo.findOne(condition);
     else return await this.conversationsRepo.findOne();
@@ -64,7 +70,8 @@ export class SmsService {
     else return await this.conversationsRepo.find();
   }
   public async findOneConversationsMessages(condition?: any) {
-    if (condition) return await this.conversationsMessagesRepo.findOne(condition);
+    if (condition)
+      return await this.conversationsMessagesRepo.findOne(condition);
     else return await this.conversationsMessagesRepo.findOne();
   }
 
@@ -455,10 +462,11 @@ export class SmsService {
   //#endregion
 
   //#region  sms templates
-  async createSmsTemplate(body: string, influencer: UserEntity) {
+  async createSmsTemplate(title: string, body: string, influencer: UserEntity) {
     try {
       const template = await this.smsTemplateRepo.save({
         body: body,
+        title: title,
         user: influencer,
       });
       template.user = template.user.id as any;
@@ -468,13 +476,19 @@ export class SmsService {
     }
   }
 
-  async updateSmsTemplate(id: number, body: string, influencer: UserEntity) {
+  async updateSmsTemplate(
+    id: number,
+    title: string,
+    body: string,
+    influencer: UserEntity,
+  ) {
     try {
       const template = await this.smsTemplateRepo.findOne({
         where: { id: id, user: influencer },
       });
       if (template) {
         template.body = body;
+        template.title = title;
         await this.smsTemplateRepo.save(template);
       } else {
         return { message: 'Template does not exist.' };

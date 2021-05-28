@@ -6,6 +6,8 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { join } from 'path';
+import * as fs from 'fs';
 import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
 import { nanoid } from 'src/shared/random-keygen';
@@ -171,7 +173,7 @@ export class ContactsService {
     return { contacts: contacts, count: contacts.length };
   }
 
-  async updateContact(urlId: string, data: ContactDto) {
+  async updateContact(urlId: string, data: ContactDto, image?: any) {
     const consolidatedIds = urlId.split(':::');
     const userId = consolidatedIds[0];
     const contactUniqueMapper = consolidatedIds[1];
@@ -206,6 +208,16 @@ export class ContactsService {
     }
     if (data.city) {
       contactDetails.city = data.city;
+      flag++;
+    }
+    if (data.socialLinks.length > 0) {
+      contactDetails.socialLinks = JSON.stringify(data.socialLinks);
+      flag++;
+    }
+
+    if (image) {
+      const file = await this.setProfileImage(contactDetails, image);
+      contactDetails.profileImage = file;
       flag++;
     }
 
@@ -266,6 +278,19 @@ export class ContactsService {
     } catch (e) {
       throw e;
     }
+  }
+
+  setProfileImage(contact: ContactsEntity, file: any) {
+    if (contact.profileImage) {
+      const filePath = join(
+        __dirname,
+        '../../..',
+        'uploads',
+        contact.profileImage,
+      );
+      fs.unlinkSync(filePath);
+    }
+    return file.filename;
   }
 
   async checkContact(urlId: string) {

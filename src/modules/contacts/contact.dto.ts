@@ -2,6 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsIn,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -47,6 +48,19 @@ export class ContactDto {
   @IsOptional()
   @Length(3, 100)
   public timezone: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public socialLinks: SocialLinks[];
+}
+
+export class SocialLinks {
+  @IsNotEmpty()
+  public link: string;
+
+  @IsNotEmpty()
+  @Length(2, 30)
+  public title: string;
 }
 
 export class ContactFilter {

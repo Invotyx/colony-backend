@@ -1,8 +1,22 @@
-import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
+import { diskStorage } from 'multer';
 import { Auth } from '../../decorators/auth.decorator';
 import { UserEntity } from '../users/entities/user.entity';
 import { GetUser } from '../users/get-user.decorator';
+import { editFileName, imageFileFilter } from '../users/imageupload.service';
 import { ContactDto, ContactFilter } from './contact.dto';
 import { ContactsService } from './contacts.service';
 
@@ -10,14 +24,15 @@ import { ContactsService } from './contacts.service';
 @ApiTags('contacts')
 export class ContactsController {
   constructor(private readonly service: ContactsService) {}
-  /* 
+
   @Post('')
   async addContact(
     @Query('phone') phone: string,
     @Query('user') user: number,
+    @Query('cc') cCode: string,
   ): Promise<any> {
-    return await this.service.addContact(phone, user);
-  } */
+    return await this.service.addContact(phone, user, cCode);
+  }
 
   @Get('/get-url')
   async getUrlMapper(@Query('phone') phone: string) {
@@ -50,10 +65,40 @@ export class ContactsController {
     }
   }
 
-  @Put(':urlId')
-  async updateContact(@Param('urlId') id: string, @Body() data: ContactDto) {
+  @Get(':number')
+  async getContactDetails(@Param('number') number: string) {
     try {
-      return await this.service.updateContact(id, data);
+      const contact = await this.service.findOne({
+        where: { phoneNumber: number },
+      });
+      if (contact) {
+        return contact;
+      } else {
+        throw new BadRequestException('Contact not found.');
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Put(':urlId')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+    }),
+  )
+  async updateContact(
+    @Param('urlId') id: string,
+    @Body() data: ContactDto,
+    @UploadedFile() image?: any,
+  ) {
+    try {
+      if (!image) return await this.service.updateContact(id, data);
+      else return await this.service.updateContact(id, data, image);
     } catch (e) {
       throw e;
     }

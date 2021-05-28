@@ -87,7 +87,7 @@ export class InfluencerLinksController {
   }
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
-  @Put(':uniqueId/sent')
+  @Put(':uniqueId/send')
   async linkSent(@Param('uniqueId') uniqueId: string) {
     try {
       return await this.service.sendLink(uniqueId);
@@ -97,7 +97,7 @@ export class InfluencerLinksController {
   }
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
-  @Put(':uniqueId/opened')
+  @Put(':uniqueId/open')
   async linkOpened(@Param('uniqueId') uniqueId: string) {
     try {
       return await this.service.linkOpened(uniqueId);

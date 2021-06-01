@@ -65,7 +65,7 @@ export class ContactsController {
     }
   }
 
-  @Get(':number')
+  @Get(':number/details')
   async getContactDetails(@Param('number') number: string) {
     try {
       const contact = await this.service.findOne({

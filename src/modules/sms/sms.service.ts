@@ -392,16 +392,19 @@ export class SmsService {
 
   async getConversations(inf: UserEntity) {
     try {
-      const conversations = await this.conversationsRepo.findOne({
+      const conversations = await this.conversationsRepo.find({
         where: { user: inf },
         order: { createdAt: 'DESC' },
+        relations: ['phone', 'contact'],
       });
-      if (conversations) {
+      if (conversations.length > 0) {
         return conversations;
       } else {
         return { message: 'No conversations created yet.' };
       }
-    } catch (e) {}
+    } catch (e) {
+      throw e;
+    }
   }
 
   async getConversation(inf: UserEntity, contact: string) {
@@ -412,6 +415,7 @@ export class SmsService {
       if (contactNumber) {
         const conversation = await this.conversationsRepo.findOne({
           where: { user: inf, contact: contactNumber },
+          relations: ['phone', 'contact'],
         });
         const conversationMessages = await this.conversationsMessagesRepo.find({
           where: { conversations: conversation },

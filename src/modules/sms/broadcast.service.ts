@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { MessageBird } from 'messagebird/types';
 import { env } from 'process';
+import { ContactFilter } from '../contacts/contact.dto';
 import { ContactsEntity } from '../contacts/entities/contacts.entity';
 import { PhonesEntity } from '../phone/entities/phone.entity';
 import { UserEntity } from '../users/entities/user.entity';
@@ -21,30 +22,12 @@ export class BroadcastService {
 
   async createBroadcast(
     User: UserEntity,
-    phone: PhonesEntity,
-    _con: ContactsEntity[],
+    filters:ContactFilter,
     name: string,
     body: string,
   ) {
-    const broadcast = await this.repository.save({
-      body: body,
-      name: name,
-      user: User,
-      contacts: _con,
-    });
 
-    _con.forEach(async (con) => {
-      //parse sms body here
-      const sms = '';
-      // send via MessageBird
-      await this.smsService.sendSms(con, phone, body, 'broadcast');
-      //push sms to conversation
-      await this.bcRepo.save({
-        broadcast: broadcast,
-        contact: con,
-        isSent: true,
-        status: '',
-      });
-    });
+    
+    
   }
 }

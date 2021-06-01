@@ -31,11 +31,11 @@ import { SmsService } from './sms.service';
   controllers: [SmsController],
   providers: [
     SmsService,
-    BroadcastService,
     InboundSmsProcessor,
     PaymentHistoryService,
     CityCountryService,
     PhoneService,
+    BroadcastService,
   ],
   exports: [SmsService],
 })

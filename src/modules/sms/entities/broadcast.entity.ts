@@ -22,6 +22,9 @@ export class BroadcastsEntity {
   @Column({ length: 200 })
   public name: string;
 
+  @Column({ nullable: true })
+  public scheduled: Date;
+
   @ApiHideProperty()
   @ManyToOne(() => UserEntity, (user) => user.broadcasts, { eager: false })
   public user: UserEntity;

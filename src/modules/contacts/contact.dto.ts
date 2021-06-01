@@ -87,7 +87,7 @@ export class ContactFilter {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  @Length(2, 10)
+  @Length(2, 20)
   public city?: string;
 
   @ApiPropertyOptional()
@@ -97,8 +97,7 @@ export class ContactFilter {
   public timezone?: string;
 
   @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
+  @IsNotEmpty()
   @Length(2, 10)
   public country?: string;
 

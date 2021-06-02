@@ -17,6 +17,7 @@ import { ProductsModule } from './modules/products/products.module';
 import { SmsModule } from './modules/sms/sms.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { PermissionsService } from './modules/users/services/permissions.service';
+import { UsersModule } from './modules/users/users.module';
 import { SeederController } from './seeder/seeder.controller';
 import { SeederProviders } from './seeder/seeder.module';
 import { AccessControlService } from './services/access-control/access-control.service';
@@ -46,6 +47,7 @@ import { MainMysqlModule } from './shared/main-mysql.module';
       },
     }),
     AuthModule,
+    UsersModule,
     MailModule,
     MainMysqlModule,
     LanguageModule,

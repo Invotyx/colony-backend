@@ -27,7 +27,7 @@ export class TasksService {
     private readonly paymentService: PaymentMethodsService,
     private readonly phoneService: PhoneService,
     private readonly broadcastService: BroadcastService,
-    @InjectQueue('receive_sms_and_send_welcome') private readonly queue: Queue,
+    @InjectQueue('broadcast_q') private readonly queue: Queue,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
@@ -42,23 +42,36 @@ export class TasksService {
     );
   }
 
-  // @Cron('* 20 * * * *')
-  // async checkForBroadcasts() {
-  //   //get all broadcasts where broadcast schedule is less than 1
-  //   // get contact list for each broadcast
+  @Cron('10 * * * * *')
+  async checkForBroadcasts() {
+    //get all broadcasts where broadcast schedule is less than 1
+    // get contact list for each broadcast
 
-  //   const broadcasts = await (await this.broadcastService.qb('b'))
-  //     .where(
-  //       `(CAST(b.scheduled AS date) - CAST('${this.getCurrentDate()}' AS date))<=1`,
-  //     )
-  //     .getMany();
+    const broadcasts = await (await this.broadcastService.qb('bcq'))
+      .where(
+        `
+        (DATE_PART('day', bcq.scheduled::timestamp - '${this.getCurrentDate()}'::timestamp) * 24 + 
+         DATE_PART('hour', bcq.scheduled::timestamp - '${this.getCurrentDate()}'::timestamp) * 60 +
+         DATE_PART('minute', bcq.scheduled::timestamp - '${this.getCurrentDate()}'::timestamp) * 60 +
+         DATE_PART('second', bcq.scheduled::timestamp - '${this.getCurrentDate()}'::timestamp))=0`,
+      )
+      .getMany();
 
-  //   // await this.queue.add('inboundSms', body, {
-  //   //   removeOnComplete: true,
-  //   //   removeOnFail: true,
-  //   //   attempts: 2,
-  //   // });
-  // }
+    console.log('task-broadcasts', broadcasts);
+
+    for (let broadcast of broadcasts) {
+      const contacts = await this.contactService.filterContacts(
+        broadcast.user.id,
+        JSON.parse(broadcast.filters),
+      );
+      //add to queue here.
+    }
+    // await this.queue.add('inboundSms', body, {
+    //   removeOnComplete: true,
+    //   removeOnFail: true,
+    //   attempts: 2,
+    // });
+  }
 
   //cron to check for due payments.
   @Cron('10 * * * * *')

@@ -1,3 +1,4 @@
+import { BullModule } from '@nestjs/bull';
 import { forwardRef, Module } from '@nestjs/common';
 import { MainMysqlModule } from 'src/shared/main-mysql.module';
 import { ContactsModule } from '../contacts/contacts.module';
@@ -9,6 +10,9 @@ import { TasksService } from './tasks.service';
 
 @Module({
   imports: [
+    BullModule.registerQueue({
+      name: 'broadcast_q',
+    }),
     MainMysqlModule,
     forwardRef(() => ContactsModule),
     forwardRef(() => SmsModule),

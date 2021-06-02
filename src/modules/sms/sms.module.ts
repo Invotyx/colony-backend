@@ -37,6 +37,6 @@ import { SmsService } from './sms.service';
     PhoneService,
     BroadcastService,
   ],
-  exports: [SmsService],
+  exports: [SmsService, BroadcastService],
 })
 export class SmsModule {}

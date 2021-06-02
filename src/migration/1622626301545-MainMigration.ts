@@ -1,7 +1,7 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class MainMigration1622177697701 implements MigrationInterface {
-    name = 'MainMigration1622177697701'
+export class MainMigration1622626301545 implements MigrationInterface {
+    name = 'MainMigration1622626301545'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "timezones" ("id" character varying(100) NOT NULL, "timezone" character varying(300) NOT NULL, "utc" integer, CONSTRAINT "UQ_589871db156cc7f92942334ab7e" UNIQUE ("id"), CONSTRAINT "PK_589871db156cc7f92942334ab7e" PRIMARY KEY ("id"))`);
@@ -11,19 +11,24 @@ export class MainMigration1622177697701 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "payment_history" ("id" SERIAL NOT NULL, "cost" numeric NOT NULL DEFAULT '0', "costType" character varying(20) NOT NULL, "chargeId" character varying(100) NOT NULL, "description" character varying(255), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "userId" integer NOT NULL, CONSTRAINT "PK_5fcec51a769b65c0c3c0987f11c" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "city" ("id" character varying(100) NOT NULL, "name" character varying(300) NOT NULL, "countryId" character varying(100), CONSTRAINT "UQ_b222f51ce26f7e5ca86944a6739" UNIQUE ("id"), CONSTRAINT "PK_b222f51ce26f7e5ca86944a6739" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "country" ("id" character varying(100) NOT NULL, "name" character varying(300) NOT NULL, "code" character varying(100) NOT NULL, "native" character varying(100) NOT NULL, "active" boolean NOT NULL DEFAULT false, "smsCost" numeric, "phoneCost" numeric, CONSTRAINT "UQ_bf6e37c231c4f4ea56dcd887269" UNIQUE ("id"), CONSTRAINT "PK_bf6e37c231c4f4ea56dcd887269" PRIMARY KEY ("id")); COMMENT ON COLUMN "country"."active" IS 'Use only with plans.'`);
+        await queryRunner.query(`CREATE TYPE "plans_interval_enum" AS ENUM('month', 'year')`);
         await queryRunner.query(`CREATE TABLE "plans" ("id" character varying(100) NOT NULL, "amount_decimal" numeric NOT NULL, "currency" character varying(10) NOT NULL DEFAULT 'USD', "interval" "plans_interval_enum", "active" boolean NOT NULL DEFAULT false, "threshold" numeric NOT NULL DEFAULT '50', "nickname" character varying(100) NOT NULL, "subscriberCost" numeric, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, CONSTRAINT "UQ_3720521a81c7c24fe9b7202ba61" UNIQUE ("id"), CONSTRAINT "PK_3720521a81c7c24fe9b7202ba61" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "subscriptions_collection_method_enum" AS ENUM('charge_automatically', 'send_invoice')`);
         await queryRunner.query(`CREATE TABLE "subscriptions" ("id" SERIAL NOT NULL, "rId" character varying(100) NOT NULL, "collection_method" "subscriptions_collection_method_enum" NOT NULL DEFAULT 'charge_automatically', "paymentType" character varying(20) NOT NULL, "cancelled" boolean NOT NULL DEFAULT false, "currentStartDate" TIMESTAMP, "currentEndDate" TIMESTAMP, "smsCount" integer DEFAULT '0', "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "userId" integer NOT NULL, "planId" character varying(100) NOT NULL, "countryId" character varying(100), "phoneId" integer, CONSTRAINT "PK_a87248d73155605cf782be9ee5e" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "conversations" ("id" SERIAL NOT NULL, "isActive" boolean NOT NULL DEFAULT false, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "phoneId" integer, "contactId" integer, "userId" integer, CONSTRAINT "PK_ee34f4f7ced4ec8681f26bf04ef" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "phones" ("id" SERIAL NOT NULL, "number" character varying(20) NOT NULL, "country" character varying(3) NOT NULL, "features" character varying(100), "sid" character varying(100) DEFAULT null, "status" character varying(10) NOT NULL, "type" character varying(50) DEFAULT 'extra', "renewalDate" TIMESTAMP NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "userId" integer, CONSTRAINT "PK_30d7fc09a458d7a4d9471bda554" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "payment_methods" ("id" character varying(100) NOT NULL, "last4_card" character varying(4) NOT NULL, "type" character varying(15), "name" character varying(15) NOT NULL, "expiry" character varying(15), "default" boolean NOT NULL DEFAULT false, "fingerprint" character varying(50), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "userId" integer NOT NULL, CONSTRAINT "UQ_34f9b8c6dfb4ac3559f7e2820d1" UNIQUE ("id"), CONSTRAINT "PK_34f9b8c6dfb4ac3559f7e2820d1" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "broadcasts_contacts" ("id" SERIAL NOT NULL, "isSent" boolean NOT NULL, "status" character varying(20) NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "broadcastId" integer, "contactId" integer, CONSTRAINT "PK_991d00608a07f47fbc9675b1b09" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "broadcasts" ("id" SERIAL NOT NULL, "name" character varying(200) NOT NULL, "body" text NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "userId" integer, CONSTRAINT "PK_b0586900034d0726bbdcb1b21b2" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "broadcasts" ("id" SERIAL NOT NULL, "name" character varying(200) NOT NULL, "scheduled" TIMESTAMP, "body" text NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "userId" integer, CONSTRAINT "PK_b0586900034d0726bbdcb1b21b2" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "preset_messages_trigger_enum" AS ENUM('onBoard', 'noResponse', 'welcome')`);
         await queryRunner.query(`CREATE TABLE "preset_messages" ("id" SERIAL NOT NULL, "name" character varying(200) NOT NULL, "body" text NOT NULL, "trigger" "preset_messages_trigger_enum" NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "userId" integer, CONSTRAINT "PK_6ee593b414c47ee4e0fdb91e616" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "sms_templates" ("id" SERIAL NOT NULL, "body" text NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "userId" integer, CONSTRAINT "PK_940ef6d70e5e49587c1a2f3222d" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "sms_templates" ("id" SERIAL NOT NULL, "body" text NOT NULL, "title" text NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "userId" integer, CONSTRAINT "PK_940ef6d70e5e49587c1a2f3222d" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "user_role" ("userId" integer NOT NULL, "roleId" integer NOT NULL, "meta" json, CONSTRAINT "PK_7b4e17a669299579dfa55a3fc35" PRIMARY KEY ("userId", "roleId"))`);
         await queryRunner.query(`CREATE TABLE "roles" ("id" SERIAL NOT NULL, "role" character varying(60) NOT NULL, CONSTRAINT "PK_c1433d71a4838793a49dcad46ab" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "users_gender_enum" AS ENUM('male', 'female')`);
         await queryRunner.query(`CREATE TABLE "users" ("id" SERIAL NOT NULL, "firstName" character varying(60) NOT NULL, "lastName" character varying(60), "username" character varying(60) NOT NULL, "email" character varying(60) NOT NULL, "mobile" character varying(20), "password" character varying(100) NOT NULL, "gender" "users_gender_enum", "dob" TIMESTAMP, "statusMessage" character varying(300), "image" character varying, "isActive" boolean NOT NULL DEFAULT false, "isApproved" boolean NOT NULL DEFAULT false, "consumedSmsCost" numeric NOT NULL DEFAULT '0', "consumedSubscriberCost" numeric NOT NULL DEFAULT '0', "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "timezone" character varying(100) NOT NULL DEFAULT 'Asia/Karachi', "customerId" character varying(100), "meta" json, "urlId" character varying(100) NOT NULL, "languageId" integer, "cityId" character varying(100), "countryId" character varying(100), CONSTRAINT "UQ_fe0bb3f6520ee0469504521e710" UNIQUE ("username"), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "UQ_d376a9f93bba651f32a2c03a7d3" UNIQUE ("mobile"), CONSTRAINT "UQ_c6c520dfb9a4d6dd749e73b13de" UNIQUE ("customerId"), CONSTRAINT "UQ_faba227a3416490513d4471f879" UNIQUE ("urlId"), CONSTRAINT "REL_3785318df310caf8cb8e1e37d8" UNIQUE ("cityId"), CONSTRAINT "REL_cc0dc7234854a65964f1a26827" UNIQUE ("countryId"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "influencer_contacts" ("id" SERIAL NOT NULL, "userId" integer NOT NULL, "contactId" integer NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, CONSTRAINT "PK_3a91f61fd35430b525cea602d3c" PRIMARY KEY ("id", "userId", "contactId"))`);
+        await queryRunner.query(`CREATE TYPE "contacts_gender_enum" AS ENUM('male', 'female', 'non_binary')`);
         await queryRunner.query(`CREATE TABLE "contacts" ("id" SERIAL NOT NULL, "name" character varying(100), "phoneNumber" character varying(20) NOT NULL, "isComplete" boolean NOT NULL DEFAULT false, "gender" "contacts_gender_enum", "dob" TIMESTAMP, "socialLinks" json, "profileImage" character varying, "state" character varying(100), "cCode" character varying(2), "timezone" character varying(100), "urlMapper" character varying(100), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "deletedAt" TIMESTAMP, "countryId" character varying(100), "cityId" character varying(100), CONSTRAINT "PK_b99cd40cfd66a99f1571f4f72e6" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "pages" ("id" SERIAL NOT NULL, "title" character varying(200) NOT NULL, "subTitle" character varying(200) NOT NULL, "slug" character varying(250) NOT NULL, "metaDescription" character varying(300), "metaTags" character varying(300), CONSTRAINT "UQ_fe66ca6a86dc94233e5d7789535" UNIQUE ("slug"), CONSTRAINT "PK_8f21ed625aa34c8391d636b7d3b" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "images" ("id" SERIAL NOT NULL, "url" character varying(300) NOT NULL, "title" character varying(100), "imagePosition" character varying(10) DEFAULT 'center', "pageId" integer, "sectionId" integer, CONSTRAINT "UQ_a4d7e908a3574e21ca5f06d0aad" UNIQUE ("url"), CONSTRAINT "PK_1fe148074c6a1a91b63cb9ee3c9" PRIMARY KEY ("id"))`);
@@ -38,6 +43,7 @@ export class MainMigration1622177697701 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "role_has_permission" ("roleId" integer NOT NULL, "permId" integer NOT NULL, CONSTRAINT "PK_c1f78d13c4cf1dcb076cb6ec5e7" PRIMARY KEY ("roleId", "permId"))`);
         await queryRunner.query(`CREATE TABLE "user_has_permissions" ("userId" integer NOT NULL, "permId" integer NOT NULL, CONSTRAINT "PK_3ce2da2b4e924aa4bd5e2de2775" PRIMARY KEY ("userId", "permId"))`);
         await queryRunner.query(`CREATE TABLE "email_verifications" ("id" SERIAL NOT NULL, "emailToken" character varying NOT NULL, "email" character varying NOT NULL, "timestamp" TIMESTAMP NOT NULL, CONSTRAINT "UQ_44e5cfea68f87243cad38bb1b1f" UNIQUE ("email"), CONSTRAINT "PK_c1ea2921e767f83cd44c0af203f" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`ALTER TABLE "broadcasts" DROP COLUMN "scheduled"`);
         await queryRunner.query(`ALTER TABLE "user_role" DROP COLUMN "meta"`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP CONSTRAINT "PK_3a91f61fd35430b525cea602d3c"`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" ADD CONSTRAINT "PK_45170f07127ff6f89c97d2d64b2" PRIMARY KEY ("userId", "contactId")`);
@@ -45,6 +51,7 @@ export class MainMigration1622177697701 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP COLUMN "createdAt"`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP COLUMN "updatedAt"`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP COLUMN "deletedAt"`);
+        await queryRunner.query(`ALTER TABLE "broadcasts" ADD "scheduled" TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE "user_role" ADD "meta" json`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" ADD "id" SERIAL NOT NULL`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP CONSTRAINT "PK_45170f07127ff6f89c97d2d64b2"`);
@@ -150,6 +157,7 @@ export class MainMigration1622177697701 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "influencer_contacts" ADD CONSTRAINT "PK_45170f07127ff6f89c97d2d64b2" PRIMARY KEY ("userId", "contactId")`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP COLUMN "id"`);
         await queryRunner.query(`ALTER TABLE "user_role" DROP COLUMN "meta"`);
+        await queryRunner.query(`ALTER TABLE "broadcasts" DROP COLUMN "scheduled"`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" ADD "deletedAt" TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" ADD "updatedAt" TIMESTAMP NOT NULL DEFAULT now()`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" ADD "createdAt" TIMESTAMP NOT NULL DEFAULT now()`);
@@ -157,6 +165,7 @@ export class MainMigration1622177697701 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP CONSTRAINT "PK_45170f07127ff6f89c97d2d64b2"`);
         await queryRunner.query(`ALTER TABLE "influencer_contacts" ADD CONSTRAINT "PK_3a91f61fd35430b525cea602d3c" PRIMARY KEY ("id", "userId", "contactId")`);
         await queryRunner.query(`ALTER TABLE "user_role" ADD "meta" json`);
+        await queryRunner.query(`ALTER TABLE "broadcasts" ADD "scheduled" TIMESTAMP`);
         await queryRunner.query(`DROP TABLE "email_verifications"`);
         await queryRunner.query(`DROP TABLE "user_has_permissions"`);
         await queryRunner.query(`DROP TABLE "role_has_permission"`);
@@ -171,19 +180,24 @@ export class MainMigration1622177697701 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "images"`);
         await queryRunner.query(`DROP TABLE "pages"`);
         await queryRunner.query(`DROP TABLE "contacts"`);
+        await queryRunner.query(`DROP TYPE "contacts_gender_enum"`);
         await queryRunner.query(`DROP TABLE "influencer_contacts"`);
         await queryRunner.query(`DROP TABLE "users"`);
+        await queryRunner.query(`DROP TYPE "users_gender_enum"`);
         await queryRunner.query(`DROP TABLE "roles"`);
         await queryRunner.query(`DROP TABLE "user_role"`);
         await queryRunner.query(`DROP TABLE "sms_templates"`);
         await queryRunner.query(`DROP TABLE "preset_messages"`);
+        await queryRunner.query(`DROP TYPE "preset_messages_trigger_enum"`);
         await queryRunner.query(`DROP TABLE "broadcasts"`);
         await queryRunner.query(`DROP TABLE "broadcasts_contacts"`);
         await queryRunner.query(`DROP TABLE "payment_methods"`);
         await queryRunner.query(`DROP TABLE "phones"`);
         await queryRunner.query(`DROP TABLE "conversations"`);
         await queryRunner.query(`DROP TABLE "subscriptions"`);
+        await queryRunner.query(`DROP TYPE "subscriptions_collection_method_enum"`);
         await queryRunner.query(`DROP TABLE "plans"`);
+        await queryRunner.query(`DROP TYPE "plans_interval_enum"`);
         await queryRunner.query(`DROP TABLE "country"`);
         await queryRunner.query(`DROP TABLE "city"`);
         await queryRunner.query(`DROP TABLE "payment_history"`);

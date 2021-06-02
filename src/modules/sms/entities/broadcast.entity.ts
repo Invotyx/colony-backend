@@ -32,6 +32,12 @@ export class BroadcastsEntity {
   @Column({ type: 'text' })
   public body: string;
 
+  @Column({ type: 'text' })
+  public filters: string;
+
+  @Column({ length: 20 })
+  public status: string;
+
   @OneToMany(() => BroadcastsContactsEntity, (bc) => bc.broadcast, {
     eager: false,
     cascade: true,

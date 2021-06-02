@@ -29,6 +29,9 @@ export class BroadcastsContactsEntity {
   @Column()
   public isSent: boolean;
 
+  @Column({ length: 100 })
+  public smsSid: string;
+
   @Column({ length: 20 })
   public status: string;
 

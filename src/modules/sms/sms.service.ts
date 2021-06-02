@@ -15,7 +15,7 @@ import { PhoneService } from '../phone/phone.service';
 import { SubscriptionsService } from '../products/subscription/subscriptions.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { presetTrigger } from './entities/preset-message.entity';
-import { PresetsDto, PresetsUpdateDto } from './preset.dto';
+import { PresetsDto, PresetsUpdateDto } from './dtos/preset.dto';
 import { ConversationsRepository } from './repo/conversation-messages.repo';
 import { ConversationMessagesRepository } from './repo/conversation.repo';
 import { PresetMessagesRepository } from './repo/sms-presets.repo';

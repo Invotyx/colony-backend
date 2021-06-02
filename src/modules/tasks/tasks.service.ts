@@ -1,5 +1,7 @@
+import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { Queue } from 'bull';
 import { env } from 'process';
 import Stripe from 'stripe';
 import { ContactsService } from '../contacts/contacts.service';
@@ -8,6 +10,7 @@ import { PhoneService } from '../phone/phone.service';
 import { PaymentMethodsService } from '../products/payments/payment-methods.service';
 import { PlansService } from '../products/plan/plans.service';
 import { SubscriptionsService } from '../products/subscription/subscriptions.service';
+import { BroadcastService } from '../sms/broadcast.service';
 import { SmsService } from '../sms/sms.service';
 
 @Injectable()
@@ -23,6 +26,8 @@ export class TasksService {
     private readonly subscriptionService: SubscriptionsService,
     private readonly paymentService: PaymentMethodsService,
     private readonly phoneService: PhoneService,
+    private readonly broadcastService: BroadcastService,
+    @InjectQueue('receive_sms_and_send_welcome') private readonly queue: Queue,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
@@ -36,17 +41,30 @@ export class TasksService {
       },
     );
   }
-  // @Cron('30 * * * * *')
-  // handleCron() {
-  //   this.logger.debug('Called every 30 seconds');
-  //   //this.checkIfContactHasCompletedProfile();
+
+  // @Cron('* 20 * * * *')
+  // async checkForBroadcasts() {
+  //   //get all broadcasts where broadcast schedule is less than 1
+  //   // get contact list for each broadcast
+
+  //   const broadcasts = await (await this.broadcastService.qb('b'))
+  //     .where(
+  //       `(CAST(b.scheduled AS date) - CAST('${this.getCurrentDate()}' AS date))<=1`,
+  //     )
+  //     .getMany();
+
+  //   // await this.queue.add('inboundSms', body, {
+  //   //   removeOnComplete: true,
+  //   //   removeOnFail: true,
+  //   //   attempts: 2,
+  //   // });
   // }
 
   //cron to check for due payments.
   @Cron('10 * * * * *')
   async checkForPackageExpiryAndResubscribe() {
     try {
-      const subscriptions = await(await this.subscriptionService.qb('sub'))
+      const subscriptions = await (await this.subscriptionService.qb('sub'))
         .where(
           `(CAST(sub.currentEndDate AS date) - CAST('${this.getCurrentDate()}' AS date))<=1`,
         )
@@ -60,7 +78,7 @@ export class TasksService {
         ]);
         const plan = requests[0];
         const default_pm = requests[1];
-        
+
         if (default_pm) {
           // charge client here
           const charge = await this.stripe.paymentIntents.create({
@@ -89,7 +107,7 @@ export class TasksService {
               chargeId: charge.id,
             });
           } else {
-            this.logger.debug("payment charge failed with details:");
+            this.logger.debug('payment charge failed with details:');
             this.logger.debug(charge);
           }
         }
@@ -98,14 +116,6 @@ export class TasksService {
     } catch (e) {
       this.logger.debug(e);
     }
-  }
-
-  private getCurrentDate() {
-    const today = new Date();
-    const dd = String(today.getDate()).padStart(2, '0');
-    const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-    const yyyy = today.getFullYear();
-    return mm + '/' + dd + '/' + yyyy;
   }
 
   // check if user has not completed profile yet.
@@ -142,6 +152,15 @@ export class TasksService {
     }
   }
 
+  //#region Utility Functions
+  private getCurrentDate() {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    const yyyy = today.getFullYear();
+    return mm + '/' + dd + '/' + yyyy;
+  }
+
   private search(nameKey, myArray) {
     for (var i = 0; i < myArray.length; i++) {
       if (myArray[i].trigger === nameKey) {
@@ -158,4 +177,6 @@ export class TasksService {
     let differenceInDays = Math.ceil(timeDifference / (1000 * 3600 * 24));
     return differenceInDays;
   }
+
+  //#endregion
 }

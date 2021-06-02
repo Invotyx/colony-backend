@@ -18,7 +18,8 @@ import { LoginUser } from '../../decorators/user.decorator';
 import { ROLES } from '../../services/access-control/consts/roles.const';
 import { UserEntity } from '../users/entities/user.entity';
 import { BroadcastService } from './broadcast.service';
-import { PresetsDto, PresetsUpdateDto, presetTrigger } from './preset.dto';
+import { BroadcastDto } from './dtos/broadcast.dto';
+import { PresetsDto, PresetsUpdateDto, presetTrigger } from './dtos/preset.dto';
 import { SmsService } from './sms.service';
 
 @Controller('sms')
@@ -50,6 +51,7 @@ export class SmsController {
   @HttpCode(200)
   async receiveSmsStatusCallback(@Body() body: any, @Res() res: Response) {
     try {
+      //add checks here to write to Queue
       await this.queue.add('outBoundSmsStatus', body, {
         removeOnComplete: true,
         removeOnFail: true,
@@ -126,7 +128,24 @@ export class SmsController {
   //#endregion
 
   //#region broadcast
-
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Post('broadcast')
+  async createBroadcast(
+    @LoginUser() user: UserEntity,
+    @Body() broadcast: BroadcastDto,
+  ) {
+    try {
+      return this.broadcastService.createBroadcast(
+        user,
+        broadcast.filters,
+        broadcast.name,
+        broadcast.body,
+        broadcast.scheduled,
+      );
+    } catch (e) {
+      throw e;
+    }
+  }
   //#endregion
 
   //#region  message templates

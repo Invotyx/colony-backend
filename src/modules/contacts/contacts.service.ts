@@ -6,8 +6,8 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
 import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
 import { nanoid } from 'src/shared/random-keygen';
@@ -100,7 +100,10 @@ export class ContactsService {
     }
   }
 
-  async filterContacts(influencerId: number, data: ContactFilter) {
+  async filterContacts(
+    influencerId: number,
+    data: ContactFilter,
+  ): Promise<{ contacts: ContactsEntity[]; count: number }> {
     let query = `SELECT * FROM ${TABLES.CONTACTS.name} c Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
 
     //age

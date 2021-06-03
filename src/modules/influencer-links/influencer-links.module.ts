@@ -9,5 +9,6 @@ import { InfluencerLinksService } from './influencer-links.service';
   imports: [MainMysqlModule, UsersModule, ContactsModule],
   controllers: [InfluencerLinksController],
   providers: [InfluencerLinksService],
+  exports: [InfluencerLinksService],
 })
 export class InfluencerLinksModule {}

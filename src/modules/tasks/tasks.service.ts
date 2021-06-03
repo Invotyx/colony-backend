@@ -3,8 +3,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Queue } from 'bull';
 import { env } from 'process';
+import { tagReplace } from 'src/shared/tag-replace';
 import Stripe from 'stripe';
+import { LessThanOrEqual } from 'typeorm';
 import { ContactsService } from '../contacts/contacts.service';
+import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhoneService } from '../phone/phone.service';
 import { PaymentMethodsService } from '../products/payments/payment-methods.service';
@@ -26,6 +29,7 @@ export class TasksService {
     private readonly subscriptionService: SubscriptionsService,
     private readonly paymentService: PaymentMethodsService,
     private readonly phoneService: PhoneService,
+    private readonly infLinks: InfluencerLinksService,
     private readonly broadcastService: BroadcastService,
     @InjectQueue('broadcast_q') private readonly queue: Queue,
   ) {
@@ -47,30 +51,65 @@ export class TasksService {
     //get all broadcasts where broadcast schedule is less than 1
     // get contact list for each broadcast
 
-    const broadcasts = await (await this.broadcastService.qb('bcq'))
-      .where(
-        `
-        (DATE_PART('day', bcq.scheduled::timestamp - '${this.getCurrentDate()}'::timestamp) * 24 + 
-         DATE_PART('hour', bcq.scheduled::timestamp - '${this.getCurrentDate()}'::timestamp) * 60 +
-         DATE_PART('minute', bcq.scheduled::timestamp - '${this.getCurrentDate()}'::timestamp) * 60 +
-         DATE_PART('second', bcq.scheduled::timestamp - '${this.getCurrentDate()}'::timestamp))=0`,
-      )
-      .getMany();
-
-    console.log('task-broadcasts', broadcasts);
+    await this.broadcastService.find();
+    const broadcasts = await this.broadcastService.find({
+      where: {
+        scheduled: LessThanOrEqual(this.getCurrentDatetime()),
+        status: 'scheduled',
+      },
+      relations: ['user'],
+    });
 
     for (let broadcast of broadcasts) {
       const contacts = await this.contactService.filterContacts(
         broadcast.user.id,
         JSON.parse(broadcast.filters),
       );
-      //add to queue here.
+      broadcast.status = 'inProgress';
+
+      await this.broadcastService.save(broadcast);
+      for (let contact of contacts.contacts) {
+        const phone = await this.phoneService.findOne({
+          where: { country: contact.cCode, user: broadcast.user },
+        });
+        if (phone) {
+          let messageBody = broadcast.body;
+          const links = messageBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
+          if (links.length > 0) {
+            for (let link of links) {
+              let id = link.replace('${link:', '').replace('}', '');
+              const shareableUri = (
+                await this.infLinks.getUniqueLinkForContact(
+                  parseInt(id),
+                  contact.phoneNumber,
+                )
+              ).url;
+              messageBody = messageBody.replace(
+                link,
+                env.PUBLIC_APP_URL + '/' + shareableUri,
+              );
+            }
+          }
+          const q_obj = {
+            message: tagReplace(messageBody, {
+              name: contact.name ? contact.name : '',
+              inf_name:
+                broadcast.user.firstName + ' ' + broadcast.user.lastName,
+            }),
+            contact: contact,
+            phone: phone,
+          };
+          await this.queue.add('broadcast_message', q_obj, {
+            removeOnComplete: true,
+            removeOnFail: true,
+            attempts: 2,
+          });
+        } else {
+          //operation if phone number for contact country cannot be found.
+        }
+      }
     }
-    // await this.queue.add('inboundSms', body, {
-    //   removeOnComplete: true,
-    //   removeOnFail: true,
-    //   attempts: 2,
-    // });
+    //
   }
 
   //cron to check for due payments.
@@ -172,6 +211,19 @@ export class TasksService {
     const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
     const yyyy = today.getFullYear();
     return mm + '/' + dd + '/' + yyyy;
+  }
+
+  private getCurrentDatetime() {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    const yyyy = today.getFullYear();
+
+    const hh = today.getHours().toString().padStart(2, '0');
+    const MM = today.getMinutes().toString().padStart(2, '0');
+    const ss = today.getSeconds().toString().padStart(2, '0');
+
+    return mm + '/' + dd + '/' + yyyy + ' ' + hh + ':' + MM + ':' + ss;
   }
 
   private search(nameKey, myArray) {

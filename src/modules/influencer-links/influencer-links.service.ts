@@ -8,7 +8,7 @@ import {
 } from 'src/shared/paginator';
 import { TABLES } from '../../consts/tables.const';
 import { UserEntity } from '../../modules/users/entities/user.entity';
-import { nanoid } from '../../shared/random-keygen';
+import { uniqueId } from '../../shared/random-keygen';
 import { ContactsService } from '../contacts/contacts.service';
 import { InfluencerLinksEntity } from './entities/influencer-links.entity';
 import { InfluencerLinksTrackingRepository } from './repo/influencer-links-tracking.repo';
@@ -27,7 +27,7 @@ export class InfluencerLinksService {
       const inf_links = new InfluencerLinksEntity();
       inf_links.title = title;
       inf_links.link = link;
-      inf_links.urlMapper = nanoid();
+      inf_links.urlMapper = uniqueId(6);
       inf_links.user = user;
 
       await this.repository.save(inf_links);

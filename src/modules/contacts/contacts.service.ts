@@ -10,7 +10,7 @@ import * as fs from 'fs';
 import { join } from 'path';
 import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
-import { nanoid } from 'src/shared/random-keygen';
+import { nanoid, uniqueId } from 'src/shared/random-keygen';
 import { tagReplace } from 'src/shared/tag-replace';
 import { PhoneService } from '../phone/phone.service';
 import { SmsService } from '../sms/sms.service';
@@ -68,7 +68,7 @@ export class ContactsService {
           let contact = new ContactsEntity();
           contact.phoneNumber = phoneNumber;
           contact.user = [user];
-          contact.urlMapper = nanoid();
+          contact.urlMapper = uniqueId(4);
           contact.cCode = fromCountry;
           contact = await this.repository.save(
             await this.repository.create(contact),

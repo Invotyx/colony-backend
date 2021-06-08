@@ -59,4 +59,32 @@ export class BroadcastService {
       throw new BadRequestException(e);
     }
   }
+
+  public async getBroadcastContacts(user: UserEntity, id: number) {
+    try {
+      const b = await this.repository.findOne({
+        where: { id: id, user: user },
+      });
+      return this.contactService.filterContacts(user.id, JSON.parse(b.filters));
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+  public async getBroadcasts(user: UserEntity) {
+    try {
+      const b = await this.repository.find({
+        where: { user: user },
+      });
+      for (let i of b) {
+        i.contacts = (await this.contactService.filterContacts(
+          user.id,
+          JSON.parse(i.filters),
+        )) as any;
+      }
+      return b;
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
 }

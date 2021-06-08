@@ -16,6 +16,7 @@ import { Response } from 'express';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { ROLES } from '../../services/access-control/consts/roles.const';
+import { ContactsService } from '../contacts/contacts.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { BroadcastService } from './broadcast.service';
 import { BroadcastDto } from './dtos/broadcast.dto';
@@ -28,6 +29,7 @@ export class SmsController {
   constructor(
     private readonly service: SmsService,
     private readonly broadcastService: BroadcastService,
+    private readonly contactService: ContactsService,
     @InjectQueue('receive_sms_and_send_welcome') private readonly queue: Queue,
   ) {}
 
@@ -135,17 +137,48 @@ export class SmsController {
     @Body() broadcast: BroadcastDto,
   ) {
     try {
-      return this.broadcastService.createBroadcast(
+      const b = await this.broadcastService.createBroadcast(
         user,
         broadcast.filters,
         broadcast.name,
         broadcast.body,
         broadcast.scheduled,
       );
+
+      const contacts = await this.contactService.filterContacts(
+        user.id,
+        broadcast.filters,
+      );
+      return { broadcast: b, contacts: contacts };
     } catch (e) {
       throw e;
     }
   }
+
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Post('broadcast/:id/contacts')
+  async getBroadcastContacts(
+    @LoginUser() user: UserEntity,
+    @Param('id') id: number,
+  ) {
+    try {
+      const b = await this.broadcastService.getBroadcastContacts(user, id);
+      return { broadcast: b };
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('broadcasts')
+  async getBroadcasts(@LoginUser() user: UserEntity) {
+    try {
+      return this.broadcastService.getBroadcasts(user);
+    } catch (e) {
+      throw e;
+    }
+  }
+
   //#endregion
 
   //#region  message templates

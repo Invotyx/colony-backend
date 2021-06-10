@@ -414,7 +414,8 @@ export class SmsService {
         where: { user: inf, id: conversationId },
         relations: ['phone', 'contact', 'conversationMessages'],
       });
-      return { conversation };
+      if (conversation) return conversation.conversationMessages;
+      throw new BadRequestException('No messages found.');
     } catch (e) {
       throw e;
     }

@@ -408,23 +408,13 @@ export class SmsService {
     }
   }
 
-  async getConversation(inf: UserEntity, contact: string) {
+  async getConversation(inf: UserEntity, conversationId: string) {
     try {
-      const contactNumber = await this.contactService.findOne({
-        where: { phoneNumber: contact },
-        relations:['user']
+      const conversation = await this.conversationsRepo.findOne({
+        where: { user: inf, id: conversationId },
+        relations: ['phone', 'contact', 'conversationMessages'],
       });
-      console.log(contactNumber);
-      if (contactNumber.user.includes(inf)) {
-        const conversation = await this.conversationsRepo.findOne({
-          where: { user: inf },
-          relations: ['phone', 'contact', 'conversationMessages'],
-        });
-        console.log(conversation);
-        return { conversation };
-      } else {
-        throw new BadRequestException('No such contact exists');
-      }
+      return { conversation };
     } catch (e) {
       throw e;
     }

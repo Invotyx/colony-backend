@@ -1,13 +1,13 @@
 import { HttpException, HttpStatus, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { json, urlencoded } from 'express';
 import * as mtz from 'moment-timezone';
 import { env } from 'process';
 import { AppModule } from './app.module';
 import { SeederModule } from './seeder/seeder.module';
 import { SeederService } from './seeder/seeder.service';
 import { logger } from './services/logs/log.storage';
-import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   NestFactory.createApplicationContext(SeederModule)
@@ -87,9 +87,9 @@ async function bootstrap() {
       },
     }),
   );
-  
-  app.use(bodyParser.json({ limit: '50mb' }));
-  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
   await app.listen(port, () => {
     console.log(
       'Listening API at http://localhost:' + port + '/' + globalPrefix,

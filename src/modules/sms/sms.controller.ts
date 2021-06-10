@@ -77,13 +77,14 @@ export class SmsController {
     }
   }
 
-  @Auth({})
+  @Auth({roles:[ROLES.ADMIN,ROLES.INFLUENCER]})
   @Get('/conversation/:contact')
   async getConversation(
     @LoginUser() inf: UserEntity,
     @Param('contact') contact: string,
   ) {
     try {
+      console.log(inf)
       return await this.service.getConversation(inf, contact);
     } catch (e) {
       throw e;

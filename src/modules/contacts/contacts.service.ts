@@ -10,7 +10,7 @@ import * as fs from 'fs';
 import { join } from 'path';
 import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
-import { nanoid, uniqueId } from 'src/shared/random-keygen';
+import { uniqueId } from 'src/shared/random-keygen';
 import { tagReplace } from 'src/shared/tag-replace';
 import { PhoneService } from '../phone/phone.service';
 import { SmsService } from '../sms/sms.service';
@@ -40,13 +40,13 @@ export class ContactsService {
   }
 
   public async findOne(condition?: any) {
-    if (condition) return await this.repository.findOne(condition);
-    else return await this.repository.findOne();
+    if (condition) return this.repository.findOne(condition);
+    else return this.repository.findOne();
   }
 
   public async find(condition?: any) {
-    if (condition) return await this.repository.find(condition);
-    else return await this.repository.find();
+    if (condition) return this.repository.find(condition);
+    else return this.repository.find();
   }
 
   async addContact(

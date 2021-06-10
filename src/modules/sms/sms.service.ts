@@ -393,11 +393,11 @@ export class SmsService {
   async getConversations(inf: UserEntity) {
     try {
       const conversations = await this.conversationsRepo.find({
-        where: { user: inf, },
+        where: { user: inf },
         order: { createdAt: 'DESC' },
         relations: ['phone', 'contact'],
       });
-      
+
       if (conversations.length > 0) {
         return conversations;
       } else {
@@ -411,20 +411,17 @@ export class SmsService {
   async getConversation(inf: UserEntity, contact: string) {
     try {
       const contactNumber = await this.contactService.findOne({
-        where: { phoneNumber: contact, user: inf },
+        where: { phoneNumber: contact },
+        relations:['user']
       });
-      if (contactNumber) {
+      console.log(contactNumber);
+      if (contactNumber.user.includes(inf)) {
         const conversation = await this.conversationsRepo.findOne({
-          where: { user: inf, contact: contactNumber },
-          relations: ['phone', 'contact'],
+          where: { user: inf },
+          relations: ['phone', 'contact', 'conversationMessages'],
         });
         console.log(conversation);
-        const conversationMessages = await this.conversationsMessagesRepo.find({
-          where: { conversationsId: conversation.id },
-          order: { createdAt: 'DESC' },
-        });
-        console.log(conversationMessages);
-        return { conversation, conversationMessages };
+        return { conversation };
       } else {
         throw new BadRequestException('No such contact exists');
       }

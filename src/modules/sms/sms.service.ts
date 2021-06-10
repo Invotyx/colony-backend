@@ -418,10 +418,12 @@ export class SmsService {
           where: { user: inf, contact: contactNumber },
           relations: ['phone', 'contact'],
         });
+        console.log(conversation);
         const conversationMessages = await this.conversationsMessagesRepo.find({
-          where: { conversations: conversation },
+          where: { conversationsId: conversation.id },
           order: { createdAt: 'DESC' },
         });
+        console.log(conversationMessages);
         return { conversation, conversationMessages };
       } else {
         throw new BadRequestException('No such contact exists');

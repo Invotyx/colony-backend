@@ -1,9 +1,11 @@
 import { ApiHideProperty } from '@nestjs/swagger';
 import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  getRepository,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -12,6 +14,7 @@ import {
 import { TABLES } from '../../../consts/tables.const';
 import { UserEntity } from '../../users/entities/user.entity';
 import { BroadcastsContactsEntity } from './broadcast-contacts.entity';
+import { ConversationMessagesEntity } from './conversation-messages.entity';
 
 @Entity({ name: TABLES.BROADCASTS.name })
 export class BroadcastsEntity {
@@ -38,6 +41,12 @@ export class BroadcastsEntity {
   @Column({ length: 20 })
   public status: string;
 
+  @OneToMany(() => ConversationMessagesEntity, (con) => con.broadcast, {
+    eager: false,
+    cascade: true,
+  })
+  public conversationMessages!: ConversationMessagesEntity;
+
   @OneToMany(() => BroadcastsContactsEntity, (bc) => bc.broadcast, {
     eager: false,
     cascade: true,
@@ -52,4 +61,21 @@ export class BroadcastsEntity {
 
   @DeleteDateColumn()
   public deletedAt: Date;
+
+  public lastMessage: string;
+  public lastSmsTime: Date;
+
+  @AfterLoad()
+  async getLastConversationMessage() {
+    const innerSelect = getRepository(ConversationMessagesEntity)
+      .createQueryBuilder()
+      .select('*')
+      .where('"broadcastId" = :id', { id: this.id })
+      .andWhere('"type"=:type', { type: 'broadcastOutbound' })
+      .orderBy('"createdAt"', 'DESC')
+      .limit(1);
+
+    this.lastMessage = (await innerSelect.getRawOne()).sms;
+    this.lastSmsTime = (await innerSelect.getRawOne()).createdAt;
+  }
 }

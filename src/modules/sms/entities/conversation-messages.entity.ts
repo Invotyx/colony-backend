@@ -4,10 +4,12 @@ import {
   DeleteDateColumn,
   Entity,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../../../consts/tables.const';
+import { BroadcastsEntity } from './broadcast.entity';
 import { ConversationsEntity } from './conversations.entity';
 
 @Entity({ name: TABLES.CONVERSATION_MESSAGES.name })
@@ -20,6 +22,11 @@ export class ConversationMessagesEntity {
     eager: false,
   })
   public conversations: ConversationsEntity;
+
+  @ManyToOne(() => BroadcastsEntity, (b) => b.conversationMessages, {
+    eager: false,
+  })
+  public broadcast!: BroadcastsEntity;
 
   @Column({ length: 1000 })
   public sms: string;

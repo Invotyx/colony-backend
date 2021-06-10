@@ -7,6 +7,8 @@ import { AppModule } from './app.module';
 import { SeederModule } from './seeder/seeder.module';
 import { SeederService } from './seeder/seeder.service';
 import { logger } from './services/logs/log.storage';
+import * as bodyParser from 'body-parser';
+
 async function bootstrap() {
   NestFactory.createApplicationContext(SeederModule)
     .then((appContext) => {
@@ -85,6 +87,9 @@ async function bootstrap() {
       },
     }),
   );
+  
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
   await app.listen(port, () => {
     console.log(
       'Listening API at http://localhost:' + port + '/' + globalPrefix,

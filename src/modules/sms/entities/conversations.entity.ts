@@ -1,9 +1,12 @@
 import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  getRepository,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -11,6 +14,7 @@ import { TABLES } from '../../../consts/tables.const';
 import { ContactsEntity } from '../../contacts/entities/contacts.entity';
 import { PhonesEntity } from '../../phone/entities/phone.entity';
 import { UserEntity } from '../../users/entities/user.entity';
+import { ConversationMessagesEntity } from './conversation-messages.entity';
 
 @Entity({ name: TABLES.CONVERSATIONS.name })
 export class ConversationsEntity {
@@ -33,6 +37,12 @@ export class ConversationsEntity {
   })
   public user: UserEntity;
 
+  @OneToMany(() => ConversationMessagesEntity, (con) => con.conversations, {
+    eager: false,
+    cascade: true,
+  })
+  public conversationMessages!: ConversationMessagesEntity;
+
   @Column({ default: false })
   public isActive: boolean;
 
@@ -44,4 +54,20 @@ export class ConversationsEntity {
 
   @DeleteDateColumn()
   public deletedAt: Date;
+
+  public lastMessage: string;
+  public lastSmsTime: Date;
+
+  @AfterLoad()
+  async getLastConversationMessage() {
+    const innerSelect = getRepository(ConversationMessagesEntity)
+      .createQueryBuilder()
+      .select('*')
+      .where('conversationsId = :id', { id: this.id })
+      .orderBy('createdAt', 'DESC')
+      .limit(1);
+
+    this.lastMessage = (await innerSelect.getRawOne()).sms;
+    this.lastSmsTime = (await innerSelect.getRawOne()).createdAt;
+  }
 }

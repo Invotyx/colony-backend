@@ -12,13 +12,13 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../../../consts/tables.const';
-import { InfluencerContactsEntity } from './influencer-contacts.entity';
-import { InfluencerLinksTrackingEntity } from '../../influencer-links/entities/influencer-links-tracking.entity';
 import { CityEntity } from '../../../services/city-country/entities/city.entity';
 import { CountryEntity } from '../../../services/city-country/entities/country.entity';
+import { InfluencerLinksTrackingEntity } from '../../influencer-links/entities/influencer-links-tracking.entity';
 import { BroadcastsContactsEntity } from '../../sms/entities/broadcast-contacts.entity';
 import { ConversationsEntity } from '../../sms/entities/conversations.entity';
 import { UserEntity } from '../../users/entities/user.entity';
+import { InfluencerContactsEntity } from './influencer-contacts.entity';
 
 enum gender {
   male = 'male',
@@ -69,7 +69,7 @@ export class ContactsEntity {
   @Column({ length: 100, nullable: true })
   public timezone: string;
 
-  @Column({ length: 100, nullable: true })
+  @Column({ length: 100, nullable: true, unique: true })
   public urlMapper: string;
 
   @OneToMany(() => InfluencerContactsEntity, (cToI) => cToI.contact)

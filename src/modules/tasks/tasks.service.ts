@@ -86,8 +86,9 @@ export class TasksService {
               ).url;
               messageBody = messageBody.replace(
                 link,
-                env.PUBLIC_APP_URL + '/' + shareableUri,
+                env.API_URL + '/api/s/o/' + shareableUri,
               );
+              await this.infLinks.sendLink(shareableUri);
             }
           }
           const q_obj = {
@@ -99,6 +100,7 @@ export class TasksService {
             contact: contact,
             phone: phone,
           };
+          
           await this.queue.add('broadcast_message', q_obj, {
             removeOnComplete: true,
             removeOnFail: true,

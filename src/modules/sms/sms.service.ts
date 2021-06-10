@@ -14,8 +14,8 @@ import { PhonesEntity } from '../phone/entities/phone.entity';
 import { PhoneService } from '../phone/phone.service';
 import { SubscriptionsService } from '../products/subscription/subscriptions.service';
 import { UserEntity } from '../users/entities/user.entity';
-import { presetTrigger } from './entities/preset-message.entity';
 import { PresetsDto, PresetsUpdateDto } from './dtos/preset.dto';
+import { presetTrigger } from './entities/preset-message.entity';
 import { ConversationsRepository } from './repo/conversation-messages.repo';
 import { ConversationMessagesRepository } from './repo/conversation.repo';
 import { PresetMessagesRepository } from './repo/sms-presets.repo';
@@ -393,10 +393,11 @@ export class SmsService {
   async getConversations(inf: UserEntity) {
     try {
       const conversations = await this.conversationsRepo.find({
-        where: { user: inf },
+        where: { user: inf, },
         order: { createdAt: 'DESC' },
         relations: ['phone', 'contact'],
       });
+      
       if (conversations.length > 0) {
         return conversations;
       } else {

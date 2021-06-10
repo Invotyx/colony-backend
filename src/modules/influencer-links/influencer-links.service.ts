@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import {
   dataViewer,
   mapColumns,
@@ -31,6 +36,17 @@ export class InfluencerLinksService {
       inf_links.user = user;
 
       await this.repository.save(inf_links);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async getLinkDetailsByUniqueId(id: any) {
+    try {
+      return this.repository.findOne({
+        where: { id: id },
+        relations: ['influencerLink'],
+      });
     } catch (e) {
       throw e;
     }
@@ -162,13 +178,13 @@ export class InfluencerLinksService {
         where: { urlMapper: contact },
       });
       if (!contactUrl) {
-        return { message: "contact doesn't exist." };
+        throw new BadRequestException('contact does not exist.');
       }
       const linkUrl = await this.repository.findOne({
         where: { urlMapper: link },
       });
       if (!linkUrl) {
-        return { message: "link doesn't exist." };
+        throw new BadRequestException("link doesn't exist.");
       }
       const linkSent = await this.trackingRepo.findOne({
         where: { influencerLink: linkUrl, contact: contactUrl },
@@ -176,7 +192,7 @@ export class InfluencerLinksService {
       if (linkSent) {
         linkSent.isOpened = true;
       } else {
-        return { message: 'link is not sent to this contact yet.' };
+        throw new BadRequestException('link is not sent to this contact yet.');
       }
       const linkOpened = await this.trackingRepo.save(linkSent);
       return linkOpened;

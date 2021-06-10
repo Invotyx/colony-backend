@@ -52,7 +52,7 @@ export class UsersService {
     return await this.repository.save(user);
   }
 
-  async findOne(condition?:any): Promise<UserEntity> {
+  async findOne(condition?: any): Promise<UserEntity> {
     return await this.repository.findOne(condition);
   }
 

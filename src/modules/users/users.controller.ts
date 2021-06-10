@@ -108,7 +108,8 @@ export class UsersController {
       throw error;
     }
   }
-  //@Auth({ roles: [ROLES.ADMIN] })
+
+  @Auth({ roles: [ROLES.ADMIN] })
   @Get(':id')
   async getUser(@Param('id') id: number) {
     try {
@@ -132,11 +133,14 @@ export class UsersController {
   @Auth({ roles: [ROLES.ADMIN] })
   @Get(':id/roleId')
   getRolesId(@Param('id') id: string) {
-    return this.userService.findOne({ where: { id:id }, relations: ['roles'] });
+    return this.userService.findOne({
+      where: { id: id },
+      relations: ['roles'],
+    });
     //return this.rolesService.repository.find();
   }
 
-  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Auth({ roles: [ROLES.ADMIN] })
   @Post(':id/update')
   @UsePipes(ValidationPipe)
   async updateUser(@Body() user: UpdateProfileDto, @Param('id') id: string) {
@@ -155,7 +159,7 @@ export class UsersController {
     }
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @Auth({ roles: [ROLES.ADMIN] })
   @Post(':id/updateRole')
   @UsePipes(ValidationPipe)
   async updateRole(@Body() user: UpdateRole, @Param('id') id: string) {
@@ -170,6 +174,7 @@ export class UsersController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post('update-password')
   @UsePipes(ValidationPipe)
   async updatePwd(@Body() data: PasswordChange) {
@@ -192,8 +197,8 @@ export class UsersController {
     }
   }
 
-  // @Auth({})
-  @Post(':id/upProfileImage')
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Post('upProfileImage')
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
@@ -203,20 +208,35 @@ export class UsersController {
       fileFilter: imageFileFilter,
     }),
   )
-  async uploadFile(
-    @UploadedFile() image: any,
-    @Param('id') id: number /* ,@LoginUser() user: UserEntity */,
-  ) {
+  async uploadFile(@UploadedFile() image: any, @LoginUser() _user: UserEntity) {
     // console.log(pic);
-    const user = await this.userService.findOne(id);
+    const user = await this.userService.findOne(_user.id);
 
     //upload pic
     return this.userService.setProfileImage(user, image);
   }
 
-  @Get(':id')
-  async getSingleUser(@Param('id') id: number) {
-    const allData = await this.userService.findOne(id);
-    return { user: allData };
+  @Get(':username')
+  async getUserByUsername(@Param('username') username: string) {
+    try {
+      const _u = await this.userService.findOne({
+        where: { username: username },
+        relations: ['numbers'],
+      });
+      if (_u) {
+        const user = {
+          username: _u.username,
+          dob: _u.dob,
+          link: _u.links,
+          image: _u.image,
+          status: _u.statusMessage,
+          numbers: _u.numbers,
+        };
+        return { user };
+      }
+      throw new BadRequestException("Influencer not found in our system");
+    } catch (e) {
+      throw e;
+    }
   }
 }

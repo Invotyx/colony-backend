@@ -63,10 +63,10 @@ export class ConversationsEntity {
     const innerSelect = getRepository(ConversationMessagesEntity)
       .createQueryBuilder()
       .select('*')
-      .where('conversationsId = :id', { id: this.id })
-      .orderBy('createdAt', 'DESC')
+      .where('"conversationsId" = :id', { id: this.id })
+      .orderBy('"createdAt"', 'DESC')
       .limit(1);
-    console.log(innerSelect.getSql());
+    
     this.lastMessage = (await innerSelect.getRawOne()).sms;
     this.lastSmsTime = (await innerSelect.getRawOne()).createdAt;
   }

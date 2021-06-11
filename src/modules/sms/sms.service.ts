@@ -401,7 +401,7 @@ export class SmsService {
       if (conversations.length > 0) {
         return conversations;
       } else {
-        return { message: 'No conversations created yet.' };
+        return [];
       }
     } catch (e) {
       throw e;

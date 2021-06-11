@@ -9,4 +9,10 @@ export class AppController {
   getData() {
     return this.appService.getData();
   }
+
+  @Get('merge-tags')
+  getSystemMergeTags() {
+    const tags = ['${name}', '${inf_name}', '${link:id}'];
+    return tags;
+  }
 }

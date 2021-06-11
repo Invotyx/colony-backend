@@ -90,6 +90,7 @@ async function bootstrap() {
 
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
+  app.enableCors({ origin: '*' });
   await app.listen(port, () => {
     console.log(
       'Listening API at http://localhost:' + port + '/' + globalPrefix,

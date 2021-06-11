@@ -184,6 +184,7 @@ export class ContactsService {
   ) {
     try {
       return this.influencerContactRepo.find({
+        select: ['contact'],
         where: { userId: user.id },
         relations: ['contact'],
         take: count,

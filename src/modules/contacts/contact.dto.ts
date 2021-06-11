@@ -7,6 +7,8 @@ import {
   IsOptional,
   IsString,
   Length,
+  Max,
+  Min,
 } from 'class-validator';
 import { CityEntity } from '../../services/city-country/entities/city.entity';
 import { CountryEntity } from '../../services/city-country/entities/country.entity';
@@ -61,6 +63,19 @@ export class SocialLinks {
   @IsNotEmpty()
   @Length(2, 30)
   public title: string;
+}
+
+export class PaginationDto {
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(100)
+  perPage?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  page?: number;
 }
 
 export class ContactFilter {

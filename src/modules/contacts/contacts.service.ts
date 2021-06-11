@@ -183,13 +183,17 @@ export class ContactsService {
     page: number = 1,
   ) {
     try {
-      return this.influencerContactRepo.find({
-        select: ['contact'],
+      const contacts = await this.influencerContactRepo.find({
         where: { userId: user.id },
         relations: ['contact'],
         take: count,
         skip: count * page - count,
       });
+      let _contact = [];
+      for (let contact of contacts) {
+        _contact.push(contact.contact);
+      }
+      return _contact;
     } catch (e) {
       throw new BadRequestException(e);
     }

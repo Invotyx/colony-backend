@@ -19,7 +19,7 @@ import { Auth } from '../../decorators/auth.decorator';
 import { UserEntity } from '../users/entities/user.entity';
 import { GetUser } from '../users/get-user.decorator';
 import { editFileName, imageFileFilter } from '../users/imageupload.service';
-import { ContactDto, ContactFilter } from './contact.dto';
+import { ContactDto, ContactFilter, PaginationDto } from './contact.dto';
 import { ContactsService } from './contacts.service';
 
 @Controller('contacts')
@@ -87,11 +87,10 @@ export class ContactsController {
   @Get('list')
   async getAllContacts(
     @LoginUser() user: UserEntity,
-    @Query('perPage') perPage?: number,
-    @Query('page') page?: number,
+    @Query() data?: PaginationDto,
   ) {
     try {
-      return this.service.getAllContacts(user, perPage, page);
+      return this.service.getAllContacts(user, data.perPage, data.page);
     } catch (e) {
       throw e;
     }

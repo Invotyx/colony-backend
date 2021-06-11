@@ -199,7 +199,20 @@ export class ContactsService {
     }
   }
 
-  async upcomingBirthdays() {}
+  async upcomingBirthdays(user: UserEntity) {
+    try {
+      return this.repository
+        .createQueryBuilder('contact')
+        .where('DAY("dob")>=DAY(CURRENT_DATE)')
+        .andWhere('MONTH("dob")=MONTH(CURRENT_DATE)')
+        .leftJoin('contact.user', 'user', 'user.id = :id', { id: user.id })
+        .select()
+        .take(10)
+        .getMany();
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
 
   async updateContact(urlId: string, data: ContactDto, image?: any) {
     const consolidatedIds = urlId.split(':::');

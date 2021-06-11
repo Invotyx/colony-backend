@@ -100,7 +100,7 @@ export class ContactsController {
   @Get('upcoming-birthdays')
   async upcomingBirthdays(@LoginUser() user: UserEntity) {
     try {
-      return this.service.upcomingBirthdays();
+      return this.service.upcomingBirthdays(user);
     } catch (e) {
       throw e;
     }

@@ -203,11 +203,9 @@ export class ContactsService {
     try {
       return this.repository
         .createQueryBuilder('contact')
-        .where(
-          'EXTRACT(DAY FROM TIMESTAMP "contact"."dob")>=DAY(CURRENT_DATE)',
-        )
+        .where('EXTRACT(DAY FROM TIMESTAMP contact.dob)>=DAY(CURRENT_DATE)')
         .andWhere(
-          'EXTRACT(MONTH FROM TIMESTAMP "contact"."dob")>=MONTH(CURRENT_DATE)',
+          'EXTRACT(MONTH FROM TIMESTAMP contact.dob)>=MONTH(CURRENT_DATE)',
         )
         .leftJoin('contact.user', 'user', 'user.id = :id', { id: user.id })
         .select()

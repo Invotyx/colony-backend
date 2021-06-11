@@ -29,6 +29,11 @@
             "date": 1623295489898,
             "name": "logs\\error.log.2021-06-10",
             "hash": "aef61fe9ba64a0896de0be4d4bf8196c"
+        },
+        {
+            "date": 1623382307900,
+            "name": "logs\\error.log.2021-06-11",
+            "hash": "00459af1b08f0f95ae5608d749f8fe13"
         }
     ]
 }

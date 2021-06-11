@@ -26,7 +26,7 @@ export class ConversationMessagesEntity {
   @ManyToOne(() => BroadcastsEntity, (b) => b.conversationMessages, {
     eager: false,
   })
-  public broadcast!: BroadcastsEntity;
+  public broadcast: BroadcastsEntity;
 
   @Column({ length: 1000 })
   public sms: string;

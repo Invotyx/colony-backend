@@ -27,11 +27,10 @@ export class InfluencerLinksController {
   async addLink(
     @LoginUser() influencer: UserEntity,
     @Body('link') link: string,
-    @Body('title') title: string,
   ) {
     try {
       return {
-        data: await this.service.addLink(link, title, influencer),
+        data: await this.service.addLink(link, influencer),
         message: 'Link added successfully.',
       };
     } catch (e) {
@@ -58,11 +57,10 @@ export class InfluencerLinksController {
     @LoginUser() influencer: UserEntity,
     @Body('linkId') id: number,
     @Body('link') link: string,
-    @Body('title') title: string,
   ) {
     try {
       return {
-        data: await this.service.updateLink(id, link, title, influencer),
+        data: await this.service.updateLink(id, link, influencer),
         message: 'Link updated successfully.',
       };
     } catch (e) {

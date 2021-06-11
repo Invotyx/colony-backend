@@ -27,15 +27,14 @@ export class InfluencerLinksService {
     private readonly contactService: ContactsService,
   ) {}
 
-  async addLink(link: string, title: string, user: UserEntity) {
+  async addLink(link: string,user: UserEntity) {
     try {
       const inf_links = new InfluencerLinksEntity();
-      inf_links.title = title;
       inf_links.link = link;
       inf_links.urlMapper = uniqueId(6);
       inf_links.user = user;
 
-      await this.repository.save(inf_links);
+      return this.repository.save(inf_links);
     } catch (e) {
       throw e;
     }
@@ -60,14 +59,11 @@ export class InfluencerLinksService {
     }
   }
 
-  async updateLink(id: number, link: string, title: string, user: UserEntity) {
+  async updateLink(id: number, link: string,  user: UserEntity) {
     try {
       const inf_links = await this.repository.findOne({
         where: { id: id, user: user },
       });
-      if (title) {
-        inf_links.title = title;
-      }
       if (link) {
         inf_links.link = link;
       }

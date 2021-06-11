@@ -1,4 +1,5 @@
 import {
+  BeforeInsert,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -43,4 +44,9 @@ export class InfluencerLinksEntity {
 
   @DeleteDateColumn()
   public deletedAt: Date;
+
+  @BeforeInsert()
+  async setTitle() {
+    this.title = 'Link' + this.id;
+  }
 }

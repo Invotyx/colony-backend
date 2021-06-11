@@ -14,6 +14,7 @@ import { uniqueId } from 'src/shared/random-keygen';
 import { tagReplace } from 'src/shared/tag-replace';
 import { PhoneService } from '../phone/phone.service';
 import { SmsService } from '../sms/sms.service';
+import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/services/users.service';
 import { ContactDto, ContactFilter } from './contact.dto';
 import { ContactsRepository } from './repo/contact.repo';
@@ -176,6 +177,25 @@ export class ContactsService {
     return { contacts: contacts, count: contacts.length };
   }
 
+  async getAllContacts(
+    user: UserEntity,
+    count: number = 100,
+    page: number = 1,
+  ) {
+    try {
+      return this.influencerContactRepo.find({
+        where: { userId: user.id },
+        relations: ['contact'],
+        take: count,
+        skip: count * page - count,
+      });
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+  async upcomingBirthdays() {}
+
   async updateContact(urlId: string, data: ContactDto, image?: any) {
     const consolidatedIds = urlId.split(':::');
     const userId = consolidatedIds[0];
@@ -264,7 +284,7 @@ export class ContactsService {
 
       return { message: 'Contact details updated.', data: contactDetails };
     } catch (e) {
-      throw e;
+      throw new BadRequestException(e);
     }
   }
 

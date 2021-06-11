@@ -13,6 +13,8 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
+import { LoginUser } from 'src/decorators/user.decorator';
+import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { Auth } from '../../decorators/auth.decorator';
 import { UserEntity } from '../users/entities/user.entity';
 import { GetUser } from '../users/get-user.decorator';
@@ -76,6 +78,30 @@ export class ContactsController {
       } else {
         throw new BadRequestException('Contact not found.');
       }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('list')
+  async getAllContacts(
+    @LoginUser() user: UserEntity,
+    @Query('perPage') perPage?: number,
+    @Query('page') page?: number,
+  ) {
+    try {
+      return this.service.getAllContacts(user, perPage, page);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('upcoming-birthdays')
+  async upcomingBirthdays(@LoginUser() user: UserEntity) {
+    try {
+      return this.service.upcomingBirthdays();
     } catch (e) {
       throw e;
     }

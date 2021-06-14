@@ -199,6 +199,66 @@ export class TasksService {
     }
   }
 
+  //cron to check for due payments.
+  @Cron('0 59 11 * * *')
+  async checkForSmsThreshold() {
+    try {
+      const subscriptions = await (await this.subscriptionService.qb('sub'))
+        .where(
+          `(CAST(sub.currentEndDate AS date) - CAST('${this.getCurrentDate()}' AS date))<=1`,
+        )
+        .getMany();
+      for (let subscription of subscriptions) {
+        const requests = await Promise.all([
+          this.planService.findOne({ where: { id: subscription.plan } }),
+          this.paymentService.findOne({
+            where: { default: true, user: subscription.user },
+          }),
+          this.paymentHistoryService.getDues('sms', subscription.user),
+        ]);
+        const plan = requests[0];
+        const default_pm = requests[1];
+        const sms = requests[2];
+
+        if (default_pm && sms.cost < plan.threshold) {
+          // charge client here
+          const charge = await this.stripe.paymentIntents.create({
+            amount: Math.round(sms.cost * 100),
+            currency: 'GBP',
+            capture_method: 'automatic',
+            confirm: true,
+            confirmation_method: 'automatic',
+            customer: subscription.user.customerId,
+            description: 'Sms Dues payed automatically on reaching threshold.',
+            payment_method: default_pm.id,
+          });
+          if (charge.status == 'succeeded') {
+            await this.paymentHistoryService.setDuesToZero({
+              type: 'sms',
+              user: subscription.user,
+            });
+
+            await this.paymentHistoryService.addRecordToHistory({
+              user: subscription.user,
+              description:
+                'Sms Dues payed automatically on reaching threshold.',
+              cost: sms.cost,
+              costType: 'sms-dues',
+              chargeId: charge.id,
+            });
+            //send email here
+          } else {
+            this.logger.debug('payment charge failed with details:');
+            this.logger.debug(charge);
+          }
+        }
+        this.logger.debug(subscriptions);
+      }
+    } catch (e) {
+      this.logger.debug(e);
+    }
+  }
+
   // check if user has not completed profile yet.
   @Cron('0 0 16 * * *')
   async checkIfContactHasCompletedProfile() {

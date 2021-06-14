@@ -21,6 +21,16 @@ export class PaymentHistoryService {
     }
   }
 
+  public async setDuesToZero(dues: any) {
+    const due = await this.duesRepo.findOne({
+      where: { costType: dues.type, user: dues.user },
+    });
+    if (due) {
+      due.cost = 0;
+      await this.duesRepo.save(due);
+    }
+  }
+
   public async updateDues(dues: any) {
     const due = await this.duesRepo.findOne({
       where: { costType: dues.type, user: dues.user },
@@ -31,7 +41,7 @@ export class PaymentHistoryService {
     } else {
       await this.duesRepo.save({
         cost: dues.cost,
-        costType: dues.costType,
+        costType: dues.type,
         user: dues.user,
       });
     }

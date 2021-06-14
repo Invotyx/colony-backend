@@ -201,16 +201,16 @@ export class ContactsService {
 
   async upcomingBirthdays(user: UserEntity) {
     try {
-      return this.repository
-        .createQueryBuilder('contact')
-        .where('EXTRACT(DAY FROM TIMESTAMP contact.dob)>=DAY(CURRENT_DATE)')
-        .andWhere(
-          'EXTRACT(MONTH FROM TIMESTAMP contact.dob)>=MONTH(CURRENT_DATE)',
-        )
-        .leftJoin('contact.user', 'user', 'user.id = :id', { id: user.id })
-        .select()
-        .take(10)
-        .getMany();
+      const contacts = await this.repository.query(`
+        select "c".* from "contacts" "c"
+        left join "influencer_contacts" "ic" on "ic"."contactId"="c"."id"
+        left join "users" "u" on ("u"."id"="ic"."userId" and "u"."id"=${user.id} )
+        where extract(month from "c"."dob") = extract(month from current_date)
+        and extract(day from "c"."dob") between extract(day from current_date)
+        and extract(day from current_date+14);
+      `);
+
+      return contacts;
     } catch (e) {
       throw new BadRequestException(e);
     }

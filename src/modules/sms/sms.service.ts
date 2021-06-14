@@ -213,7 +213,7 @@ export class SmsService {
     const plan = await this.subService.planService.findOne();
     await this.paymentHistory.updateDues({
       cost: plan.subscriberCost,
-      costType: 'contacts',
+      type: 'contacts',
       user: influencerNumber.user,
     });
     console.log('subscription log added to dues');
@@ -359,7 +359,7 @@ export class SmsService {
         } else {
           await this.paymentHistory.updateDues({
             cost: country.smsCost,
-            costType: 'sms',
+            type: 'sms',
             user: influencerNumber.user,
           });
           await this.saveSms(

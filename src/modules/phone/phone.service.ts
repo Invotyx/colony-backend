@@ -54,6 +54,24 @@ export class PhoneService {
     else return await this.repo.find();
   }
 
+  public async changeRenewal(
+    user: UserEntity,
+    number: string,
+    renewalDate: Date,
+  ) {
+    try {
+      const phone = await this.repo.findOne({
+        where: { number: number, user: user },
+      });
+
+      phone.renewalDate = renewalDate;
+
+      return await this.repo.update({ id: phone.id }, phone);
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
   public async cancelPhoneNumber(num: string, user: UserEntity) {
     try {
       if (env.NODE_ENV !== 'development') {
@@ -174,7 +192,20 @@ export class PhoneService {
     }
   }
 
-  public async searchPhoneNumbers(
+  public async getUserPurchasedActiveNumbers(user: UserEntity) {
+    try {
+      const numbers = await this.repo.query(
+        `select phones.*, "country"."phoneCost" as phonecost, "country"."smsCost" as smscost 
+         from phones left join country on phones.country=country.code
+         where (phones.status='in-use' and "phones"."userId"=${user.id});`,
+      );
+      return numbers;
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+  private async searchPhoneNumbers(
     cc: string,
     limit: number,
     number_must_have: string = '',

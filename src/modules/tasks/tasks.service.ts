@@ -100,7 +100,7 @@ export class TasksService {
             contact: contact,
             phone: phone,
           };
-          
+
           await this.queue.add('broadcast_message', q_obj, {
             removeOnComplete: true,
             removeOnFail: true,
@@ -115,7 +115,7 @@ export class TasksService {
   }
 
   //cron to check for due payments.
-  @Cron('10 * * * * *')
+  @Cron('0 59 11 * * *')
   async checkForPackageExpiryAndResubscribe() {
     try {
       const subscriptions = await (await this.subscriptionService.qb('sub'))
@@ -129,37 +129,64 @@ export class TasksService {
           this.paymentService.findOne({
             where: { default: true, user: subscription.user },
           }),
+          this.phoneService.getUserPurchasedActiveNumbers(subscription.user),
+          this.paymentHistoryService.getDues('contacts', subscription.user),
         ]);
         const plan = requests[0];
         const default_pm = requests[1];
+        const phones = requests[2];
+        const fans = requests[3];
+
+        let phonesCost = 0;
+
+        for (let phone of phones) {
+          phonesCost += parseInt(phone.phonecost);
+        }
 
         if (default_pm) {
           // charge client here
           const charge = await this.stripe.paymentIntents.create({
-            amount: Math.round(plan.amount_decimal * 100),
+            amount: Math.round(
+              (plan.amount_decimal + phonesCost + fans.cost) * 100,
+            ),
             currency: 'GBP',
             capture_method: 'automatic',
             confirm: true,
             confirmation_method: 'automatic',
             customer: subscription.user.customerId,
-            description: 'Plan resubscribed!',
+            description:
+              'Plan resubscribed, with phone numbers and fans due charges.',
             payment_method: default_pm.id,
           });
           if (charge.status == 'succeeded') {
+            const renewal = new Date().setDate(new Date().getDate() + 30);
             subscription.currentStartDate = new Date();
-            subscription.currentEndDate = new Date(
-              new Date().setDate(new Date().getDate() + 30),
-            );
+            subscription.currentEndDate = new Date(renewal);
+
+            for (let phone of phones) {
+              await this.phoneService.changeRenewal(
+                subscription.user,
+                phone.number,
+                new Date(renewal),
+              );
+            }
+
+            await this.paymentHistoryService.setDuesToZero({
+              type: 'contacts',
+              user: subscription.user,
+            });
 
             await this.subscriptionService.save(subscription);
 
             await this.paymentHistoryService.addRecordToHistory({
               user: subscription.user,
-              description: 'Base Package Re-subscribed.',
+              description:
+                'Base Package Re-subscribed with phone numbers and fans due charges.',
               cost: plan.amount_decimal,
               costType: 'base-plan-purchase',
               chargeId: charge.id,
             });
+            //send email here
           } else {
             this.logger.debug('payment charge failed with details:');
             this.logger.debug(charge);

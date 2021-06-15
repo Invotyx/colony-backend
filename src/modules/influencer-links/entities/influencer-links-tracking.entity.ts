@@ -1,3 +1,4 @@
+import { BroadcastsEntity } from 'src/modules/sms/entities/broadcast.entity';
 import {
   Column,
   CreateDateColumn,
@@ -31,6 +32,15 @@ export class InfluencerLinksTrackingEntity {
 
   @Column({ default: false, nullable: false })
   public sent: boolean;
+
+  @ManyToOne(() => BroadcastsEntity, (b) => b.links, {
+    eager: false,
+    nullable: true,
+  })
+  public broadcast: BroadcastsEntity;
+
+  @Column({ length: 100 })
+  public smsSid: string;
 
   @Column({ default: false, nullable: false })
   public isOpened: boolean;

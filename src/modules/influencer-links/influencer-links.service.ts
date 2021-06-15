@@ -15,6 +15,7 @@ import { TABLES } from '../../consts/tables.const';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { uniqueId } from '../../shared/random-keygen';
 import { ContactsService } from '../contacts/contacts.service';
+import { BroadcastsEntity } from '../sms/entities/broadcast.entity';
 import { InfluencerLinksEntity } from './entities/influencer-links.entity';
 import { InfluencerLinksTrackingRepository } from './repo/influencer-links-tracking.repo';
 import { InfluencerLinksRepository } from './repo/influencer-links.repo';
@@ -27,7 +28,7 @@ export class InfluencerLinksService {
     private readonly contactService: ContactsService,
   ) {}
 
-  async addLink(link: string,user: UserEntity) {
+  async addLink(link: string, user: UserEntity) {
     try {
       const inf_links = new InfluencerLinksEntity();
       inf_links.link = link;
@@ -59,7 +60,7 @@ export class InfluencerLinksService {
     }
   }
 
-  async updateLink(id: number, link: string,  user: UserEntity) {
+  async updateLink(id: number, link: string, user: UserEntity) {
     try {
       const inf_links = await this.repository.findOne({
         where: { id: id, user: user },
@@ -112,7 +113,21 @@ export class InfluencerLinksService {
     }
   }
 
-  async sendLink(url: string) {
+  async updateLinkStatus(id: string, status: string, sid: string) {
+    try {
+      const linkUrl = await this.trackingRepo.findOne({
+        where: { smsSid: id },
+      });
+      linkUrl.sent = status == 'sent' || status == 'delivered' ? true : false;
+      linkUrl.smsSid = sid;
+
+      return await this.trackingRepo.save(linkUrl);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async sendLink(url: string, sid: string, broadcast: BroadcastsEntity) {
     try {
       const parts = url.split(':');
       if (parts.length != 2) {
@@ -126,34 +141,20 @@ export class InfluencerLinksService {
       const contactUrl = await this.contactService.findOne({
         where: { urlMapper: contact },
       });
-      if (!contactUrl) {
-        return { message: "contact doesn't exist." };
-      }
       const linkUrl = await this.repository.findOne({
         where: { urlMapper: link },
       });
-      if (!linkUrl) {
-        return { message: "link doesn't exist." };
-      }
-
-      //Send link via sms here......
-
-      let linkSent = await this.trackingRepo.findOne({
-        where: { influencerLink: linkUrl, contact: contactUrl },
+      let linkSent = await this.trackingRepo.save({
+        contact: contactUrl,
+        influencerLink: linkUrl,
+        isOpened: false,
+        sent: false,
+        smsSid: sid,
+        broadcast: broadcast,
       });
-      if (!linkSent) {
-        linkSent = await this.trackingRepo.save({
-          contact: contactUrl,
-          influencerLink: linkUrl,
-          isOpened: false,
-          sent: true,
-        });
-        linkSent.contact = linkSent.contact.id as any;
-        linkSent.influencerLink = linkSent.influencerLink.id as any;
-        return linkSent;
-      } else {
-        return { message: 'This Link is already sent to this contact' };
-      }
+      linkSent.contact = linkSent.contact.id as any;
+      linkSent.influencerLink = linkSent.influencerLink.id as any;
+      return linkSent;
     } catch (e) {
       throw e;
     }

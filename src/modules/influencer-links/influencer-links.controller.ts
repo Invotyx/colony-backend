@@ -84,15 +84,6 @@ export class InfluencerLinksController {
     }
   }
 
-  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
-  @Put(':uniqueId/send')
-  async linkSent(@Param('uniqueId') uniqueId: string) {
-    try {
-      return await this.service.sendLink(uniqueId);
-    } catch (e) {
-      throw e;
-    }
-  }
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Put(':uniqueId/open')

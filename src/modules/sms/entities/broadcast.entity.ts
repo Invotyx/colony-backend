@@ -1,4 +1,5 @@
 import { ApiHideProperty } from '@nestjs/swagger';
+import { InfluencerLinksTrackingEntity } from 'src/modules/influencer-links/entities/influencer-links-tracking.entity';
 import {
   AfterLoad,
   Column,
@@ -64,6 +65,9 @@ export class BroadcastsEntity {
 
   public lastMessage: string;
   public lastSmsTime: Date;
+
+  @OneToMany(() => InfluencerLinksTrackingEntity, (track) => track.broadcast)
+  public links!: InfluencerLinksTrackingEntity[];
 
   @AfterLoad()
   async getLastConversationMessage() {

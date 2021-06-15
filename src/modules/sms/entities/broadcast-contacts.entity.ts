@@ -9,8 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../../../consts/tables.const';
-import { BroadcastsEntity } from './broadcast.entity';
 import { ContactsEntity } from '../../contacts/entities/contacts.entity';
+import { BroadcastsEntity } from './broadcast.entity';
 
 @Entity({ name: TABLES.BROADCASTS_CONTACTS.name })
 export class BroadcastsContactsEntity {
@@ -25,9 +25,6 @@ export class BroadcastsContactsEntity {
   @ApiHideProperty()
   @ManyToOne(() => ContactsEntity, (c) => c.broadcast, { eager: false })
   public contact: ContactsEntity;
-
-  @Column()
-  public isSent: boolean;
 
   @Column({ length: 100 })
   public smsSid: string;

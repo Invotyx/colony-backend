@@ -1,5 +1,6 @@
 import { InjectQueue } from '@nestjs/bull';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -130,6 +131,21 @@ export class SmsController {
   //#endregion
 
   //#region broadcast
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('broadcast/:id/stats/:filter')
+  async getBroadcastStats(
+    @LoginUser() user: UserEntity,
+    @Param('id') id: number,
+    @Param('filter') filter: string,
+  ) {
+    try {
+      return this.broadcastService.getBroadcastStats(user,id,filter);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Post('broadcast')
   async createBroadcast(

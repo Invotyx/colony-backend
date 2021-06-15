@@ -88,7 +88,11 @@ export class TasksService {
                 link,
                 env.API_URL + '/api/s/o/' + shareableUri,
               );
-              await this.infLinks.sendLink(shareableUri);
+              await this.infLinks.sendLink(
+                shareableUri,
+                contact.id + ':' + broadcast.id,
+                broadcast,
+              );
             }
           }
           const q_obj = {
@@ -99,12 +103,14 @@ export class TasksService {
             }),
             contact: contact,
             phone: phone,
+            broadcast: broadcast,
           };
 
           await this.queue.add('broadcast_message', q_obj, {
             removeOnComplete: true,
             removeOnFail: true,
             attempts: 2,
+            delay: 1000,
           });
         } else {
           //operation if phone number for contact country cannot be found.
@@ -170,11 +176,6 @@ export class TasksService {
                 new Date(renewal),
               );
             }
-
-            await this.paymentHistoryService.setDuesToZero({
-              type: 'contacts',
-              user: subscription.user,
-            });
 
             await this.subscriptionService.save(subscription);
 

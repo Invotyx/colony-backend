@@ -346,23 +346,22 @@ export class SmsService {
 
         if (message.status != 'sent') {
           //failure case
-          await this.saveSms(
+          return await this.saveSms(
             contact,
             influencerNumber,
             body,
             new Date(),
             type,
             message.sid,
-            'failed',
+            message.status,
           );
-          return true;
         } else {
           await this.paymentHistory.updateDues({
             cost: country.smsCost,
             type: 'sms',
             user: influencerNumber.user,
           });
-          await this.saveSms(
+          return await this.saveSms(
             contact,
             influencerNumber,
             body,
@@ -371,7 +370,6 @@ export class SmsService {
             message.sid,
             'sent',
           );
-          return true;
           //success scenario
         }
       } else {
@@ -386,6 +384,32 @@ export class SmsService {
     }
   }
 
+  public async updateStatus(sid: string, status: string, from: string) {
+    try {
+      const bc = await this.conversationsMessagesRepo.findOne({
+        where: { smsSid: sid },
+      });
+
+      const influencerNumber = await this.phoneService.findOne({
+        where: { number: from },
+      });
+      const country = await this.countryService.countryRepo.findOne({
+        where: { code: influencerNumber.country },
+      });
+
+      if (bc.status != 'sent' && status == 'sent') {
+        await this.paymentHistory.updateDues({
+          cost: country.smsCost,
+          type: 'sms',
+          user: influencerNumber.user,
+        });
+      }
+      bc.status = status;
+      return this.conversationsMessagesRepo.save(bc);
+    } catch (e) {
+      throw e;
+    }
+  }
   //#endregion
 
   //#region conversation

@@ -1,8 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { MessageBird } from 'messagebird/types';
 import { env } from 'process';
+import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { ContactFilter } from '../contacts/contact.dto';
 import { ContactsService } from '../contacts/contacts.service';
+import { PaymentHistoryService } from '../payment-history/payment-history.service';
+import { PhoneService } from '../phone/phone.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { BroadcastContactsRepository } from './repo/broadcast-contact.repo';
 import { BroadcastsRepository } from './repo/broadcast.repo';
@@ -15,7 +18,10 @@ export class BroadcastService {
     private readonly repository: BroadcastsRepository,
     private readonly bcRepo: BroadcastContactsRepository,
     private readonly smsService: SmsService,
+    private readonly phoneService: PhoneService,
     private readonly contactService: ContactsService,
+    private readonly countryService: CityCountryService,
+    private readonly paymentHistory: PaymentHistoryService,
   ) {
     this.mb = require('messagebird')(env.MESSAGEBIRD_KEY);
   }
@@ -38,7 +44,7 @@ export class BroadcastService {
     return this.repository.createQueryBuilder(alias);
   }
 
-  async createBroadcast(
+  public async createBroadcast(
     user: UserEntity,
     filters: ContactFilter,
     name: string,
@@ -50,13 +56,20 @@ export class BroadcastService {
         body: body,
         user: user,
         filters: JSON.stringify(filters),
-        scheduled: schedule ? schedule : null,
+        scheduled: schedule ? schedule : new Date(),
         name: name,
         status: schedule ? 'scheduled' : 'inProgress',
       });
     } catch (e) {
       console.log('createBroadcast', e);
       throw new BadRequestException(e);
+    }
+  }
+
+  public async reschedule(id: number, type) {
+    try {
+    } catch (e) {
+      throw e;
     }
   }
 
@@ -68,6 +81,47 @@ export class BroadcastService {
       return this.contactService.filterContacts(user.id, JSON.parse(b.filters));
     } catch (e) {
       throw new BadRequestException(e);
+    }
+  }
+
+  public async getBroadcastStats(user: UserEntity, id: number, filter: string) {
+    try {
+      const broadcast = await this.repository.findOne({
+        where: { id: id, user: user },
+      });
+
+      if (
+        filter == 'sent' ||
+        filter == 'delivered' ||
+        filter == 'undelivered' ||
+        filter == 'failed'
+      ) {
+        const [contacts, count] = await this.bcRepo.findAndCount({
+          where: {
+            broadcast: broadcast,
+            status: filter,
+          },
+          relations: ['contact'],
+        });
+        return { contacts, count };
+      }
+      throw new BadRequestException('No contacts found.');
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  public async addContactToBroadcastList(broadcast, contact, smsSid, status) {
+    try {
+      const item = await this.bcRepo.save({
+        broadcast: broadcast,
+        contact: contact,
+        smsSid: smsSid,
+        status: status,
+      });
+      return item;
+    } catch (e) {
+      throw e;
     }
   }
 
@@ -85,6 +139,31 @@ export class BroadcastService {
       return b;
     } catch (e) {
       throw new BadRequestException(e);
+    }
+  }
+
+  public async updateStatus(sid: string, status: string, from: string) {
+    try {
+      const bc = await this.bcRepo.findOne({ where: { smsSid: sid } });
+
+      const influencerNumber = await this.phoneService.findOne({
+        where: { number: from },
+      });
+      const country = await this.countryService.countryRepo.findOne({
+        where: { code: influencerNumber.country },
+      });
+
+      if (bc.status != 'sent' && status == 'sent') {
+        await this.paymentHistory.updateDues({
+          cost: country.smsCost,
+          type: 'sms',
+          user: influencerNumber.user,
+        });
+      }
+      bc.status = status;
+      return this.bcRepo.save(bc);
+    } catch (e) {
+      throw e;
     }
   }
 }

@@ -133,6 +133,20 @@ export class SmsController {
   //#region broadcast
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Post('broadcast/:id/reschedule/:filter')
+  async reschedule(
+    @LoginUser() user: UserEntity,
+    @Param('id') id: number,
+    @Param('filter') filter: string,
+  ) {
+    try {
+      return this.broadcastService.reschedule(id, filter);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Get('broadcast/:id/stats/:filter')
   async getBroadcastStats(
     @LoginUser() user: UserEntity,
@@ -140,7 +154,7 @@ export class SmsController {
     @Param('filter') filter: string,
   ) {
     try {
-      return this.broadcastService.getBroadcastStats(user,id,filter);
+      return this.broadcastService.getBroadcastStats(user, id, filter);
     } catch (error) {
       throw new BadRequestException(error);
     }

@@ -61,10 +61,19 @@ export class TasksService {
     });
 
     for (let broadcast of broadcasts) {
-      const contacts = await this.contactService.filterContacts(
-        broadcast.user.id,
-        JSON.parse(broadcast.filters),
-      );
+      let contacts;
+      if (JSON.parse(broadcast.filters).successorId == null) {
+        contacts = await this.contactService.filterContacts(
+          broadcast.user.id,
+          JSON.parse(broadcast.filters),
+        );
+      } else {
+        contacts = await this.broadcastService.getBroadcastStats(
+          broadcast.user,
+          JSON.parse(broadcast.filters).successorId,
+          JSON.parse(broadcast.filters).filter,
+        );
+      }
       broadcast.status = 'inProgress';
 
       await this.broadcastService.save(broadcast);

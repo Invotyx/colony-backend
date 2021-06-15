@@ -66,10 +66,19 @@ export class BroadcastService {
     }
   }
 
-  public async reschedule(id: number, type) {
+  public async reschedule(id: number, type: string) {
     try {
+      const b = await this.repository.findOne({ where: { id: id } });
+      return this.repository.save({
+        body: b.body,
+        user: b.user,
+        filters: JSON.stringify({ successorId: b.id, filter: type }),
+        scheduled: new Date(),
+        name: b.name + ' ' + type,
+        status: 'scheduled',
+      });
     } catch (e) {
-      throw e;
+      throw new BadRequestException(e);
     }
   }
 
@@ -97,6 +106,7 @@ export class BroadcastService {
         filter == 'failed'
       ) {
         const [contacts, count] = await this.bcRepo.findAndCount({
+          select: ['contact'],
           where: {
             broadcast: broadcast,
             status: filter,

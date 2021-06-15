@@ -69,6 +69,9 @@ export class BroadcastsEntity {
   @OneToMany(() => InfluencerLinksTrackingEntity, (track) => track.broadcast)
   public links!: InfluencerLinksTrackingEntity[];
 
+  @ManyToOne(() => BroadcastsEntity, (b) => b.id, { nullable: true })
+  public successor?: BroadcastsEntity;
+
   @AfterLoad()
   async getLastConversationMessage() {
     const innerSelect = getRepository(ConversationMessagesEntity)

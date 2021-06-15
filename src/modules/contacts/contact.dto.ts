@@ -119,4 +119,10 @@ export class ContactFilter {
   @ApiPropertyOptional()
   @IsOptional()
   public joinDate?: Date;
+
+  @IsOptional()
+  public successorId?: number;
+
+  @IsOptional()
+  public filter?: string;
 }

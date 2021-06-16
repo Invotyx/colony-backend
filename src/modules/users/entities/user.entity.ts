@@ -1,5 +1,6 @@
 import { classToPlain, Exclude } from 'class-transformer';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
+import { FavoriteContactsEntity } from 'src/modules/contacts/entities/favruite-contacts.entity';
 import { InfluencerContactsEntity } from 'src/modules/contacts/entities/influencer-contacts.entity';
 import { InfluencerLinksEntity } from 'src/modules/influencer-links/entities/influencer-links.entity';
 import { LanguageEntity } from 'src/modules/language/entities/language.entity';
@@ -164,6 +165,20 @@ export class UserEntity {
     cascade: true,
   })
   public broadcasts!: BroadcastsEntity;
+
+  @OneToMany(() => FavoriteContactsEntity, (cToI) => cToI.user)
+  public influencerFavorites!: FavoriteContactsEntity[];
+
+  @ManyToMany(() => ContactsEntity, (c) => c.influencer, {
+    eager: false,
+    nullable: true,
+  })
+  @JoinTable({
+    name: TABLES.FAVORITE_CONTACTS.name,
+    joinColumn: { name: 'contactId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'userId', referencedColumnName: 'id' },
+  })
+  favorites: ContactsEntity[];
 
   @OneToOne(() => CityEntity, { nullable: true, eager: true })
   @JoinColumn()

@@ -173,7 +173,7 @@ export class SmsController {
         broadcast.body,
         broadcast.scheduled,
       );
-
+      b.user = b.user.id as any;
       const contacts = await this.contactService.filterContacts(
         user.id,
         broadcast.filters,

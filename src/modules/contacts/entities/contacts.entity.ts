@@ -18,6 +18,7 @@ import { InfluencerLinksTrackingEntity } from '../../influencer-links/entities/i
 import { BroadcastsContactsEntity } from '../../sms/entities/broadcast-contacts.entity';
 import { ConversationsEntity } from '../../sms/entities/conversations.entity';
 import { UserEntity } from '../../users/entities/user.entity';
+import { FavoriteContactsEntity } from './favruite-contacts.entity';
 import { InfluencerContactsEntity } from './influencer-contacts.entity';
 
 enum gender {
@@ -78,6 +79,9 @@ export class ContactsEntity {
   @OneToMany(() => InfluencerLinksTrackingEntity, (track) => track.contact)
   public links!: InfluencerLinksTrackingEntity[];
 
+  @OneToMany(() => FavoriteContactsEntity, (cToI) => cToI.contact)
+  public influencerFavorites!: FavoriteContactsEntity[];
+
   @OneToMany(() => BroadcastsContactsEntity, (b) => b.contact)
   public broadcast!: [];
 
@@ -91,6 +95,9 @@ export class ContactsEntity {
     inverseJoinColumn: { name: 'userId', referencedColumnName: 'id' },
   })
   user: UserEntity[];
+
+  @ManyToMany(() => UserEntity, (u) => u.favorites)
+  public influencer!: UserEntity[];
 
   @CreateDateColumn()
   public createdAt: Date;

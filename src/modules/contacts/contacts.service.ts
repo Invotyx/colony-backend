@@ -140,7 +140,7 @@ export class ContactsService {
       } else {
         query =
           query +
-          ` date_part('day', age(c."dob"::date)) = date_part('day', age(CURRENT_DATE::date))
+          `AND date_part('day', age(c."dob"::date)) = date_part('day', age(CURRENT_DATE::date))
             AND date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))`;
       }
     }

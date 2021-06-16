@@ -18,7 +18,7 @@ import { InfluencerLinksTrackingEntity } from '../../influencer-links/entities/i
 import { BroadcastsContactsEntity } from '../../sms/entities/broadcast-contacts.entity';
 import { ConversationsEntity } from '../../sms/entities/conversations.entity';
 import { UserEntity } from '../../users/entities/user.entity';
-import { FavoriteContactsEntity } from './favruite-contacts.entity';
+import { FavoriteContactsEntity } from './favorite-contacts.entity';
 import { InfluencerContactsEntity } from './influencer-contacts.entity';
 
 enum gender {
@@ -97,7 +97,7 @@ export class ContactsEntity {
   user: UserEntity[];
 
   @ManyToMany(() => UserEntity, (u) => u.favorites)
-  public influencer!: UserEntity[];
+  public influencers!: UserEntity[];
 
   @CreateDateColumn()
   public createdAt: Date;

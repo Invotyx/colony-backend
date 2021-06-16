@@ -1,6 +1,6 @@
 import { classToPlain, Exclude } from 'class-transformer';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
-import { FavoriteContactsEntity } from 'src/modules/contacts/entities/favruite-contacts.entity';
+import { FavoriteContactsEntity } from 'src/modules/contacts/entities/favorite-contacts.entity';
 import { InfluencerContactsEntity } from 'src/modules/contacts/entities/influencer-contacts.entity';
 import { InfluencerLinksEntity } from 'src/modules/influencer-links/entities/influencer-links.entity';
 import { LanguageEntity } from 'src/modules/language/entities/language.entity';
@@ -169,14 +169,14 @@ export class UserEntity {
   @OneToMany(() => FavoriteContactsEntity, (cToI) => cToI.user)
   public influencerFavorites!: FavoriteContactsEntity[];
 
-  @ManyToMany(() => ContactsEntity, (c) => c.influencer, {
+  @ManyToMany(() => ContactsEntity, (c) => c.influencers, {
     eager: false,
     nullable: true,
   })
   @JoinTable({
     name: TABLES.FAVORITE_CONTACTS.name,
-    joinColumn: { name: 'contactId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'userId', referencedColumnName: 'id' },
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'contactId', referencedColumnName: 'id' },
   })
   favorites: ContactsEntity[];
 

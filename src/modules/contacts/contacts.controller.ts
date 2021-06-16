@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -124,6 +125,68 @@ export class ContactsController {
     try {
       if (!image) return await this.service.updateContact(id, data);
       else return await this.service.updateContact(id, data, image);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Post('favorite/:contactId')
+  async addToFavorites(
+    @LoginUser() _user: UserEntity,
+    @Param('contactId') contactId: number,
+  ) {
+    try {
+      return this.service.addToFavorites(_user, contactId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('favorite/:contactId')
+  async checkFavorites(
+    @LoginUser() _user: UserEntity,
+    @Param('contactId') contactId: number,
+  ) {
+    try {
+      return this.service.checkFavorites(_user, contactId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Delete('favorite/:contactId')
+  async removeFromFavorites(
+    @LoginUser() _user: UserEntity,
+    @Param('contactId') contactId: number,
+  ) {
+    try {
+      return this.service.removeFromFavorites(_user, contactId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('favorites')
+  async myFavorites(@LoginUser() _user: UserEntity) {
+    try {
+      return this.service.myFavorites(_user);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Delete('remove-from-list/:contactId')
+  async removeFromList(
+    @LoginUser() _user: UserEntity,
+    @Param('contactId') contactId: number,
+  ) {
+    try {
+      return this.service.removeFromList(_user, contactId);
     } catch (e) {
       throw e;
     }

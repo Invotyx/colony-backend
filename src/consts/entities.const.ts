@@ -1,6 +1,6 @@
 import { TimezonesEntity } from '../entities/timezones.entity';
 import { ContactsEntity } from '../modules/contacts/entities/contacts.entity';
-import { FavoriteContactsEntity } from '../modules/contacts/entities/favruite-contacts.entity';
+import { FavoriteContactsEntity } from '../modules/contacts/entities/favorite-contacts.entity';
 import { InfluencerContactsEntity } from '../modules/contacts/entities/influencer-contacts.entity';
 import { ButtonsEntity } from '../modules/content/entities/buttons.entity';
 import { ImagesEntity } from '../modules/content/entities/images.entity';

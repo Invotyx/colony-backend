@@ -234,7 +234,7 @@ export class UsersController {
         };
         return { user };
       }
-      throw new BadRequestException("Influencer not found in our system");
+      throw new BadRequestException('Influencer not found in our system');
     } catch (e) {
       throw e;
     }

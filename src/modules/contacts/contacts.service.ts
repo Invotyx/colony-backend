@@ -18,6 +18,7 @@ import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/services/users.service';
 import { ContactDto, ContactFilter } from './contact.dto';
 import { ContactsRepository } from './repo/contact.repo';
+import { FavoriteContactRepository } from './repo/favorite-contact.repo';
 import { InfluencerContactRepository } from './repo/influencer-contact.repo';
 
 @Injectable()
@@ -30,6 +31,7 @@ export class ContactsService {
     @Inject(forwardRef(() => SmsService))
     private readonly smsService: SmsService,
     private readonly phoneService: PhoneService,
+    private readonly favoriteRepo: FavoriteContactRepository,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -364,7 +366,89 @@ export class ContactsService {
         throw new BadRequestException('Contact does not exist in our system.');
       }
     } catch (e) {
-      throw e;
+      throw new BadRequestException(e);
+    }
+  }
+
+  async addToFavorites(_user: UserEntity, contactId: number) {
+    try {
+      const user = await this.users.findOne({
+        where: { id: _user.id },
+        relations: ['favorites'],
+      });
+      const contact = await this.findOne({ where: { id: contactId } });
+      if (contact) {
+        user.favorites.push(contact);
+        await this.users.save(user);
+        return { message: 'Contact marked as favorite.' };
+      }
+      throw new BadRequestException('Contact not found');
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+  async checkFavorites(_user: UserEntity, contactId: number) {
+    try {
+      const check = await this.favoriteRepo.findOne({
+        where: { userId: _user.id, contactId: contactId },
+      });
+      if (check) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+  async removeFromFavorites(_user: UserEntity, contactId: number) {
+    try {
+      const user = await this.users.findOne({
+        where: { id: _user.id },
+        relations: ['favorites'],
+      });
+      const contact = await this.findOne({ where: { id: contactId } });
+      if (contact) {
+        await this.favoriteRepo.delete({ user: user, contact: contact });
+        return { message: 'Contact removed from favorite list.' };
+      }
+      throw new BadRequestException('Contact not found');
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+  async removeFromList(_user: UserEntity, contactId: number) {
+    try {
+      const contact = await this.findOne({ where: { id: contactId } });
+      if (contact) {
+        const check = await this.influencerContactRepo.findOne({
+          where: { user: _user, contact: contact },
+        });
+        await this.influencerContactRepo.delete(check);
+        return { message: 'Contact removed from list.' };
+      }
+      throw new BadRequestException('Contact not found');
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+  async myFavorites(_user: UserEntity) {
+    try {
+      const user = await this.users.findOne({
+        where: { id: _user.id },
+        relations: ['favorites'],
+      });
+
+      if (user && user.favorites) {
+        return user.favorites;
+      }
+
+      throw new BadRequestException('User not found.');
+    } catch (e) {
+      throw new BadRequestException(e);
     }
   }
 }

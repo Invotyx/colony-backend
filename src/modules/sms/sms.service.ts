@@ -286,20 +286,30 @@ export class SmsService {
     return message;
   }
 
-  async initiateSendSms(
-    inf: UserEntity,
-    contact: string,
-    message: string,
-    phoneNumber: string,
-  ) {
+  async initiateSendSms(inf: UserEntity, contact: string, message: string) {
     try {
       const _contact = await this.contactService.findOne({
         where: { phoneNumber: contact, user: inf },
       });
       if (_contact) {
-        const _inf_phone = await this.phoneService.findOne({
-          where: { user: inf, number: phoneNumber },
+        const conversation = await this.conversationsRepo.findOne({
+          where: { contact: _contact, user: inf },
+          relations: ['user', 'contact', 'phone'],
         });
+
+        let _inf_phone = conversation.phone;
+        if (_inf_phone && _inf_phone.status != 'in-use') {
+          const __inf_phone = await this.phoneService.findOne({
+            where: { user: inf, country: _contact.cCode, status: 'in-use' },
+          });
+          if (__inf_phone) {
+            _inf_phone = __inf_phone;
+          } else {
+            throw new BadRequestException(
+              'You do not have any number associated to your account to send sms to this country',
+            );
+          }
+        }
         if (_inf_phone)
           await this.sendSms(
             _contact,

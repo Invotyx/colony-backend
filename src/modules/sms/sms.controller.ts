@@ -120,10 +120,9 @@ export class SmsController {
     @LoginUser() inf: UserEntity,
     @Body('to') contact: string,
     @Body('message') message: string,
-    @Body('from') phoneNumber: string,
   ) {
     try {
-      return this.service.initiateSendSms(inf, contact, message, phoneNumber);
+      return this.service.initiateSendSms(inf, contact, message);
     } catch (e) {
       throw e;
     }

@@ -91,6 +91,10 @@ export class ContactFilter {
 
   @ApiPropertyOptional()
   @IsOptional()
+  public dob?: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsBoolean()
   public newContacts?: boolean;
 

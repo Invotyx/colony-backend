@@ -129,6 +129,22 @@ export class ContactsService {
       }
     }
 
+    //dob
+    if (data.newContacts) {
+      if (!query.includes('WHERE')) {
+        query =
+          query +
+          ` WHERE date_part('day', age(c."dob"::date)) = date_part('day', age(CURRENT_DATE::date))
+            AND date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))
+          `;
+      } else {
+        query =
+          query +
+          ` date_part('day', age(c."dob"::date)) = date_part('day', age(CURRENT_DATE::date))
+            AND date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))`;
+      }
+    }
+
     //gender
     if (data.gender) {
       if (!query.includes('WHERE')) {
@@ -206,10 +222,8 @@ export class ContactsService {
         left join "influencer_contacts" "ic" on "ic"."contactId"="c"."id"
         left join "users" "u" on ("u"."id"="ic"."userId" and "u"."id"=${user.id} )
         where extract(month from "c"."dob") = extract(month from current_date)
-        and extract(day from "c"."dob") between extract(day from current_date)
-        and extract(day from current_date+14);
+        and extract(day from "c"."dob") = extract(day from current_date);
       `);
-
       return contacts;
     } catch (e) {
       throw new BadRequestException(e);

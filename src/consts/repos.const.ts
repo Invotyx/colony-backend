@@ -1,4 +1,5 @@
 import { ContactsRepository } from '../modules/contacts/repo/contact.repo';
+import { FavoriteContactRepository } from '../modules/contacts/repo/favorite-contact.repo';
 import { InfluencerContactRepository } from '../modules/contacts/repo/influencer-contact.repo';
 import { ButtonsRepository } from '../modules/content/repos/buttons.repo';
 import { FaqsRepository } from '../modules/content/repos/faqs.repo';
@@ -9,8 +10,9 @@ import { SectionsRepository } from '../modules/content/repos/sections.repo';
 import { InfluencerLinksTrackingRepository } from '../modules/influencer-links/repo/influencer-links-tracking.repo';
 import { InfluencerLinksRepository } from '../modules/influencer-links/repo/influencer-links.repo';
 import { LanguageRepository } from '../modules/language/languages.repo';
-import { PhonesRepository } from '../modules/phone/phone.repo';
+import { PaymentDuesRepository } from '../modules/payment-history/due-payment.repo';
 import { PaymentHistoryRepository } from '../modules/payment-history/payment-history.repo';
+import { PhonesRepository } from '../modules/phone/phone.repo';
 import { PaymentMethodsRepository } from '../modules/products/payments/payment-methods.repo';
 import { PlansRepository } from '../modules/products/plan/plans.repo';
 import { SubscriptionsRepository } from '../modules/products/subscription/subscriptions.repo';
@@ -28,7 +30,6 @@ import { RoleRepository } from '../repos/roles.repo';
 import { CityRepository } from '../services/city-country/repos/city.repo';
 import { CountryRepository } from '../services/city-country/repos/country.repo';
 import { TimezonesRepository } from '../services/city-country/repos/timezone.repo';
-import { PaymentDuesRepository } from 'src/modules/payment-history/due-payment.repo';
 
 export const REPOS = [
   PermissionRepository,
@@ -62,4 +63,5 @@ export const REPOS = [
   ConversationMessagesRepository,
   PaymentHistoryRepository,
   PaymentDuesRepository,
+  FavoriteContactRepository,
 ];

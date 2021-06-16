@@ -82,7 +82,10 @@ export class BroadcastsEntity {
       .orderBy('"createdAt"', 'DESC')
       .limit(1);
 
-    this.lastMessage = (await innerSelect.getRawOne()).sms;
-    this.lastSmsTime = (await innerSelect.getRawOne()).createdAt;
+    const val = await innerSelect.getOne();
+    if (val) {
+      this.lastMessage = val.sms;
+      this.lastSmsTime = val.createdAt;
+    }
   }
 }

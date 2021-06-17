@@ -140,9 +140,7 @@ export class BroadcastService {
       const b = await this.repository.find({
         where: { user: user },
       });
-      console.log(b);
       for (let i of b) {
-        console.log(i);
         i.contacts = (await this.contactService.filterContacts(
           user.id,
           JSON.parse(i.filters),

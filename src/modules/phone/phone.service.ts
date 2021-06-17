@@ -292,10 +292,10 @@ export class PhoneService {
                 const number = await this.client.incomingPhoneNumbers.create({
                   phoneNumber: num,
                   smsMethod: 'POST',
-                  smsUrl:
-                    'https://colony.invotyx.gq/api/sms/receive-sms/webhook',
+                  smsUrl: env.API_URL + '/api/sms/receive-sms/webhook',
                   statusCallback:
-                    'https://colony.invotyx.gq/api/sms/receive-sms-status-callback/webhook',
+                    env.API_URL +
+                    '/api/sms/receive-sms-status-callback/webhook',
                   statusCallbackMethod: 'POST',
                 });
                 const date = new Date(); // Now
@@ -404,9 +404,9 @@ export class PhoneService {
             let number = await this.client.incomingPhoneNumbers.create({
               phoneNumber: num,
               smsMethod: 'POST',
-              smsUrl: 'https://colony.invotyx.gq/api/sms/receive-sms/webhook',
+              smsUrl: env.API_URL + '/api/sms/receive-sms/webhook',
               statusCallback:
-                'https://colony.invotyx.gq/api/sms/receive-sms-status-callback/webhook',
+                env.API_URL + '/api/sms/receive-sms-status-callback/webhook',
               statusCallbackMethod: 'POST',
             });
 

@@ -131,8 +131,44 @@ export class ContactsService {
       }
     }
 
+    //new contacts week
+    if (data.newContacts_week) {
+      if (!query.includes('WHERE')) {
+        query =
+          query +
+          ` WHERE date_part('month', age(c."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
+            AND date_part('day', age(c."createdAt"::date)) between (date_part('day', age(CURRENT_DATE::date))-7)
+            and date_part('day', age(CURRENT_DATE::date))
+          `;
+      } else {
+        query =
+          query +
+          ` and  date_part('month', age(c."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
+            AND date_part('day', age(c."createdAt"::date)) between (date_part('day', age(CURRENT_DATE::date))-7) and
+            date_part('day', age(CURRENT_DATE::date))
+            `;
+      }
+    }
+
+    //new contacts month
+    if (data.newContacts_month) {
+      if (!query.includes('WHERE')) {
+        query =
+          query +
+          ` WHERE date_part('month', age(c."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
+            AND date_part('day', age(c."createdAt"::date)) between 1 and date_part('day', age(CURRENT_DATE::date))
+          `;
+      } else {
+        query =
+          query +
+          ` and  date_part('month', age(c."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
+            AND date_part('day', age(c."createdAt"::date)) between 1 and date_part('day', age(CURRENT_DATE::date))
+            `;
+      }
+    }
+
     //dob today
-    if (data.dob) {
+    if (data.dob_today) {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -144,6 +180,40 @@ export class ContactsService {
           query +
           `AND date_part('day', age(c."dob"::date)) = date_part('day', age(CURRENT_DATE::date))
             AND date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))`;
+      }
+    }
+
+    //dob week
+    if (data.dob_week) {
+      if (!query.includes('WHERE')) {
+        query =
+          query +
+          ` WHERE date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))
+            AND date_part('day', age(c."dob"::date)) between date_part('day', age(CURRENT_DATE::date))
+            and (date_part('day', age(CURRENT_DATE::date))+7)
+          `;
+      } else {
+        query =
+          query +
+          `AND  date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))
+            AND date_part('day', age(c."dob"::date)) between date_part('day', age(CURRENT_DATE::date))
+            and (date_part('day', age(CURRENT_DATE::date))+7)`;
+      }
+    }
+    //dob month
+    if (data.dob_month) {
+      if (!query.includes('WHERE')) {
+        query =
+          query +
+          ` WHERE date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))
+            AND date_part('day', age(c."dob"::date)) >= date_part('day', age(CURRENT_DATE::date))
+          `;
+      } else {
+        query =
+          query +
+          ` WHERE date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))
+            AND date_part('day', age(c."dob"::date)) >= date_part('day', age(CURRENT_DATE::date))
+          `;
       }
     }
 
@@ -438,8 +508,6 @@ export class ContactsService {
           where: { user: _user, contact: contact },
         });
         const check2 = await this.influencerContactRepo.remove(check);
-        console.log(check2);
-
         return { message: 'Contact removed from list.' };
       }
       throw new BadRequestException('Contact not found');

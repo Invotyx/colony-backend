@@ -91,12 +91,66 @@ export class ContactFilter {
 
   @ApiPropertyOptional()
   @IsOptional()
-  public dob?: Date;
+  public dob_today?: Boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public dob_week?: Boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public dob_month?: Boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public contacted_week?: Boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public contacted_month?: Boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public contacted_year?: Boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public never_contacted?: Boolean;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
   public newContacts?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  public newContacts_week?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  public newContacts_month?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  public hasIg?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  public hasFb?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  public hasTw?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  public hasLi?: boolean;
 
   @ApiPropertyOptional({ enum: ['male', 'female', 'non_binary'] })
   @IsOptional()

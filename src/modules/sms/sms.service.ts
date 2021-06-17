@@ -321,6 +321,11 @@ export class SmsService {
             }),
             'outBound',
           );
+        
+      } else {
+        throw new BadRequestException(
+          'You cannot send message to contact who has not subscribed you yet.',
+        );
       }
     } catch (e) {
       throw e;

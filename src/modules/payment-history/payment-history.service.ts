@@ -36,11 +36,11 @@ export class PaymentHistoryService {
       where: { costType: dues.type, user: dues.user },
     });
     if (due) {
-      due.cost = due.cost + dues.cost;
+      due.cost = due.cost + parseFloat(dues.cost);
       await this.duesRepo.save(due);
     } else {
       await this.duesRepo.save({
-        cost: dues.cost,
+        cost: parseFloat(dues.cost),
         costType: dues.type,
         user: dues.user,
       });

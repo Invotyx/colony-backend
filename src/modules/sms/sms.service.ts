@@ -100,11 +100,6 @@ export class SmsService {
           where: { phoneNumber: sender },
         });
 
-        let rel = await this.contactService.checkRelation(
-          influencerNumber.user,
-          contact,
-        );
-
         let preset_welcome: any = await this.presetRepo.findOne({
           where: { trigger: 'welcome', user: influencerNumber.user },
         });
@@ -114,8 +109,12 @@ export class SmsService {
             body: 'Welcome from ${inf_name}.',
           };
         }
-
         if (contact) {
+          let rel = await this.contactService.checkRelation(
+            influencerNumber.user,
+            contact,
+          );
+
           const conversation = await this.conversationsRepo.findOne({
             where: { contact: contact, phone: influencerNumber },
           });

@@ -107,8 +107,71 @@ export class ContactsService {
     influencerId: number,
     data: ContactFilter,
   ): Promise<{ contacts: ContactsEntity[]; count: number }> {
-    let query = `SELECT * FROM ${TABLES.CONTACTS.name} c Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
+    let query = `SELECT c.* FROM ${TABLES.CONTACTS.name} c Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
 
+    //contacted_week
+    if (data.contacted_week) {
+      query =
+        query +
+        `
+        left join ${TABLES.CONVERSATIONS.name} co on ("co"."userId"=${influencerId} and "co"."contactId"="c"."id")
+        left join ${TABLES.CONVERSATION_MESSAGES.name} com on
+        ("com"."conversationsId"="co"."id" and
+          (
+            date_part('month', age(com."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
+            and
+            date_part('day', age(com."createdAt"::date)) between
+            (date_part('day', age(CURRENT_DATE::date))-7)
+            and
+            date_part('day', age(CURRENT_DATE::date))
+          )
+        )
+      `;
+    }
+
+    //contacted_month
+    if (data.contacted_month) {
+      query =
+        query +
+        `
+        left join ${TABLES.CONVERSATIONS.name} co on ("co"."userId"=${influencerId} and "co"."contactId"="c"."id")
+        left join ${TABLES.CONVERSATION_MESSAGES.name} com on
+        ("com"."conversationsId"="co"."id" and
+          (
+            date_part('month', age(com."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
+            and
+            date_part('day', age(com."createdAt"::date)) between
+            1 and date_part('day', age(CURRENT_DATE::date))
+          )
+        )
+      `;
+    }
+
+    //contacted_year
+    if (data.contacted_year) {
+      query =
+        query +
+        `
+        left join ${TABLES.CONVERSATIONS.name} co on ("co"."userId"=${influencerId} and "co"."contactId"="c"."id")
+        left join ${TABLES.CONVERSATION_MESSAGES.name} com on
+        ("com"."conversationsId"="co"."id" and
+          (
+            date_part('year', age(com."createdAt"::date)) = date_part('year', age(CURRENT_DATE::date))
+          )
+        )
+      `;
+    }
+
+    //never_contacted
+    if (data.never_contacted) {
+      query =
+        query +
+        `
+        left join ${TABLES.CONVERSATIONS.name} co on ("co"."userId"=${influencerId} and "co"."contactId"="c"."id")
+        left join ${TABLES.CONVERSATION_MESSAGES.name} com on
+        ("com"."conversationsId"="co"."id" and "com"."type"<>'inBound')
+      `;
+    }
     //age
     if (data.ageFrom && data.ageTo) {
       if (!query.includes('WHERE')) {
@@ -125,9 +188,17 @@ export class ContactsService {
     //new contacts
     if (data.newContacts) {
       if (!query.includes('WHERE')) {
-        query = query + ` WHERE date_part('day', age(c."createdAt"::date)) < 2`;
+        query =
+          query +
+          ` WHERE date_part('month', age(c."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
+            and date_part('day', age(c."createdAt"::date)) between (date_part('day', age(CURRENT_DATE::date))-2)
+            and date_part('day', age(CURRENT_DATE::date))`;
       } else {
-        query = query + ` and date_part('day', age(c."createdAt"::date)) < 2`;
+        query =
+          query +
+          `and date_part('month', age(c."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
+           and date_part('day', age(c."createdAt"::date)) between (date_part('day', age(CURRENT_DATE::date))-2)
+           and date_part('day', age(CURRENT_DATE::date))`;
       }
     }
 

@@ -94,9 +94,8 @@ export class SmsService {
         where: { number: receiver, status: 'in-use', country: fromCountry },
         relations: ['user'],
       });
-
       if (influencerNumber) {
-        let contact = await this.contactService.findOne({
+        const contact = await this.contactService.findOne({
           where: { phoneNumber: sender },
         });
 
@@ -110,9 +109,9 @@ export class SmsService {
           };
         }
         if (contact) {
-          let rel = await this.contactService.checkRelation(
-            influencerNumber.user,
-            contact,
+          const rel = await this.contactService.checkRelation(
+            influencerNumber.user.id,
+            contact.id,
           );
 
           const conversation = await this.conversationsRepo.findOne({

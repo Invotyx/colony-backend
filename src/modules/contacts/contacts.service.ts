@@ -358,8 +358,10 @@ export class ContactsService {
     }
   }
 
-  async checkRelation(user: UserEntity, contact: ContactsEntity) {
-    return this.findOne({ where: { user: user, contact: contact } });
+  async checkRelation(userId: number, contactId: number) {
+    return this.influencerContactRepo.findOne({
+      where: { userId: userId, contactId: contactId },
+    });
   }
 
   async upcomingBirthdays(user: UserEntity) {

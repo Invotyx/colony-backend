@@ -437,7 +437,7 @@ export class ContactsService {
         const check = await this.influencerContactRepo.findOne({
           where: { user: _user, contact: contact },
         });
-        const check2 = await this.influencerContactRepo.delete(check);
+        const check2 = await this.influencerContactRepo.remove(check);
         console.log(check2);
 
         return { message: 'Contact removed from list.' };

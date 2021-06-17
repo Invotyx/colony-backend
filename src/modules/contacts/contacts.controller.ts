@@ -46,13 +46,14 @@ export class ContactsController {
     }
   }
 
-  @Auth({})
+  @Auth({roles:[ROLES.ADMIN,ROLES.INFLUENCER]})
   @Get('filter')
   async filterContactsByAge(
-    @GetUser() user: UserEntity,
+    @LoginUser() user: UserEntity,
     @Query() data: ContactFilter,
   ) {
     try {
+      
       return await this.service.filterContacts(user.id, data);
     } catch (e) {
       throw e;

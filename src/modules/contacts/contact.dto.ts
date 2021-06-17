@@ -81,12 +81,10 @@ export class PaginationDto {
 export class ContactFilter {
   @ApiPropertyOptional()
   @IsOptional()
-  @IsNumber()
   public ageFrom?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsNumber()
   public ageTo?: number;
 
   @ApiPropertyOptional()
@@ -119,37 +117,30 @@ export class ContactFilter {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsBoolean()
   public newContacts?: boolean;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsBoolean()
   public newContacts_week?: boolean;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsBoolean()
   public newContacts_month?: boolean;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsBoolean()
   public hasIg?: boolean;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsBoolean()
   public hasFb?: boolean;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsBoolean()
   public hasTw?: boolean;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsBoolean()
   public hasLi?: boolean;
 
   @ApiPropertyOptional({ enum: ['male', 'female', 'non_binary'] })

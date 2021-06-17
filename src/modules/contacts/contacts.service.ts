@@ -131,8 +131,8 @@ export class ContactsService {
       }
     }
 
-    //dob
-    if (data.newContacts) {
+    //dob today
+    if (data.dob) {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -437,7 +437,9 @@ export class ContactsService {
         const check = await this.influencerContactRepo.findOne({
           where: { user: _user, contact: contact },
         });
-        await this.influencerContactRepo.delete(check);
+        const check2 = await this.influencerContactRepo.delete(check);
+        console.log(check2);
+
         return { message: 'Contact removed from list.' };
       }
       throw new BadRequestException('Contact not found');

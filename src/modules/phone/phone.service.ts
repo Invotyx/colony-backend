@@ -340,10 +340,10 @@ export class PhoneService {
                       {
                         phoneNumber: num,
                         smsMethod: 'POST',
-                        smsUrl:
-                          'https://colony.invotyx.gq/api/sms/receive-sms/webhook',
+                        smsUrl: env.API_URL + '/api/sms/receive-sms/webhook',
                         statusCallback:
-                          'https://colony.invotyx.gq/api/sms/receive-sms-status-callback/webhook',
+                          env.API_URL +
+                          '/api/sms/receive-sms-status-callback/webhook',
                         statusCallbackMethod: 'POST',
                       },
                     );

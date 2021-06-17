@@ -287,6 +287,10 @@ export class ContactsService {
     }
   }
 
+  async checkRelation(user: UserEntity, contact: ContactsEntity) {
+    return this.findOne({ where: { user: user, contact: contact } });
+  }
+
   async upcomingBirthdays(user: UserEntity) {
     try {
       const contacts = await this.repository.query(`

@@ -100,6 +100,11 @@ export class SmsService {
           where: { phoneNumber: sender },
         });
 
+        let rel = await this.contactService.checkRelation(
+          influencerNumber.user,
+          contact,
+        );
+
         let preset_welcome: any = await this.presetRepo.findOne({
           where: { trigger: 'welcome', user: influencerNumber.user },
         });
@@ -114,66 +119,32 @@ export class SmsService {
           const conversation = await this.conversationsRepo.findOne({
             where: { contact: contact, phone: influencerNumber },
           });
-          console.log('conversation found');
-          if (conversation) {
-            const messages = await this.conversationsMessagesRepo.find({
-              where: { conversations: conversation },
-            });
 
-            if (messages && messages.length > 0) {
-              await this.saveSms(
-                contact,
-                influencerNumber,
-                body,
-                receivedAt,
-                'inBound',
-                sid,
-              );
-              console.log('saved as regular inbound sms');
-              //this is just a normal sms
-            } else {
-              console.log('conversation found but sms count is 0');
-              // contact already exists but not subscribed to this influencer
-              // send welcome sms
-              // send profile completion sms if not completed yet
-              await this.contactOnboarding(
-                sender,
-                influencerNumber,
-                body,
-                receivedAt,
-                sid,
-                preset_welcome,
-                fromCountry,
-              );
-            }
-          } else {
-            console.log('conversation not found but contact exists');
-            //contact already exists, subscribed to new influencer.
-            await this.contactOnboarding(
-              sender,
+          if (rel && conversation) {
+            console.log('conversation found');
+            await this.saveSms(
+              contact,
               influencerNumber,
               body,
               receivedAt,
+              'inBound',
               sid,
-              preset_welcome,
-              fromCountry,
             );
+            console.log('saved as regular inbound sms');
+            //this is just a normal sms
+            return 200;
           }
-        } else {
-          // new contact onboarding.
-          // send welcome sms
-          // send profile completion sms
-          console.log('new contact onboard.');
-          await this.contactOnboarding(
-            sender,
-            influencerNumber,
-            body,
-            receivedAt,
-            sid,
-            preset_welcome,
-            fromCountry,
-          );
         }
+        await this.contactOnboarding(
+          sender,
+          influencerNumber,
+          body,
+          receivedAt,
+          sid,
+          preset_welcome,
+          fromCountry,
+        );
+        return 200;
       } else {
         console.log(
           'Influencer not found. Error generated. Returned 200 to twillio hook.',
@@ -321,7 +292,6 @@ export class SmsService {
             }),
             'outBound',
           );
-        
       } else {
         throw new BadRequestException(
           'You cannot send message to contact who has not subscribed you yet.',

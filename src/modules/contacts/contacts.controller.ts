@@ -191,4 +191,15 @@ export class ContactsController {
       throw e;
     }
   }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('specific-countries')
+  async findContactSpecificCountries(@LoginUser() _user: UserEntity) {
+    
+    try {
+      return this.service.findContactSpecificCountries(_user);
+    } catch (e) {
+      throw e;
+    }
+  }
 }

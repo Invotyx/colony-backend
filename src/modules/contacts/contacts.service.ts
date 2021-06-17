@@ -390,16 +390,15 @@ export class ContactsService {
 
   async findContactSpecificCountries(_user: UserEntity) {
     try {
-      `SELECT * from contacts c left join influencer_contacts ic on (c.id=ic.contactId and ic.userId=1) `;
-      const countries = this.repository.find({
-        select: ['country'],
-        where: { user: _user },
-        
-      });
+      const countries = await this.repository.query(`
+          SELECT DISTINCT "c".* from "phones" "p" left join "country" "c" on ("c"."code"="p"."country" ) where "p"."userId"=${_user.id};
+          `);
+      return countries;
     } catch (e) {
       throw new BadRequestException(e);
     }
   }
+
   async checkFavorites(_user: UserEntity, contactId: number) {
     try {
       const check = await this.favoriteRepo.findOne({

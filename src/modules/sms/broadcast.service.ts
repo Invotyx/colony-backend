@@ -121,6 +121,14 @@ export class BroadcastService {
     }
   }
 
+  public async getBroadcastMessages(bid:number) {
+    try {
+      
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
   public async addContactToBroadcastList(broadcast, contact, smsSid, status) {
     try {
       const item = await this.bcRepo.save({

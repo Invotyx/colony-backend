@@ -9,7 +9,7 @@ import {
   Put,
   Query,
   UploadedFile,
-  UseInterceptors
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
@@ -45,14 +45,13 @@ export class ContactsController {
     }
   }
 
-  @Auth({roles:[ROLES.ADMIN,ROLES.INFLUENCER]})
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Get('filter')
   async filterContactsByAge(
     @LoginUser() user: UserEntity,
     @Query() data: ContactFilter,
   ) {
     try {
-      
       return this.service.filterContacts(user.id, data);
     } catch (e) {
       throw e;
@@ -120,11 +119,10 @@ export class ContactsController {
   async updateContact(
     @Param('urlId') id: string,
     @Body() data: ContactDto,
-    @UploadedFile() image?: any,
+    @UploadedFile() image: any,
   ) {
     try {
-      if (!image) return this.service.updateContact(id, data);
-      else return this.service.updateContact(id, data, image);
+      return this.service.updateContact(id, data, image);
     } catch (e) {
       throw e;
     }
@@ -195,7 +193,6 @@ export class ContactsController {
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Get('specific-countries')
   async findContactSpecificCountries(@LoginUser() _user: UserEntity) {
-    
     try {
       return this.service.findContactSpecificCountries(_user);
     } catch (e) {

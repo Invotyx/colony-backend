@@ -446,7 +446,7 @@ export class ContactsService {
 
       if (!preset_onboard) {
         preset_onboard = {
-          body: 'Welcome onboard ${inf_name}.',
+          body: 'Welcome onboard ${name}.',
         };
       }
 

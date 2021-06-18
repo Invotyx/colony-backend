@@ -9,6 +9,7 @@ import { LessThanOrEqual } from 'typeorm';
 import { ContactsService } from '../contacts/contacts.service';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
+import { PhonesRepository } from '../phone/phone.repo';
 import { PhoneService } from '../phone/phone.service';
 import { PaymentMethodsService } from '../products/payments/payment-methods.service';
 import { PlansService } from '../products/plan/plans.service';
@@ -152,9 +153,21 @@ export class TasksService {
         const phones = requests[2];
         const fans = requests[3];
 
+        const metaPayment = {
+          subscription: plan.amount_decimal,
+          fan: fans.cost,
+          phones: []
+        };
+
         let phonesCost = 0;
 
         for (let phone of phones) {
+          const check = {
+            number: phone.number,
+            country: phone.country,
+            cost:phone.phonecost
+          }
+          metaPayment.phones.push(check);
           phonesCost += parseInt(phone.phonecost);
         }
 
@@ -195,6 +208,7 @@ export class TasksService {
               cost: plan.amount_decimal,
               costType: 'base-plan-purchase',
               chargeId: charge.id,
+              meta: JSON.stringify(metaPayment),
             });
             //send email here
           } else {

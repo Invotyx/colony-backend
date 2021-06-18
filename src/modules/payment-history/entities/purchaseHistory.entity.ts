@@ -48,6 +48,9 @@ export class PaymentHistoryEntity {
   })
   public description: string;
 
+  @Column({ type: 'text', nullable: true })
+  public meta: string;
+
   @CreateDateColumn()
   public createdAt: Date;
 

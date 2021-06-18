@@ -31,7 +31,7 @@ export class PaymentHistoryService {
     }
   }
 
-  public async updateDues(dues: any) {
+  public async updateDues(dues) {
     const due = await this.duesRepo.findOne({
       where: { costType: dues.type, user: dues.user },
     });

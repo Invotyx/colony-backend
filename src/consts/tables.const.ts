@@ -42,7 +42,7 @@ const TablesList: any = {
   CONVERSATION_MESSAGES: new TableData(),
   PAYMENT_HISTORY: new TableData(),
   DUE_PAYMENTS: new TableData(),
-  FAVORITE_CONTACTS:new TableData(),
+  FAVORITE_CONTACTS: new TableData(),
 };
 
 const numHash = (t: string) =>

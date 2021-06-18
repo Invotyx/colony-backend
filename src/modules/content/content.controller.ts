@@ -11,21 +11,13 @@ import {
   Put,
   Query,
   UploadedFile,
-  UseInterceptors,
+  UseInterceptors
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
-import { TABLES } from 'src/consts/tables.const';
 import { Auth } from 'src/decorators/auth.decorator';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
-import {
-  dataViewer,
-  mapColumns,
-  paginateQuery,
-  PaginatorError,
-  PaginatorErrorHandler,
-} from 'src/shared/paginator';
 import { editFileName, imageFileFilter } from '../users/imageupload.service';
 import { ContentService } from './content.service';
 import { FaqsDto } from './dtos/faqs.dto';
@@ -273,7 +265,7 @@ export class ContentController {
   @Post('faqs')
   async addFaq(@Body() faq: FaqsDto) {
     try {
-      return await this.contentService.addFaq(faq);
+      return this.contentService.addFaq(faq);
     } catch (e) {
       throw e;
     }
@@ -282,7 +274,7 @@ export class ContentController {
   @Put('faqs/:id')
   async updateFaq(@Param('id') id: number, @Body() faqs: FaqsDto) {
     try {
-      return await this.contentService.updateFaq(id, faqs);
+      return this.contentService.updateFaq(id, faqs);
     } catch (e) {
       throw e;
     }
@@ -290,7 +282,7 @@ export class ContentController {
 
   @Delete('faqs/:id')
   async removeFaq(@Param('id') id: number) {
-    return await this.contentService.removeFaq(id);
+    return this.contentService.removeFaq(id);
   }
 
   @Get('faqs/:id')

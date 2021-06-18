@@ -53,7 +53,7 @@ export class UsersController {
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
   async getUserProfile(@LoginUser() user: UserEntity): Promise<UserEntity> {
-    return await this.userService.findOne({
+    return this.userService.findOne({
       where: { id: user.id },
       relations: ['paymentMethod'],
     });

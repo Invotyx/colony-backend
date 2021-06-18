@@ -9,9 +9,9 @@ export class SeederService {
   public async sow({ klass, up }) {
     const seedService: ISeed = await this.moduleRef.resolve(SEEDS[klass]);
     if (up) {
-      return await seedService.up();
+      return seedService.up();
     } else {
-      return await seedService.down();
+      return seedService.down();
     }
   }
 }

@@ -19,13 +19,13 @@ export class PlansService {
   }
 
   public async findOne(condition?: any) {
-    if (condition) return await this.repository.findOne(condition);
-    else return await this.repository.findOne();
+    if (condition) return this.repository.findOne(condition);
+    else return this.repository.findOne();
   }
 
   public async find(condition?: any) {
-    if (condition) return await this.repository.find(condition);
-    else return await this.repository.find();
+    if (condition) return this.repository.find(condition);
+    else return this.repository.find();
   }
 
   public async getPlanDetails() {

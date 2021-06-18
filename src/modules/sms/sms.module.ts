@@ -17,9 +17,14 @@ import { SmsService } from './sms.service';
 
 @Module({
   imports: [
-    BullModule.registerQueue({
-      name: 'receive_sms_and_send_welcome',
-    }),
+    BullModule.registerQueue(
+      {
+        name: 'receive_sms_and_send_welcome',
+      },
+      {
+        name: 'sms_q',
+      },
+    ),
     MainMysqlModule,
     forwardRef(() => UsersModule),
     forwardRef(() => ContactsModule),

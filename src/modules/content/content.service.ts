@@ -62,7 +62,7 @@ export class ContentService {
         where: { slug: data.slug },
       });
       if (!check) {
-        return await this.pagesRepo.save(data);
+        return this.pagesRepo.save(data);
       } else {
         throw new HttpException(
           'Page with same slug already exists',
@@ -115,7 +115,7 @@ export class ContentService {
     images.forEach(async (image) => {
       await this.imagesRepo.delete(image.id);
     });
-    return await this.pagesRepo.delete(id);
+    return this.pagesRepo.delete(id);
   }
 
   //#endregion
@@ -223,7 +223,7 @@ export class ContentService {
               });
             }
 
-            return await this.sectionsRepo.delete(section.id);
+            return this.sectionsRepo.delete(section.id);
           } catch (e) {
             console.info(e);
             throw e;
@@ -325,7 +325,7 @@ export class ContentService {
         const images = this.imagesRepo.find({
           where: { page: pid, section: secId },
         });
-        return await images;
+        return images;
       } else {
         throw new HttpException(
           'section not found for specified page.',
@@ -343,20 +343,20 @@ export class ContentService {
       const images = this.imagesRepo.find({
         where: { page: pid, section: null },
       });
-      return await images;
+      return images;
     } else {
       throw new HttpException('page not found.', HttpStatus.BAD_REQUEST);
     }
   }
 
   async deletePageImage(pid: number, id: number) {
-    return await this.imagesRepo.delete(
+    return this.imagesRepo.delete(
       await this.imagesRepo.findOne({ where: { page: pid, id: id } }),
     );
   }
 
   async deleteSectionImage(pid: number, secId: number, id: number) {
-    return await this.imagesRepo.delete(
+    return this.imagesRepo.delete(
       await this.imagesRepo.findOne({
         where: {
           page: pid,
@@ -372,19 +372,19 @@ export class ContentService {
   async addFaq(faq: FaqsDto) {
     console.log(faq);
 
-    return await this.faqsRepo.save(faq);
+    return this.faqsRepo.save(faq);
   }
 
   async removeFaq(id: number) {
-    return await this.faqsRepo.delete(id);
+    return this.faqsRepo.delete(id);
   }
 
   async updateFaq(id: number, faqs: any) {
-    return await this.faqsRepo.update(id, faqs);
+    return this.faqsRepo.update(id, faqs);
   }
 
   async getFaq(id: number) {
-    return await this.faqsRepo.findOne(id);
+    return this.faqsRepo.findOne(id);
   }
   async getAllFaqs(data: any) {
     try {

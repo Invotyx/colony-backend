@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
-import { LanguageRepository } from './languages.repo';
+import { isExist } from '../../shared/repo.fun';
 import { LanguageEntity } from './entities/language.entity';
 import { LanguageDto } from './language.dto';
-import { isExist } from '../../shared/repo.fun';
+import { LanguageRepository } from './languages.repo';
 
 @Injectable()
 export class LanguageService {
@@ -18,13 +18,13 @@ export class LanguageService {
   }
 
   public async findOne(condition?: any) {
-    if (condition) return await this.repository.findOne(condition);
-    else return await this.repository.findOne();
+    if (condition) return this.repository.findOne(condition);
+    else return this.repository.findOne();
   }
 
   public async find(condition?: any) {
-    if (condition) return await this.repository.find(condition);
-    else return await this.repository.find();
+    if (condition) return this.repository.find(condition);
+    else return this.repository.find();
   }
 
   async remove(id: string): Promise<void> {

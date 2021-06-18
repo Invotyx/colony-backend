@@ -59,7 +59,7 @@ export class HashEngine {
   }
 
   async check(key: string, hash: string) {
-    // return await argon2.verify('$argon2i$v=19$m=4096,t=3,p=1' + hash, key);
+    // return argon2.verify('$argon2i$v=19$m=4096,t=3,p=1' + hash, key);
     return (await this.genHash(key)) === CustomEncryptEngine.decrypt(hash);
   }
 

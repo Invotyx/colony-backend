@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Res,
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
@@ -70,9 +71,13 @@ export class SmsController {
   //#region  conversation
   @Auth({})
   @Get('/conversations')
-  async getConversations(@LoginUser() inf: UserEntity) {
+  async getConversations(
+    @LoginUser() inf: UserEntity,
+    @Query('page') page?: number,
+    @Query('perPage') perPage?: number,
+  ) {
     try {
-      return await this.service.getConversations(inf);
+      return this.service.getConversations(inf, perPage, page);
     } catch (e) {
       throw e;
     }
@@ -83,9 +88,11 @@ export class SmsController {
   async getConversation(
     @LoginUser() inf: UserEntity,
     @Param('conversationId') conversationId: string,
+    @Query('page') page?: number,
+    @Query('perPage') perPage?: number,
   ) {
     try {
-      return await this.service.getConversation(inf, conversationId);
+      return this.service.getConversation(inf, conversationId, perPage, page);
     } catch (e) {
       throw e;
     }
@@ -98,7 +105,7 @@ export class SmsController {
     @Param('contact') contact: string,
   ) {
     try {
-      return await this.service.deleteConversation(inf, contact);
+      return this.service.deleteConversation(inf, contact);
     } catch (e) {
       throw e;
     }
@@ -108,7 +115,7 @@ export class SmsController {
   @Delete('/conversation/sms/:smsId')
   async deleteSms(@LoginUser() inf: UserEntity, @Param('smsId') smsId: string) {
     try {
-      return await this.service.deleteMessage(smsId);
+      return this.service.deleteMessage(smsId);
     } catch (e) {
       throw e;
     }
@@ -120,9 +127,10 @@ export class SmsController {
     @LoginUser() inf: UserEntity,
     @Body('to') contact: string,
     @Body('message') message: string,
+    @Body('scheduled') scheduled?: Date,
   ) {
     try {
-      return this.service.initiateSendSms(inf, contact, message);
+      return this.service.initiateSendSms(inf, contact, message, scheduled);
     } catch (e) {
       throw e;
     }
@@ -200,9 +208,13 @@ export class SmsController {
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Get('broadcasts')
-  async getBroadcasts(@LoginUser() user: UserEntity) {
+  async getBroadcasts(
+    @LoginUser() user: UserEntity,
+    @Query('page') page?: number,
+    @Query('perPage') perPage?: number,
+  ) {
     try {
-      return this.broadcastService.getBroadcasts(user);
+      return this.broadcastService.getBroadcasts(user, perPage, page);
     } catch (e) {
       throw e;
     }
@@ -220,12 +232,7 @@ export class SmsController {
     @Body('title') title: string,
   ) {
     try {
-      const template = await this.service.createSmsTemplate(
-        title,
-        body,
-        influencer,
-      );
-      return template;
+      return this.service.createSmsTemplate(title, body, influencer);
     } catch (e) {
       throw e;
     }
@@ -241,13 +248,7 @@ export class SmsController {
     @Body('title') title: string,
   ) {
     try {
-      const template = await this.service.updateSmsTemplate(
-        id,
-        title,
-        body,
-        influencer,
-      );
-      return template;
+      return this.service.updateSmsTemplate(id, title, body, influencer);
     } catch (e) {
       throw e;
     }
@@ -257,8 +258,7 @@ export class SmsController {
   @Delete('template/:id/delete')
   async deleteSmsTemplate(@Param('id') id: number) {
     try {
-      const template = await this.service.deleteSmsTemplate(id);
-      return template;
+      return this.service.deleteSmsTemplate(id);
     } catch (e) {
       throw e;
     }
@@ -268,8 +268,7 @@ export class SmsController {
   @Get('template')
   async getSmsTemplates(@LoginUser() influencer: UserEntity) {
     try {
-      const templates = await this.service.getSmsTemplates(influencer);
-      return templates;
+      return this.service.getSmsTemplates(influencer);
     } catch (e) {
       throw e;
     }
@@ -282,10 +281,9 @@ export class SmsController {
     @Param('id') id: string,
   ) {
     try {
-      const templates = await this.service.findOneInTemplates({
+      return this.service.findOneInTemplates({
         where: { user: influencer, id: id },
       });
-      return templates;
     } catch (e) {
       throw e;
     }

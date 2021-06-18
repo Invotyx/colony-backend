@@ -45,13 +45,13 @@ export class PhoneService {
   }
 
   public async findOne(condition?: any) {
-    if (condition) return await this.repo.findOne(condition);
-    else return await this.repo.findOne();
+    if (condition) return this.repo.findOne(condition);
+    else return this.repo.findOne();
   }
 
   public async find(condition?: any) {
-    if (condition) return await this.repo.find(condition);
-    else return await this.repo.find();
+    if (condition) return this.repo.find(condition);
+    else return this.repo.find();
   }
 
   public async changeRenewal(
@@ -66,7 +66,7 @@ export class PhoneService {
 
       phone.renewalDate = renewalDate;
 
-      return await this.repo.update({ id: phone.id }, phone);
+      return this.repo.update({ id: phone.id }, phone);
     } catch (e) {
       throw new BadRequestException(e);
     }
@@ -177,7 +177,7 @@ export class PhoneService {
             'Number search parameter length should be less then 5 characters.',
           );
         }
-        return await this.searchPhoneNumbers(
+        return this.searchPhoneNumbers(
           cc.code.toUpperCase(),
           limit,
           number_must_have,
@@ -254,7 +254,7 @@ export class PhoneService {
             'Number should be in international format and length should be between 10 to 20 characters.',
           );
         }
-        return await this.purchasePhoneNumber(country, number, user);
+        return this.purchasePhoneNumber(country, number, user);
       } else {
         const plan = await this.planService.findOne();
         const sub: any = {
@@ -263,7 +263,7 @@ export class PhoneService {
           number: number,
           planId: plan.id,
         };
-        return await this.subscriptionService.createSubscription(user, sub);
+        return this.subscriptionService.createSubscription(user, sub);
       }
     } catch (e) {
       throw e;

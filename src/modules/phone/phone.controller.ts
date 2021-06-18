@@ -5,7 +5,7 @@ import {
   Get,
   Injectable,
   Post,
-  Query,
+  Query
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../decorators/auth.decorator';
@@ -87,7 +87,7 @@ export class PhoneController {
     @Query('number') number: string,
   ) {
     try {
-      return await this.service.cancelPhoneNumber(number, user);
+      return this.service.cancelPhoneNumber(number, user);
     } catch (e) {
       throw e;
     }

@@ -9,7 +9,7 @@ import {
   Put,
   Query,
   UploadedFile,
-  UseInterceptors,
+  UseInterceptors
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
@@ -18,7 +18,6 @@ import { LoginUser } from 'src/decorators/user.decorator';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { Auth } from '../../decorators/auth.decorator';
 import { UserEntity } from '../users/entities/user.entity';
-import { GetUser } from '../users/get-user.decorator';
 import { editFileName, imageFileFilter } from '../users/imageupload.service';
 import { ContactDto, ContactFilter, PaginationDto } from './contact.dto';
 import { ContactsService } from './contacts.service';
@@ -34,7 +33,7 @@ export class ContactsController {
     @Query('user') user: number,
     @Query('cc') cCode: string,
   ): Promise<any> {
-    return await this.service.addContact(phone, user, cCode);
+    return this.service.addContact(phone, user, cCode);
   }
 
   @Get('/get-url')
@@ -54,7 +53,7 @@ export class ContactsController {
   ) {
     try {
       
-      return await this.service.filterContacts(user.id, data);
+      return this.service.filterContacts(user.id, data);
     } catch (e) {
       throw e;
     }
@@ -124,8 +123,8 @@ export class ContactsController {
     @UploadedFile() image?: any,
   ) {
     try {
-      if (!image) return await this.service.updateContact(id, data);
-      else return await this.service.updateContact(id, data, image);
+      if (!image) return this.service.updateContact(id, data);
+      else return this.service.updateContact(id, data, image);
     } catch (e) {
       throw e;
     }

@@ -2,14 +2,14 @@ import {
   BadRequestException,
   HttpException,
   HttpStatus,
-  Injectable,
+  Injectable
 } from '@nestjs/common';
 import {
   dataViewer,
   mapColumns,
   paginateQuery,
   PaginatorError,
-  PaginatorErrorHandler,
+  PaginatorErrorHandler
 } from 'src/shared/paginator';
 import { TABLES } from '../../consts/tables.const';
 import { UserEntity } from '../../modules/users/entities/user.entity';
@@ -54,7 +54,7 @@ export class InfluencerLinksService {
 
   async deleteLink(id: number, user: UserEntity) {
     try {
-      return await this.repository.softDelete({ id: id, user: user });
+      return this.repository.softDelete({ id: id, user: user });
     } catch (e) {
       throw e;
     }
@@ -121,7 +121,7 @@ export class InfluencerLinksService {
       linkUrl.sent = status == 'sent' || status == 'delivered' ? true : false;
       linkUrl.smsSid = sid;
 
-      return await this.trackingRepo.save(linkUrl);
+      return this.trackingRepo.save(linkUrl);
     } catch (e) {
       throw e;
     }

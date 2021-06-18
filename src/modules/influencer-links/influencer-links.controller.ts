@@ -7,7 +7,7 @@ import {
   Param,
   Post,
   Put,
-  Query,
+  Query
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../decorators/auth.decorator';
@@ -45,7 +45,7 @@ export class InfluencerLinksController {
     @Query('contact') contact: string,
   ) {
     try {
-      return await this.service.getUniqueLinkForContact(linkId, contact);
+      return this.service.getUniqueLinkForContact(linkId, contact);
     } catch (e) {
       throw e;
     }
@@ -89,7 +89,7 @@ export class InfluencerLinksController {
   @Put(':uniqueId/open')
   async linkOpened(@Param('uniqueId') uniqueId: string) {
     try {
-      return await this.service.linkOpened(uniqueId);
+      return this.service.linkOpened(uniqueId);
     } catch (e) {
       throw e;
     }
@@ -102,7 +102,7 @@ export class InfluencerLinksController {
     @Param('id') id: number,
   ) {
     try {
-      return await this.service.getLinkStats(id, influencer);
+      return this.service.getLinkStats(id, influencer);
     } catch (e) {
       throw e;
     }
@@ -142,7 +142,7 @@ export class InfluencerLinksController {
         },
       };
 
-      return await this.service.getAllLinks(data);
+      return this.service.getAllLinks(data);
     } catch (e) {
       throw e;
     }

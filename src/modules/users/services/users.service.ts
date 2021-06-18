@@ -2,15 +2,17 @@ import {
   BadRequestException,
   HttpException,
   HttpStatus,
-  Injectable,
+  Injectable
 } from '@nestjs/common';
 import * as fs from 'fs';
 import { nanoid } from 'nanoid';
 import { join } from 'path';
-import { ForgotPassword } from 'src/modules/users/entities/forgottenpassword.entity';
+import { TABLES } from 'src/consts/tables.const';
 import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer';
+import { ForgotPassword } from 'src/modules/users/entities/forgottenpassword.entity';
 import { CityRepository } from 'src/services/city-country/repos/city.repo';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
+import { columnListToSelect, dataViewer, mapColumns, paginateQuery, PaginatorError, PaginatorErrorHandler } from 'src/shared/paginator';
 import { EmailTokenSender } from '../../../mails/users/emailtoken.mailer';
 import { RoleRepository } from '../../../repos/roles.repo';
 import { PasswordHashEngine } from '../../../shared/hash.service';
@@ -20,14 +22,12 @@ import { EmailVerifications } from '../entities/verifyemail.entity';
 import {
   EmailAlreadyExistError,
   PhoneAlreadyExistError,
-  UserNameAlreadyExistError,
+  UserNameAlreadyExistError
 } from '../errors/users.error';
 import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
 import { UserRepository } from '../repos/user.repo';
 import { EmailVerificationsRepository } from '../repos/verifyemail.repo';
 import { CreateUserDto, UpdateProfileDto, UpdateRole } from '../users.dto';
-import { TABLES } from 'src/consts/tables.const';
-import { columnListToSelect, dataViewer, mapColumns, paginateQuery, PaginatorError, PaginatorErrorHandler } from 'src/shared/paginator';
 
 @Injectable()
 export class UsersService {
@@ -49,11 +49,11 @@ export class UsersService {
   }
 
   async save(user: any) {
-    return await this.repository.save(user);
+    return this.repository.save(user);
   }
 
   async findOne(condition?: any): Promise<UserEntity> {
-    return await this.repository.findOne(condition);
+    return this.repository.findOne(condition);
   }
 
   findUserByEmail(email: string): Promise<UserEntity> {
@@ -214,7 +214,7 @@ export class UsersService {
   async sendResetPasswordVerification(email: string): Promise<boolean> {
     try {
       const forget = await this.createForgottenPasswordToken(email);
-      return await this.sendForgotPassword.sendEmail(forget);
+      return this.sendForgotPassword.sendEmail(forget);
     } catch (e) {
       console.log(e);
       throw e;

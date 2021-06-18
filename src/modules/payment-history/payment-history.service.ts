@@ -12,7 +12,7 @@ export class PaymentHistoryService {
 
   public async history(user: UserEntity) {
     try {
-      return await this.repository.find({
+      return this.repository.find({
         where: { user: user },
         order: { createdAt: 'DESC' },
       });
@@ -49,7 +49,7 @@ export class PaymentHistoryService {
 
   public async getDues(type: string, user: UserEntity) {
     try {
-      return await this.duesRepo.findOne({
+      return this.duesRepo.findOne({
         where: { costType: type, user: user },
       });
     } catch (e) {
@@ -59,7 +59,7 @@ export class PaymentHistoryService {
 
   public async addRecordToHistory(r: any) {
     try {
-      return await this.repository.save(r);
+      return this.repository.save(r);
     } catch (e) {
       throw e;
     }

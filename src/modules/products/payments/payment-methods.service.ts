@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { env } from 'process';
 import Stripe from 'stripe';
-import { PaymentMethodsEntity } from './payment-methods.entity';
 import { UserEntity } from '../../users/entities/user.entity';
 import { PaymentMethodDto } from './payment-methods.dto';
+import { PaymentMethodsEntity } from './payment-methods.entity';
 import { PaymentMethodsRepository } from './payment-methods.repo';
 
 @Injectable()
@@ -16,17 +16,17 @@ export class PaymentMethodsService {
   }
 
   public async findOne(condition?: any) {
-    if (condition) return await this.repository.findOne(condition);
-    else return await this.repository.findOne();
+    if (condition) return this.repository.findOne(condition);
+    else return this.repository.findOne();
   }
 
   public async find(condition?: any) {
-    if (condition) return await this.repository.find(condition);
-    else return await this.repository.find();
+    if (condition) return this.repository.find(condition);
+    else return this.repository.find();
   }
 
   public async save(obj: PaymentMethodsEntity) {
-    return await this.repository.save(obj);
+    return this.repository.save(obj);
   }
 
   public async createPaymentMethod(

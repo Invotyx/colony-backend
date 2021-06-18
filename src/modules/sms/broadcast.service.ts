@@ -135,10 +135,16 @@ export class BroadcastService {
     }
   }
 
-  public async getBroadcasts(user: UserEntity) {
+  public async getBroadcasts(
+    user: UserEntity,
+    count: number = 100,
+    page: number = 1,
+  ) {
     try {
       const b = await this.repository.find({
         where: { user: user },
+        take: count,
+        skip: count * page - count,
       });
       for (let i of b) {
         i.contacts = (await this.contactService.filterContacts(

@@ -2,7 +2,7 @@ import {
   BadRequestException,
   forwardRef,
   Inject,
-  Injectable,
+  Injectable
 } from '@nestjs/common';
 import { env } from 'process';
 import Stripe from 'stripe';
@@ -36,17 +36,17 @@ export class SubscriptionsService {
   }
 
   public async findOne(condition?: any) {
-    if (condition) return await this.repository.findOne(condition);
-    else return await this.repository.findOne();
+    if (condition) return this.repository.findOne(condition);
+    else return this.repository.findOne();
   }
 
   public async find(condition?: any) {
-    if (condition) return await this.repository.find(condition);
-    else return await this.repository.find();
+    if (condition) return this.repository.find(condition);
+    else return this.repository.find();
   }
 
   public async save(obj: SubscriptionsEntity) {
-    return await this.repository.save(obj);
+    return this.repository.save(obj);
   }
 
   public async qb(alias: string) {
@@ -72,7 +72,7 @@ export class SubscriptionsService {
             );
           }
         }
-        return await this.createSubscriptionInDb(customer, sub, _plan);
+        return this.createSubscriptionInDb(customer, sub, _plan);
       } else {
         throw new BadRequestException('Plan does not exist.');
       }

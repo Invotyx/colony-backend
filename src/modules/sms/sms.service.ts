@@ -1,9 +1,11 @@
+import { InjectQueue } from '@nestjs/bull';
 import {
   BadRequestException,
   forwardRef,
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { Queue } from 'bull';
 import { env } from 'process';
 import { CityCountryService } from '../../services/city-country/city-country.service';
 import { tagReplace } from '../../shared/tag-replace';
@@ -35,6 +37,7 @@ export class SmsService {
     private readonly subService: SubscriptionsService,
     private readonly paymentHistory: PaymentHistoryService,
     private readonly countryService: CityCountryService,
+    @InjectQueue('sms_q') private readonly queue: Queue,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -46,38 +49,37 @@ export class SmsService {
   }
 
   public async findOneInTemplates(condition?: any) {
-    if (condition) return await this.smsTemplateRepo.findOne(condition);
-    else return await this.smsTemplateRepo.findOne();
+    if (condition) return this.smsTemplateRepo.findOne(condition);
+    else return this.smsTemplateRepo.findOne();
   }
 
   public async findOneInPreSets(condition?: any) {
-    if (condition) return await this.presetRepo.findOne(condition);
-    else return await this.presetRepo.findOne();
+    if (condition) return this.presetRepo.findOne(condition);
+    else return this.presetRepo.findOne();
   }
 
   public async findInPreSets(condition?: any) {
-    if (condition) return await this.presetRepo.find(condition);
-    else return await this.presetRepo.find();
+    if (condition) return this.presetRepo.find(condition);
+    else return this.presetRepo.find();
   }
 
   public async findOneConversations(condition?: any) {
-    if (condition) return await this.conversationsRepo.findOne(condition);
-    else return await this.conversationsRepo.findOne();
+    if (condition) return this.conversationsRepo.findOne(condition);
+    else return this.conversationsRepo.findOne();
   }
 
   public async findConversations(condition?: any) {
-    if (condition) return await this.conversationsRepo.find(condition);
-    else return await this.conversationsRepo.find();
+    if (condition) return this.conversationsRepo.find(condition);
+    else return this.conversationsRepo.find();
   }
   public async findOneConversationsMessages(condition?: any) {
-    if (condition)
-      return await this.conversationsMessagesRepo.findOne(condition);
-    else return await this.conversationsMessagesRepo.findOne();
+    if (condition) return this.conversationsMessagesRepo.findOne(condition);
+    else return this.conversationsMessagesRepo.findOne();
   }
 
   public async findConversationsMessages(condition?: any) {
-    if (condition) return await this.conversationsMessagesRepo.find(condition);
-    else return await this.conversationsMessagesRepo.find();
+    if (condition) return this.conversationsMessagesRepo.find(condition);
+    else return this.conversationsMessagesRepo.find();
   }
 
   //#region sms
@@ -255,7 +257,12 @@ export class SmsService {
     return message;
   }
 
-  async initiateSendSms(inf: UserEntity, contact: string, message: string) {
+  async initiateSendSms(
+    inf: UserEntity,
+    contact: string,
+    message: string,
+    scheduled?: Date,
+  ) {
     try {
       const _contact = await this.contactService.findOne({
         where: { phoneNumber: contact, user: inf },
@@ -280,16 +287,36 @@ export class SmsService {
           }
         }
         if (_inf_phone)
-          await this.sendSms(
-            _contact,
-            _inf_phone,
-            tagReplace(message, {
-              name: _contact.name,
-              inf_name:
-                _inf_phone.user.firstName + ' ' + _inf_phone.user.firstName,
-            }),
-            'outBound',
-          );
+          if (scheduled) {
+            //handle schedule here
+            const q_obj = {
+              contact: _contact,
+              inf_phone: _inf_phone,
+              message: tagReplace(message, {
+                name: _contact.name,
+                inf_name:
+                  _inf_phone.user.firstName + ' ' + _inf_phone.user.firstName,
+              }),
+              type: 'outBound',
+            };
+            await this.queue.add('scheduled_message', q_obj, {
+              removeOnComplete: true,
+              removeOnFail: true,
+              attempts: 2,
+              delay: 1000,
+            });
+            return;
+          }
+        await this.sendSms(
+          _contact,
+          _inf_phone,
+          tagReplace(message, {
+            name: _contact.name,
+            inf_name:
+              _inf_phone.user.firstName + ' ' + _inf_phone.user.firstName,
+          }),
+          'outBound',
+        );
       } else {
         throw new BadRequestException(
           'You cannot send message to contact who has not subscribed you yet.',
@@ -329,7 +356,7 @@ export class SmsService {
 
         if (message.status != 'sent') {
           //failure case
-          return await this.saveSms(
+          return this.saveSms(
             contact,
             influencerNumber,
             body,
@@ -344,7 +371,7 @@ export class SmsService {
             type: 'sms',
             user: influencerNumber.user,
           });
-          return await this.saveSms(
+          return this.saveSms(
             contact,
             influencerNumber,
             body,
@@ -397,12 +424,18 @@ export class SmsService {
 
   //#region conversation
 
-  async getConversations(inf: UserEntity) {
+  async getConversations(
+    inf: UserEntity,
+    count: number = 100,
+    page: number = 1,
+  ) {
     try {
       const conversations = await this.conversationsRepo.find({
         where: { user: inf },
-        order: { createdAt: 'DESC' },
+        order: { updatedAt: 'DESC' },
         relations: ['phone', 'contact'],
+        take: count,
+        skip: count * page - count,
       });
 
       if (conversations.length > 0) {
@@ -415,13 +448,26 @@ export class SmsService {
     }
   }
 
-  async getConversation(inf: UserEntity, conversationId: string) {
+  async getConversation(
+    inf: UserEntity,
+    conversationId: string,
+    count: number = 100,
+    page: number = 1,
+  ) {
     try {
       const conversation = await this.conversationsRepo.findOne({
         where: { user: inf, id: conversationId },
-        relations: ['phone', 'contact', 'conversationMessages'],
+        relations: ['phone', 'contact'],
       });
-      if (conversation) return conversation.conversationMessages;
+      const conversationMessage = await this.conversationsMessagesRepo.find({
+        where: {
+          conversations: conversation,
+        },
+        order: { createdAt: 'DESC' },
+        take: count,
+        skip: count * page - count,
+      });
+      if (conversation) return conversationMessage;
       throw new BadRequestException('No messages found.');
     } catch (e) {
       throw e;

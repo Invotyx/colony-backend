@@ -433,7 +433,7 @@ export class SmsService {
       const conversations = await this.conversationsRepo.find({
         where: { user: inf },
         order: { updatedAt: 'DESC' },
-        relations: ['phone', 'contact'],
+        relations: ['phone', 'contact', 'user'],
         take: count,
         skip: count * page - count,
       });

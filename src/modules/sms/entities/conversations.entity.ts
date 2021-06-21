@@ -75,21 +75,16 @@ export class ConversationsEntity {
       .select('*')
       .where('"id"=:id', { id: this.id });
 
-    console.log('AfterLoad', _user, this.contact);
-    const inf_contact_relation = await getRepository(InfluencerContactsEntity)
+    const inf_contact_relation = getRepository(InfluencerContactsEntity)
       .createQueryBuilder()
       .select('*')
       .where('"contactId" = :id', { id: this.contact.id })
       .andWhere('"userId" = :id', { id: (await _user.getRawOne()).userId })
       .orderBy('"createdAt"', 'DESC')
-      .limit(1)
-      .getOne();
-    console.log(
-      'AfterLoad',
-      inf_contact_relation,
-      inf_contact_relation != undefined,
-    );
-    this.removedFromList = inf_contact_relation != undefined ? false : true;
+      .limit(1);
+
+    console.log('AfterLoad', await inf_contact_relation.getOne());
+    if (await inf_contact_relation.getOne()) this.removedFromList = true;
 
     this.lastMessage = (await innerSelect.getRawOne()).sms;
     this.lastSmsTime = (await innerSelect.getRawOne()).createdAt;

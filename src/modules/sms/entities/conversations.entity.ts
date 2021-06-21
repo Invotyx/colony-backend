@@ -9,7 +9,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../../../consts/tables.const';
 import { ContactsEntity } from '../../contacts/entities/contacts.entity';
@@ -69,21 +69,22 @@ export class ConversationsEntity {
       .orderBy('"createdAt"', 'DESC')
       .limit(1);
     this.removedFromList = false;
-    
-    const _user =getRepository(ConversationsEntity)
-      .createQueryBuilder()
-      .select('*').where('"id"=:id', { id: this.id });
 
-    
-    const innerSelect2 = getRepository(InfluencerContactsEntity)
+    const _user = getRepository(ConversationsEntity)
       .createQueryBuilder()
       .select('*')
-      .where('"contactId" = :id', { id: this.contact.id })
-      .andWhere('"userId" = :id', { id: (await _user.getRawOne()).userId })
-      .orderBy('"createdAt"', 'DESC')
-      .limit(1);
-    this.removedFromList = (await innerSelect2.getOne()) ? false : true;
+      .where('"id"=:id', { id: this.id });
 
+    if (this.contact) {
+      const innerSelect2 = getRepository(InfluencerContactsEntity)
+        .createQueryBuilder()
+        .select('*')
+        .where('"contactId" = :id', { id: this.contact.id })
+        .andWhere('"userId" = :id', { id: (await _user.getRawOne()).userId })
+        .orderBy('"createdAt"', 'DESC')
+        .limit(1);
+      this.removedFromList = (await innerSelect2.getOne()) ? false : true;
+    }
     this.lastMessage = (await innerSelect.getRawOne()).sms;
     this.lastSmsTime = (await innerSelect.getRawOne()).createdAt;
   }

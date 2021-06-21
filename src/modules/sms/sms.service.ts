@@ -130,7 +130,15 @@ export class SmsService {
               'inBound',
               sid,
             );
-            console.log('saved as regular inbound sms');
+
+            console.log(
+              'saved as regular inbound sms from:',
+              contact.phoneNumber,
+              ' to ',
+              influencerNumber.number,
+              ' body: ',
+              body,
+            );
             //this is just a normal sms
             return 200;
           }
@@ -180,7 +188,7 @@ export class SmsService {
       sid,
       'received',
     );
-    console.log('in bound sms saved');
+
     const plan = await this.subService.planService.findOne();
     await this.paymentHistory.updateDues({
       cost: plan.subscriberCost,
@@ -188,27 +196,28 @@ export class SmsService {
       user: influencerNumber.user,
     });
     console.log('subscription log added to dues');
-    await this.sendSms(
-      contact,
-      influencerNumber,
-      tagReplace(preset_welcome.body, {
-        name: contact.name ? contact.name : '',
-        inf_name:
-          influencerNumber.user.firstName +
-          ' ' +
-          influencerNumber.user.lastName,
-        link:
-          env.PUBLIC_APP_URL +
-          '/contacts/enroll/' +
-          influencerNumber.user.id +
-          ':::' +
-          contact.urlMapper +
-          ':::' +
-          influencerNumber.id,
-      }),
-      'outBound',
+    const text_body: string = tagReplace(preset_welcome.body, {
+      name: contact.name ? contact.name : '',
+      inf_name:
+        influencerNumber.user.firstName + ' ' + influencerNumber.user.lastName,
+      link:
+        env.PUBLIC_APP_URL +
+        '/contacts/enroll/' +
+        influencerNumber.user.id +
+        ':::' +
+        contact.urlMapper +
+        ':::' +
+        influencerNumber.id,
+    });
+    await this.sendSms(contact, influencerNumber, text_body, 'outBound');
+    console.log(
+      'outbound sms sent to:',
+      contact.phoneNumber,
+      ' from ',
+      influencerNumber.number,
+      ' body ',
+      text_body,
     );
-    console.log('outbound sms sent');
   }
 
   async saveSms(

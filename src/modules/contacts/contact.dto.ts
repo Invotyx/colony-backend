@@ -148,12 +148,6 @@ export class ContactFilter {
   public city?: string;
 
   @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  @Length(2, 30)
-  public timezone?: string;
-
-  @ApiPropertyOptional()
   @IsNotEmpty()
   @Length(2, 10)
   public country?: string;

@@ -65,7 +65,7 @@ export class ContactsService {
   ): Promise<ContactsEntity> {
     try {
       const user = await this.users.findOne({
-        where: { id: userId, isActive: true, isApproved: true },
+        WHERE: { id: userId, isActive: true, isApproved: true },
       });
       if (user) {
         const con = await this.repository.findOne({
@@ -113,7 +113,7 @@ export class ContactsService {
     influencerId: number,
     data: ContactFilter,
   ): Promise<{ contacts: ContactsEntity[]; count: number }> {
-    let query = `SELECT c.* FROM ${TABLES.CONTACTS.name} c Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId}), json_array_elements(c."socialLinks"#>'{objects}') clinks `;
+    let query = `SELECT c.* FROM ${TABLES.CONTACTS.name} c Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
 
     //contacted_week
     if (data.contacted == contacted.week) {
@@ -178,11 +178,12 @@ export class ContactsService {
       `;
     }
 
+    query += `, json_array_elements(c."socialLinks"#>'{objects}') clinks `;
     //has facebook
     if (data.hasFb) {
       if (!query.includes('WHERE')) {
         query =
-          query + ` where clinks->>'title'='facebook' and clinks->>'link'<>''`;
+          query + `WHERE clinks->>'title'='facebook' and clinks->>'link'<>''`;
       } else {
         query =
           query + ` and clinks->>'title'='facebook' and clinks->>'link'<>''`;
@@ -192,7 +193,7 @@ export class ContactsService {
     if (data.hasTw) {
       if (!query.includes('WHERE')) {
         query =
-          query + ` where clinks->>'title'='twitter' and clinks->>'link'<>''`;
+          query + ` WHERE clinks->>'title'='twitter' and clinks->>'link'<>''`;
       } else {
         query =
           query + ` and clinks->>'title'='twitter' and clinks->>'link'<>''`;
@@ -202,7 +203,7 @@ export class ContactsService {
     if (data.hasLi) {
       if (!query.includes('WHERE')) {
         query =
-          query + ` where clinks->>'title'='linkedin' and clinks->>'link'<>''`;
+          query + ` WHERE clinks->>'title'='linkedin' and clinks->>'link'<>''`;
       } else {
         query =
           query + ` and clinks->>'title'='linkedin' and clinks->>'link'<>''`;
@@ -212,7 +213,7 @@ export class ContactsService {
     if (data.hasIg) {
       if (!query.includes('WHERE')) {
         query =
-          query + ` where clinks->>'title'='instagram' and clinks->>'link'<>''`;
+          query + ` WHERE clinks->>'title'='instagram' and clinks->>'link'<>''`;
       } else {
         query =
           query + ` and clinks->>'title'='instagram' and clinks->>'link'<>''`;
@@ -371,14 +372,6 @@ export class ContactsService {
       }
     }
 
-    //timezone
-    if (data.timezone) {
-      if (!query.includes('WHERE')) {
-        query = query + ` WHERE c."timezone" = '${data.timezone}'`;
-      } else {
-        query = query + ` and c."timezone" = '${data.timezone}'`;
-      }
-    }
     const contacts = await this.repository.query(query);
     return { contacts: contacts, count: contacts.length };
   }
@@ -417,7 +410,7 @@ export class ContactsService {
         select "c".* from "contacts" "c"
         left join "influencer_contacts" "ic" on "ic"."contactId"="c"."id"
         left join "users" "u" on ("u"."id"="ic"."userId" and "u"."id"=${user.id} )
-        where extract(month from "c"."dob") = extract(month from current_date)
+        WHERE extract(month from "c"."dob") = extract(month from current_date)
         and extract(day from "c"."dob") = extract(day from current_date);
       `);
       return contacts;
@@ -482,13 +475,13 @@ export class ContactsService {
 
     try {
       const user = await this.users.findOne({
-        where: {
+        WHERE: {
           id: userId,
         },
       });
 
       let preset_onboard: any = await this.smsService.findOneInPreSets({
-        where: { trigger: 'onBoard', user: user },
+        WHERE: { trigger: 'onBoard', user: user },
       });
 
       if (!preset_onboard) {
@@ -498,7 +491,7 @@ export class ContactsService {
       }
 
       let infNum = await this.phoneService.findOne({
-        where: { id: number },
+        WHERE: { id: number },
       });
 
       await this.repository.save(contactDetails);
@@ -567,10 +560,10 @@ export class ContactsService {
   async addToFavorites(_user: UserEntity, contactId: number) {
     try {
       const user = await this.users.findOne({
-        where: { id: _user.id },
+        WHERE: { id: _user.id },
         relations: ['favorites'],
       });
-      const contact = await this.findOne({ where: { id: contactId } });
+      const contact = await this.findOne({ WHERE: { id: contactId } });
       if (contact) {
         user.favorites.push(contact);
         await this.users.save(user);
@@ -585,7 +578,7 @@ export class ContactsService {
   async findContactSpecificCountries(_user: UserEntity) {
     try {
       const countries = await this.repository.query(`
-          SELECT DISTINCT "c".* from "phones" "p" left join "country" "c" on ("c"."code"="p"."country" ) where "p"."userId"=${_user.id};
+          SELECT DISTINCT "c".* from "phones" "p" left join "country" "c" on ("c"."code"="p"."country" ) WHERE "p"."userId"=${_user.id};
           `);
       return countries;
     } catch (e) {
@@ -610,10 +603,10 @@ export class ContactsService {
   async removeFromFavorites(_user: UserEntity, contactId: number) {
     try {
       const user = await this.users.findOne({
-        where: { id: _user.id },
+        WHERE: { id: _user.id },
         relations: ['favorites'],
       });
-      const contact = await this.findOne({ where: { id: contactId } });
+      const contact = await this.findOne({ WHERE: { id: contactId } });
       if (contact) {
         await this.favoriteRepo.delete({ user: user, contact: contact });
         return { message: 'Contact removed from favorite list.' };
@@ -626,7 +619,7 @@ export class ContactsService {
 
   async removeFromList(_user: UserEntity, contactId: number) {
     try {
-      const contact = await this.findOne({ where: { id: contactId } });
+      const contact = await this.findOne({ WHERE: { id: contactId } });
       if (contact) {
         const check = await this.influencerContactRepo.findOne({
           where: { user: _user, contact: contact },

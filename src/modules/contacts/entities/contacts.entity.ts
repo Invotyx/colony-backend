@@ -99,6 +99,12 @@ export class ContactsEntity {
   @ManyToMany(() => UserEntity, (u) => u.favorites)
   public influencers!: UserEntity[];
 
+  @Column({ nullable: true })
+  public lat: number;
+
+  @Column({ nullable: true })
+  public long: number;
+
   @CreateDateColumn()
   public createdAt: Date;
 

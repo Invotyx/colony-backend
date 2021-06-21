@@ -75,7 +75,6 @@ export class ConversationsEntity {
       .select('*')
       .where('"id"=:id', { id: this.id });
 
-    if (this.contact) {
       const innerSelect2 = getRepository(InfluencerContactsEntity)
         .createQueryBuilder()
         .select('*')
@@ -84,7 +83,7 @@ export class ConversationsEntity {
         .orderBy('"createdAt"', 'DESC')
         .limit(1);
       this.removedFromList = (await innerSelect2.getOne()) ? false : true;
-    }
+    
     this.lastMessage = (await innerSelect.getRawOne()).sms;
     this.lastSmsTime = (await innerSelect.getRawOne()).createdAt;
   }

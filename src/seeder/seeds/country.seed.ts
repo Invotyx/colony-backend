@@ -25,6 +25,9 @@ export class CountrySeed implements ISeed {
         const IataCode = city.IataCode;
         const CityName = city.Name;
         //insert city here;
+        await this.service.cityRepo.save({
+          
+        })
       }
     }
   }

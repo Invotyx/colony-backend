@@ -69,6 +69,9 @@ export class ConversationsEntity {
       .orderBy('"createdAt"', 'DESC')
       .limit(1);
     this.removedFromList = false;
+    
+    console.log(this.contact,this.user);
+
     const innerSelect2 = getRepository(InfluencerContactsEntity)
       .createQueryBuilder()
       .select('*')

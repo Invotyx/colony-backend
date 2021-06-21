@@ -9,7 +9,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  UpdateDateColumn
 } from 'typeorm';
 import { TABLES } from '../../../consts/tables.const';
 import { ContactsEntity } from '../../contacts/entities/contacts.entity';
@@ -70,13 +70,16 @@ export class ConversationsEntity {
       .limit(1);
     this.removedFromList = false;
     
-    console.log(this.contact,this.user);
+    const _user =getRepository(ConversationsEntity)
+      .createQueryBuilder()
+      .select('*').where('"id"=:id', { id: this.id });
 
+    
     const innerSelect2 = getRepository(InfluencerContactsEntity)
       .createQueryBuilder()
       .select('*')
       .where('"contactId" = :id', { id: this.contact.id })
-      .andWhere('"userId" = :id', { id: this.user.id })
+      .andWhere('"userId" = :id', { id: (await _user.getRawOne()).userId })
       .orderBy('"createdAt"', 'DESC')
       .limit(1);
     this.removedFromList = (await innerSelect2.getOne()) ? false : true;

@@ -107,10 +107,10 @@ export class ContactsService {
     influencerId: number,
     data: ContactFilter,
   ): Promise<{ contacts: ContactsEntity[]; count: number }> {
-    let query = `SELECT c.* FROM ${TABLES.CONTACTS.name} c Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
+    let query = `SELECT c.* FROM ${TABLES.CONTACTS.name} c, json_array_elements("c"."socialLinks"#>'{objects}') clinks, Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
 
     //contacted_week
-    if (data.contacted_week) {
+    if (data.contacted == 'week') {
       query =
         query +
         `
@@ -130,7 +130,7 @@ export class ContactsService {
     }
 
     //contacted_month
-    if (data.contacted_month) {
+    if (data.contacted == 'month') {
       query =
         query +
         `
@@ -148,7 +148,7 @@ export class ContactsService {
     }
 
     //contacted_year
-    if (data.contacted_year) {
+    if (data.contacted == 'year') {
       query =
         query +
         `
@@ -163,7 +163,7 @@ export class ContactsService {
     }
 
     //never_contacted
-    if (data.never_contacted) {
+    if (data.contacted == 'never') {
       query =
         query +
         `
@@ -174,15 +174,43 @@ export class ContactsService {
 
     //has facebook
     if (data.hasFb) {
+      if (!query.includes('WHERE')) {
+        query =
+          query + ` where clinks->>'title'='facebook' and clinks->>'link'<>''`;
+      } else {
+        query =
+          query + ` and clinks->>'title'='facebook' and clinks->>'link'<>''`;
+      }
     }
     //has twitter
     if (data.hasTw) {
+      if (!query.includes('WHERE')) {
+        query =
+          query + ` where clinks->>'title'='twitter' and clinks->>'link'<>''`;
+      } else {
+        query =
+          query + ` and clinks->>'title'='twitter' and clinks->>'link'<>''`;
+      }
     }
     //has LinkedIn
     if (data.hasLi) {
+      if (!query.includes('WHERE')) {
+        query =
+          query + ` where clinks->>'title'='linkedin' and clinks->>'link'<>''`;
+      } else {
+        query =
+          query + ` and clinks->>'title'='linkedin' and clinks->>'link'<>''`;
+      }
     }
     //has Instagram
     if (data.hasIg) {
+      if (!query.includes('WHERE')) {
+        query =
+          query + ` where clinks->>'title'='instagram' and clinks->>'link'<>''`;
+      } else {
+        query =
+          query + ` and clinks->>'title'='instagram' and clinks->>'link'<>''`;
+      }
     }
 
     //age
@@ -199,7 +227,7 @@ export class ContactsService {
     }
 
     //new contacts
-    if (data.newContacts) {
+    if (data.newContacts == 'recent') {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -216,7 +244,7 @@ export class ContactsService {
     }
 
     //new contacts week
-    if (data.newContacts_week) {
+    if (data.newContacts == 'week') {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -235,7 +263,7 @@ export class ContactsService {
     }
 
     //new contacts month
-    if (data.newContacts_month) {
+    if (data.newContacts == 'month') {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -252,7 +280,7 @@ export class ContactsService {
     }
 
     //dob today
-    if (data.dob_today) {
+    if (data.dob == 'today') {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -268,7 +296,7 @@ export class ContactsService {
     }
 
     //dob week
-    if (data.dob_week) {
+    if (data.dob == 'week') {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -285,7 +313,7 @@ export class ContactsService {
       }
     }
     //dob month
-    if (data.dob_month) {
+    if (data.dob == 'month') {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -430,7 +458,9 @@ export class ContactsService {
       flag++;
     }
     if (data.socialLinks.length > 0) {
-      contactDetails.socialLinks = JSON.parse(JSON.stringify(data.socialLinks));
+      contactDetails.socialLinks = JSON.parse(
+        '{ "objects":' + JSON.stringify(data.socialLinks) + '}',
+      );
       flag++;
     }
 

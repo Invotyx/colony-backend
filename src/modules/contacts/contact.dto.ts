@@ -89,43 +89,18 @@ export class ContactFilter {
 
   @ApiPropertyOptional()
   @IsOptional()
-  public dob_today?: Boolean;
+  @IsIn(['today', 'week', 'month'])
+  public dob?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  public dob_week?: Boolean;
+  @IsIn(['week', 'month', 'year', 'never'])
+  public contacted?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  public dob_month?: Boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public contacted_week?: Boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public contacted_month?: Boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public contacted_year?: Boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public never_contacted?: Boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public newContacts?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public newContacts_week?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public newContacts_month?: boolean;
+  @IsIn(['recent', 'week', 'month'])
+  public newContacts?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

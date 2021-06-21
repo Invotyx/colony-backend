@@ -625,6 +625,12 @@ export class ContactsService {
           where: { user: _user, contact: contact },
         });
         if (!check) return { message: 'Contact already removed from list.' };
+        const conversation = await this.smsService.findOneConversations({
+          where: { user: null, contact: null },
+          relations: ['contact', 'user'],
+        });
+        conversation.removedFromList = true;
+        this.smsService.saveConversation(conversation);
         const check2 = await this.influencerContactRepo.remove(check);
         return { message: 'Contact removed from list.' };
       }

@@ -17,6 +17,7 @@ import { PhoneService } from '../phone/phone.service';
 import { SubscriptionsService } from '../products/subscription/subscriptions.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { PresetsDto, PresetsUpdateDto } from './dtos/preset.dto';
+import { ConversationsEntity } from './entities/conversations.entity';
 import { presetTrigger } from './entities/preset-message.entity';
 import { ConversationsRepository } from './repo/conversation-messages.repo';
 import { ConversationMessagesRepository } from './repo/conversation.repo';
@@ -72,6 +73,11 @@ export class SmsService {
     if (condition) return this.conversationsRepo.find(condition);
     else return this.conversationsRepo.find();
   }
+
+  public async saveConversation(conversation: ConversationsEntity) {
+    return this.conversationsRepo.save(conversation);
+  }
+
   public async findOneConversationsMessages(condition?: any) {
     if (condition) return this.conversationsMessagesRepo.findOne(condition);
     else return this.conversationsMessagesRepo.findOne();
@@ -118,7 +124,7 @@ export class SmsService {
 
           const conversation = await this.conversationsRepo.findOne({
             where: { contact: contact, phone: influencerNumber },
-            relations:['contact','phone']
+            relations: ['contact', 'phone'],
           });
 
           if (rel && conversation) {
@@ -234,7 +240,7 @@ export class SmsService {
     //add sms to conversation
     let conversation = await this.conversationsRepo.findOne({
       where: { contact: contact, user: influencerPhone.user },
-      relations: ['contact','phone'],
+      relations: ['contact', 'phone'],
     });
     let message;
     if (conversation) {
@@ -247,6 +253,7 @@ export class SmsService {
         sid: sid,
       });
 
+      conversation.removedFromList = false;
       conversation.isActive = true;
       await this.conversationsRepo.save(conversation);
     } else {
@@ -255,6 +262,7 @@ export class SmsService {
         phone: influencerPhone,
         isActive: type == 'broadcast' ? false : true,
         user: influencerPhone.user,
+        removedFromList: false,
       });
       message = await this.conversationsMessagesRepo.save({
         conversations: conversation,
@@ -493,7 +501,7 @@ export class SmsService {
       if (contactNumber) {
         const conversation = await this.conversationsRepo.findOne({
           where: { user: inf, contact: contactNumber },
-          relations:['contact','phone']
+          relations: ['contact', 'phone'],
         });
         await this.conversationsMessagesRepo.softDelete({
           conversations: conversation,

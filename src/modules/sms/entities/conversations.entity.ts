@@ -1,4 +1,3 @@
-import { InfluencerContactsEntity } from 'src/modules/contacts/entities/influencer-contacts.entity';
 import {
   AfterLoad,
   Column,
@@ -58,35 +57,20 @@ export class ConversationsEntity {
 
   public lastMessage: string;
   public lastSmsTime: Date;
+
+  @Column({ nullable: true, default: false })
   public removedFromList: boolean;
 
   @AfterLoad()
   async getLastConversationMessage() {
-    const innerSelect = getRepository(ConversationMessagesEntity)
+    const lastSms = await getRepository(ConversationMessagesEntity)
       .createQueryBuilder()
       .select('*')
       .where('"conversationsId" = :id', { id: this.id })
       .orderBy('"createdAt"', 'DESC')
-      .limit(1);
-    this.removedFromList = false;
+      .getOne();
 
-    const _user = getRepository(ConversationsEntity)
-      .createQueryBuilder()
-      .select('*')
-      .where('"id"=:id', { id: this.id });
-
-    const inf_contact_relation = getRepository(InfluencerContactsEntity)
-      .createQueryBuilder()
-      .select('*')
-      .where('"contactId" = :id', { id: this.contact.id })
-      .andWhere('"userId" = :id', { id: (await _user.getRawOne()).userId })
-      .orderBy('"createdAt"', 'DESC')
-      .limit(1);
-
-    console.log('AfterLoad', await inf_contact_relation.getOne());
-    if (await inf_contact_relation.getOne()) this.removedFromList = true;
-
-    this.lastMessage = (await innerSelect.getRawOne()).sms;
-    this.lastSmsTime = (await innerSelect.getRawOne()).createdAt;
+    this.lastMessage = lastSms.sms;
+    this.lastSmsTime = lastSms.createdAt;
   }
 }

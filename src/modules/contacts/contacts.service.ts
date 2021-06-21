@@ -168,10 +168,23 @@ export class ContactsService {
         query +
         `
         left join ${TABLES.CONVERSATIONS.name} co on ("co"."userId"=${influencerId} and "co"."contactId"="c"."id")
-        left join ${TABLES.CONVERSATION_MESSAGES.name} com on
-        ("com"."conversationsId"="co"."id" and "com"."type"<>'inBound')
+        left join ${TABLES.CONVERSATION_MESSAGES.name} com on ("com"."conversationsId"<>"co"."id")
       `;
     }
+
+    //has facebook
+    if (data.hasFb) {
+    }
+    //has twitter
+    if (data.hasTw) {
+    }
+    //has LinkedIn
+    if (data.hasLi) {
+    }
+    //has Instagram
+    if (data.hasIg) {
+    }
+
     //age
     if (data.ageFrom && data.ageTo) {
       if (!query.includes('WHERE')) {
@@ -282,7 +295,7 @@ export class ContactsService {
       } else {
         query =
           query +
-          ` WHERE date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))
+          ` and date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))
             AND date_part('day', age(c."dob"::date)) >= date_part('day', age(CURRENT_DATE::date))
           `;
       }
@@ -417,7 +430,7 @@ export class ContactsService {
       flag++;
     }
     if (data.socialLinks.length > 0) {
-      contactDetails.socialLinks = JSON.stringify(data.socialLinks);
+      contactDetails.socialLinks = JSON.parse(JSON.stringify(data.socialLinks));
       flag++;
     }
 
@@ -584,6 +597,7 @@ export class ContactsService {
         const check = await this.influencerContactRepo.findOne({
           where: { user: _user, contact: contact },
         });
+        if (!check) return { message: 'Contact already removed from list.' };
         const check2 = await this.influencerContactRepo.remove(check);
         return { message: 'Contact removed from list.' };
       }

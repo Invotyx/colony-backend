@@ -92,8 +92,6 @@ async function bootstrap() {
   app.use(urlencoded({ extended: true, limit: '50mb' }));
   app.enableCors({ origin: '*' });
   await app.listen(port, () => {
-    logger.info('test');
-    logger.error('error');
     console.log(
       'Listening API at http://localhost:' + port + '/' + globalPrefix,
     );

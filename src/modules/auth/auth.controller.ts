@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
+import { logger } from 'src/services/logs/log.storage';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { AuthMailer } from '../../mails/users/auth.mailer';
@@ -47,10 +48,10 @@ export class AuthController {
         };
       } else throw new BadRequestException('LOGIN_EMAIL_NOT_VERIFIED');
     } catch (error) {
+      logger.error(error);
       throw error;
     }
   }
-
 
   @ApiBody({ required: true })
   @Post('login')

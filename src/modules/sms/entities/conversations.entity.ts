@@ -69,16 +69,14 @@ export class ConversationsEntity {
       .orderBy('"createdAt"', 'DESC')
       .limit(1);
     this.removedFromList = false;
-    if (this.contact && this.user) {
-      const innerSelect2 = getRepository(InfluencerContactsEntity)
-        .createQueryBuilder()
-        .select('*')
-        .where('"contactId" = :id', { id: this.contact.id })
-        .where('"userId" = :id', { id: this.user.id })
-        .orderBy('"createdAt"', 'DESC')
-        .limit(1);
-      this.removedFromList = (await innerSelect2.getOne()) ? false : true;
-    }
+    const innerSelect2 = getRepository(InfluencerContactsEntity)
+      .createQueryBuilder()
+      .select('*')
+      .where('"contactId" = :id', { id: this.contact.id })
+      .where('"userId" = :id', { id: this.user.id })
+      .orderBy('"createdAt"', 'DESC')
+      .limit(1);
+    this.removedFromList = (await innerSelect2.getOne()) ? false : true;
 
     this.lastMessage = (await innerSelect.getRawOne()).sms;
     this.lastSmsTime = (await innerSelect.getRawOne()).createdAt;

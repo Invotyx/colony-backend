@@ -62,7 +62,7 @@ export class BroadcastService {
       });
     } catch (e) {
       console.log('createBroadcast', e);
-      throw new BadRequestException(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -78,7 +78,8 @@ export class BroadcastService {
         status: 'scheduled',
       });
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -89,7 +90,8 @@ export class BroadcastService {
       });
       return this.contactService.filterContacts(user.id, JSON.parse(b.filters));
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -121,11 +123,11 @@ export class BroadcastService {
     }
   }
 
-  public async getBroadcastMessages(bid:number) {
+  public async getBroadcastMessages(bid: number) {
     try {
-      
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -163,7 +165,7 @@ export class BroadcastService {
       return b;
     } catch (e) {
       console.log(e);
-      throw new BadRequestException(e);
+      throw new BadRequestException(e.message);
     }
   }
 

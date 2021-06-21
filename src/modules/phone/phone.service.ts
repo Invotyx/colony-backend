@@ -68,7 +68,8 @@ export class PhoneService {
 
       return this.repo.update({ id: phone.id }, phone);
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -201,7 +202,8 @@ export class PhoneService {
       );
       return numbers;
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 

@@ -394,7 +394,8 @@ export class ContactsService {
       }
       return _contact;
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -415,7 +416,8 @@ export class ContactsService {
       `);
       return contacts;
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -507,7 +509,8 @@ export class ContactsService {
 
       return { message: 'Contact details updated.', data: contactDetails };
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -553,7 +556,8 @@ export class ContactsService {
         throw new BadRequestException('Contact does not exist in our system.');
       }
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -571,7 +575,8 @@ export class ContactsService {
       }
       throw new BadRequestException('Contact not found');
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -582,7 +587,8 @@ export class ContactsService {
           `);
       return countries;
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -596,7 +602,8 @@ export class ContactsService {
       }
       return false;
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -613,7 +620,8 @@ export class ContactsService {
       }
       throw new BadRequestException('Contact not found');
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -636,7 +644,8 @@ export class ContactsService {
       }
       throw new BadRequestException('Contact not found');
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -653,7 +662,8 @@ export class ContactsService {
 
       throw new BadRequestException('User not found.');
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 }

@@ -73,7 +73,7 @@ export class ConversationsEntity {
       .createQueryBuilder()
       .select('*')
       .where('"contactId" = :id', { id: this.contact.id })
-      .where('"userId" = :id', { id: this.user.id })
+      .andWhere('"userId" = :id', { id: this.user.id })
       .orderBy('"createdAt"', 'DESC')
       .limit(1);
     this.removedFromList = (await innerSelect2.getOne()) ? false : true;

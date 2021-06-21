@@ -65,7 +65,7 @@ export class ContactsService {
   ): Promise<ContactsEntity> {
     try {
       const user = await this.users.findOne({
-        WHERE: { id: userId, isActive: true, isApproved: true },
+        where: { id: userId, isActive: true, isApproved: true },
       });
       if (user) {
         const con = await this.repository.findOne({
@@ -475,13 +475,13 @@ export class ContactsService {
 
     try {
       const user = await this.users.findOne({
-        WHERE: {
+        where: {
           id: userId,
         },
       });
 
       let preset_onboard: any = await this.smsService.findOneInPreSets({
-        WHERE: { trigger: 'onBoard', user: user },
+        where: { trigger: 'onBoard', user: user },
       });
 
       if (!preset_onboard) {
@@ -491,7 +491,7 @@ export class ContactsService {
       }
 
       let infNum = await this.phoneService.findOne({
-        WHERE: { id: number },
+        where: { id: number },
       });
 
       await this.repository.save(contactDetails);
@@ -560,10 +560,10 @@ export class ContactsService {
   async addToFavorites(_user: UserEntity, contactId: number) {
     try {
       const user = await this.users.findOne({
-        WHERE: { id: _user.id },
+        where: { id: _user.id },
         relations: ['favorites'],
       });
-      const contact = await this.findOne({ WHERE: { id: contactId } });
+      const contact = await this.findOne({ where: { id: contactId } });
       if (contact) {
         user.favorites.push(contact);
         await this.users.save(user);
@@ -603,10 +603,10 @@ export class ContactsService {
   async removeFromFavorites(_user: UserEntity, contactId: number) {
     try {
       const user = await this.users.findOne({
-        WHERE: { id: _user.id },
+        where: { id: _user.id },
         relations: ['favorites'],
       });
-      const contact = await this.findOne({ WHERE: { id: contactId } });
+      const contact = await this.findOne({ where: { id: contactId } });
       if (contact) {
         await this.favoriteRepo.delete({ user: user, contact: contact });
         return { message: 'Contact removed from favorite list.' };
@@ -619,7 +619,7 @@ export class ContactsService {
 
   async removeFromList(_user: UserEntity, contactId: number) {
     try {
-      const contact = await this.findOne({ WHERE: { id: contactId } });
+      const contact = await this.findOne({ where: { id: contactId } });
       if (contact) {
         const check = await this.influencerContactRepo.findOne({
           where: { user: _user, contact: contact },

@@ -626,7 +626,7 @@ export class ContactsService {
         });
         if (!check) return { message: 'Contact already removed from list.' };
         const conversation = await this.smsService.findOneConversations({
-          where: { user: null, contact: null },
+          where: { user: _user, contact: contact },
           relations: ['contact', 'user'],
         });
         conversation.removedFromList = true;

@@ -16,7 +16,13 @@ import { PhoneService } from '../phone/phone.service';
 import { SmsService } from '../sms/sms.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/services/users.service';
-import { ContactDto, ContactFilter } from './contact.dto';
+import {
+  ContactDto,
+  contacted,
+  ContactFilter,
+  dob,
+  newContacts,
+} from './contact.dto';
 import { ContactsRepository } from './repo/contact.repo';
 import { FavoriteContactRepository } from './repo/favorite-contact.repo';
 import { InfluencerContactRepository } from './repo/influencer-contact.repo';
@@ -107,10 +113,10 @@ export class ContactsService {
     influencerId: number,
     data: ContactFilter,
   ): Promise<{ contacts: ContactsEntity[]; count: number }> {
-    let query = `SELECT c.* FROM ${TABLES.CONTACTS.name} c, json_array_elements("c"."socialLinks"#>'{objects}') clinks, Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
+    let query = `SELECT c.* FROM ${TABLES.CONTACTS.name} c, json_array_elements(c."socialLinks"#>'{objects}') clinks Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
 
     //contacted_week
-    if (data.contacted == 'week') {
+    if (data.contacted == contacted.week) {
       query =
         query +
         `
@@ -130,7 +136,7 @@ export class ContactsService {
     }
 
     //contacted_month
-    if (data.contacted == 'month') {
+    if (data.contacted == contacted.month) {
       query =
         query +
         `
@@ -148,7 +154,7 @@ export class ContactsService {
     }
 
     //contacted_year
-    if (data.contacted == 'year') {
+    if (data.contacted == contacted.year) {
       query =
         query +
         `
@@ -163,7 +169,7 @@ export class ContactsService {
     }
 
     //never_contacted
-    if (data.contacted == 'never') {
+    if (data.contacted == contacted.never) {
       query =
         query +
         `
@@ -227,7 +233,7 @@ export class ContactsService {
     }
 
     //new contacts
-    if (data.newContacts == 'recent') {
+    if (data.newContacts == newContacts.recent) {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -244,7 +250,7 @@ export class ContactsService {
     }
 
     //new contacts week
-    if (data.newContacts == 'week') {
+    if (data.newContacts == newContacts.week) {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -263,7 +269,7 @@ export class ContactsService {
     }
 
     //new contacts month
-    if (data.newContacts == 'month') {
+    if (data.newContacts == newContacts.month) {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -280,7 +286,7 @@ export class ContactsService {
     }
 
     //dob today
-    if (data.dob == 'today') {
+    if (data.dob == dob.today) {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -296,7 +302,7 @@ export class ContactsService {
     }
 
     //dob week
-    if (data.dob == 'week') {
+    if (data.dob == dob.week) {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -313,7 +319,7 @@ export class ContactsService {
       }
     }
     //dob month
-    if (data.dob == 'month') {
+    if (data.dob == dob.month) {
       if (!query.includes('WHERE')) {
         query =
           query +
@@ -458,9 +464,7 @@ export class ContactsService {
       flag++;
     }
     if (data.socialLinks.length > 0) {
-      contactDetails.socialLinks = JSON.parse(
-        '{ "objects":' + JSON.stringify(data.socialLinks) + '}',
-      );
+      contactDetails.socialLinks = JSON.parse(JSON.stringify(data.socialLinks));
       flag++;
     }
 

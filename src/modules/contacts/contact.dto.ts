@@ -1,6 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsBoolean,
   IsIn,
   IsNotEmpty,
   IsNumber,
@@ -78,6 +77,25 @@ export class PaginationDto {
   page?: number;
 }
 
+export enum dob {
+  today = 'today',
+  week = 'week',
+  month = 'month',
+}
+
+export enum contacted {
+  week = 'week',
+  month = 'month',
+  year = 'year',
+  never = 'never',
+}
+
+export enum newContacts {
+  recent = 'recent',
+  week = 'week',
+  month = 'month',
+}
+
 export class ContactFilter {
   @ApiPropertyOptional()
   @IsOptional()
@@ -90,17 +108,17 @@ export class ContactFilter {
   @ApiPropertyOptional()
   @IsOptional()
   @IsIn(['today', 'week', 'month'])
-  public dob?: string;
+  public dob?: dob;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsIn(['week', 'month', 'year', 'never'])
-  public contacted?: string;
+  public contacted?: contacted;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsIn(['recent', 'week', 'month'])
-  public newContacts?: string;
+  public newContacts?: newContacts;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -121,7 +139,7 @@ export class ContactFilter {
   @ApiPropertyOptional({ enum: ['male', 'female', 'non_binary'] })
   @IsOptional()
   @IsIn(['male', 'female', 'non_binary'])
-  public gender?: string;
+  public gender?: gender;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -149,4 +167,13 @@ export class ContactFilter {
 
   @IsOptional()
   public filter?: string;
+
+  @IsOptional()
+  public lat?: number;
+
+  @IsOptional()
+  public long?: number;
+
+  @IsOptional()
+  public radius?: number;
 }

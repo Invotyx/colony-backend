@@ -233,6 +233,7 @@ export class SmsService {
     //add sms to conversation
     let conversation = await this.conversationsRepo.findOne({
       where: { contact: contact, user: influencerPhone.user },
+      relations: ['contact','phone'],
     });
     let message;
     if (conversation) {

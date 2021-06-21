@@ -118,6 +118,7 @@ export class SmsService {
 
           const conversation = await this.conversationsRepo.findOne({
             where: { contact: contact, phone: influencerNumber },
+            relations:['contact','phone']
           });
 
           if (rel && conversation) {
@@ -492,6 +493,7 @@ export class SmsService {
       if (contactNumber) {
         const conversation = await this.conversationsRepo.findOne({
           where: { user: inf, contact: contactNumber },
+          relations:['contact','phone']
         });
         await this.conversationsMessagesRepo.softDelete({
           conversations: conversation,

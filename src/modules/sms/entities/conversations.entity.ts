@@ -63,14 +63,15 @@ export class ConversationsEntity {
 
   @AfterLoad()
   async getLastConversationMessage() {
-    const lastSms = await getRepository(ConversationMessagesEntity)
+    const query = getRepository(ConversationMessagesEntity)
       .createQueryBuilder()
       .select('*')
       .where('"conversationsId" = :id', { id: this.id })
-      .orderBy('"createdAt"', 'DESC')
-      .getOne();
-
-    this.lastMessage = lastSms.sms;
-    this.lastSmsTime = lastSms.createdAt;
+      .orderBy('"createdAt"', 'DESC');
+    
+    const lastSms = await query.getRawOne();
+    
+    this.lastMessage = lastSms?.sms;
+    this.lastSmsTime = lastSms?.createdAt;
   }
 }

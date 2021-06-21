@@ -630,7 +630,7 @@ export class ContactsService {
           relations: ['contact', 'user'],
         });
         conversation.removedFromList = true;
-        this.smsService.saveConversation(conversation);
+        await this.smsService.saveConversation(conversation);
         const check2 = await this.influencerContactRepo.remove(check);
         return { message: 'Contact removed from list.' };
       }

@@ -4,7 +4,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
-  Injectable,
+  Injectable
 } from '@nestjs/common';
 import e from 'express';
 import { env } from 'process';
@@ -158,11 +158,7 @@ export class PhoneService {
     return str;
   }
 
-  async searchNumbers(
-    country: string,
-    limit: number,
-    number_must_have: string = '',
-  ) {
+  async searchNumbers(country: string, limit: number, number_must_have = '') {
     try {
       const cc = await this.cityCountry.countryRepo.findOne({
         where: { id: country, active: true },
@@ -210,7 +206,7 @@ export class PhoneService {
   private async searchPhoneNumbers(
     cc: string,
     limit: number,
-    number_must_have: string = '',
+    number_must_have = '',
   ) {
     const country = cc.toUpperCase();
     //
@@ -218,7 +214,7 @@ export class PhoneService {
       let numbers;
       if (country == 'US' || country == 'CA') {
         numbers = await this.client.availablePhoneNumbers(country).local.list({
-          contains: number_must_have,
+          areaCode: number_must_have,
           smsEnabled: true,
           limit: limit,
         });

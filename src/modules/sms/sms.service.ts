@@ -463,9 +463,9 @@ export class SmsService {
       const conversations = await this.conversationsRepo.find({
         where: { user: inf },
         order: { updatedAt: 'DESC' },
-        relations: ['phone', 'contact', 'user'],
+        relations: ['phone', 'contact'],
         take: count,
-        skip: count * page - count,
+        skip: page == 1 ? 0 : count * page - count,
       });
 
       if (conversations.length > 0) {
@@ -487,15 +487,18 @@ export class SmsService {
     try {
       const conversation = await this.conversationsRepo.findOne({
         where: { user: inf, id: conversationId },
-        relations: ['phone', 'contact'],
       });
+      console.log('count', count);
+      console.log('page', page);
+      console.log('skip', count * page - count);
+
       const conversationMessage = await this.conversationsMessagesRepo.find({
         where: {
           conversations: conversation,
         },
         order: { createdAt: 'DESC' },
         take: count,
-        skip: count * page - count,
+        skip: page == 1 ? 0 : count * page - count,
       });
       if (conversation) return conversationMessage;
       throw new BadRequestException('No messages found.');

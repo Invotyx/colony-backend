@@ -107,17 +107,17 @@ export class ContactFilter {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsIn(['today', 'week', 'month'])
+  @IsIn(['today', 'week', 'month', ''])
   public dob?: dob;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsIn(['week', 'month', 'year', 'never'])
+  @IsIn(['week', 'month', 'year', 'never', ''])
   public contacted?: contacted;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsIn(['recent', 'week', 'month'])
+  @IsIn(['recent', 'week', 'month', ''])
   public newContacts?: newContacts;
 
   @ApiPropertyOptional()
@@ -136,9 +136,9 @@ export class ContactFilter {
   @IsOptional()
   public hasLi?: boolean;
 
-  @ApiPropertyOptional({ enum: ['male', 'female', 'non_binary'] })
+  @ApiPropertyOptional({ enum: ['male', 'female', 'non_binary', ''] })
   @IsOptional()
-  @IsIn(['male', 'female', 'non_binary'])
+  @IsIn(['male', 'female', 'non_binary', ''])
   public gender?: gender;
 
   @ApiPropertyOptional()

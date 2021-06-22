@@ -154,7 +154,7 @@ export class BroadcastService {
       const b = await this.repository.find({
         where: { user: user },
         take: count,
-        skip: count * page - count,
+        skip: page == 1 ? 0 : count * page - count,
       });
       for (let i of b) {
         i.contacts = (await this.contactService.filterContacts(

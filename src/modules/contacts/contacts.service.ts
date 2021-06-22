@@ -399,7 +399,7 @@ export class ContactsService {
         where: { userId: user.id },
         relations: ['contact'],
         take: count,
-        skip: count * page - count,
+        skip: page == 1 ? 0 : count * page - count,
       });
       let _contact = [];
       for (let contact of contacts) {

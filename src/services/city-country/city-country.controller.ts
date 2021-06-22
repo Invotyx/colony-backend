@@ -73,6 +73,7 @@ export class CityCountryController {
         take: limit,
         skip: limit * page - limit,
       });
+      return cities;
     } catch (ex) {
       throw ex;
     }

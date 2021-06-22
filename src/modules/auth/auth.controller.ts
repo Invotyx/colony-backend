@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   Request,
   UsePipes,
   ValidationPipe,
@@ -62,6 +63,25 @@ export class AuthController {
       );
     } catch (e) {
       throw new HttpException(e, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+  }
+
+  @Get('verify-forgot-password')
+  async verfiyResetPasswordToken(@Query() param: any) {
+    try {
+      const isEmailVerified = await this.userService.verifyResetPasswordToken(
+        param.token,
+        param.email,
+      );
+
+      if (isEmailVerified)
+        return {
+          accessToken: (await this.authService.login(isEmailVerified))
+            .accessToken,
+        };
+      else throw new BadRequestException('PASSWORD_NOT_VERIFIED');
+    } catch (error) {
+      throw error;
     }
   }
 

@@ -2,7 +2,8 @@ import {
   BadRequestException,
   HttpException,
   HttpStatus,
-  Injectable
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import * as fs from 'fs';
 import { nanoid } from 'nanoid';
@@ -12,7 +13,14 @@ import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer
 import { ForgotPassword } from 'src/modules/users/entities/forgottenpassword.entity';
 import { CityRepository } from 'src/services/city-country/repos/city.repo';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
-import { columnListToSelect, dataViewer, mapColumns, paginateQuery, PaginatorError, PaginatorErrorHandler } from 'src/shared/paginator';
+import {
+  columnListToSelect,
+  dataViewer,
+  mapColumns,
+  paginateQuery,
+  PaginatorError,
+  PaginatorErrorHandler,
+} from 'src/shared/paginator';
 import { EmailTokenSender } from '../../../mails/users/emailtoken.mailer';
 import { RoleRepository } from '../../../repos/roles.repo';
 import { PasswordHashEngine } from '../../../shared/hash.service';
@@ -22,7 +30,7 @@ import { EmailVerifications } from '../entities/verifyemail.entity';
 import {
   EmailAlreadyExistError,
   PhoneAlreadyExistError,
-  UserNameAlreadyExistError
+  UserNameAlreadyExistError,
 } from '../errors/users.error';
 import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
 import { UserRepository } from '../repos/user.repo';
@@ -221,10 +229,7 @@ export class UsersService {
     }
   }
 
-  async verifyResetPasswordToken(
-    token: string,
-    email: string,
-  ): Promise<boolean> {
+  async verifyResetPasswordToken(token: string, email: string): Promise<UserEntity> {
     const emailVerif = await this.password.findOne({
       where: {
         newPasswordToken: token,
@@ -236,12 +241,12 @@ export class UsersService {
         where: { email: emailVerif.email },
       });
       if (userFromDb) {
-        return true;
+        return userFromDb;
       } else {
-        return false;
+        throw new NotFoundException('User not found');
       }
     } else {
-      return false;
+      throw new NotFoundException('Invalid Token');
     }
   }
 

@@ -5,7 +5,6 @@ import {
   Get,
   Param,
   Post,
-  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -90,20 +89,6 @@ export class UsersController {
         console.error('Mail server down, try again later!');
         throw new BadRequestException('Mail server down, try again later!');
       }
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @Get('verify-forgot-password')
-  async verfiyResetPasswordToken(@Query() param: any) {
-    try {
-      const isEmailVerified = await this.userService.verifyResetPasswordToken(
-        param.token,
-        param.email,
-      );
-      if (isEmailVerified) return isEmailVerified;
-      else throw new BadRequestException('PASSWORD_NOT_VERIFIED');
     } catch (error) {
       throw error;
     }

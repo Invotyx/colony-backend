@@ -19,14 +19,14 @@ export class ForgotPasswordTokenSender {
       if (model && model.newPasswordToken) {
         const appConfig = await AppConfig();
         const markdownContent = [
-          'You are receiving this email because we received a request for account creation.',
+          'You are receiving this email because we received a request for password reset.',
           `#### Click this link to verify your email`,
           `** ${
             process.env.PUBLIC_APP_URL +
             '/reset-password/' +
             model.newPasswordToken +
             '/' +
-            model.email
+            model.email+'/verify'
           } **`,
           '---',
           'Best Regards,',

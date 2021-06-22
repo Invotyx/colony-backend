@@ -191,7 +191,8 @@ export class ContactsService {
       `;
     }
 
-    query += `, json_array_elements(c."socialLinks"#>'{objects}') clinks `;
+    if (data.hasFb || data.hasTw || data.hasLi || data.hasIg)
+      query += `, json_array_elements(c."socialLinks"#>'{objects}') clinks `;
     //has facebook
     if (data.hasFb) {
       if (!query.includes('WHERE')) {

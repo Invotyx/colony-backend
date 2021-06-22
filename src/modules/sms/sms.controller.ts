@@ -18,6 +18,7 @@ import { Response } from 'express';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { ROLES } from '../../services/access-control/consts/roles.const';
+import { PaginationDto } from '../contacts/contact.dto';
 import { ContactsService } from '../contacts/contacts.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { BroadcastService } from './broadcast.service';
@@ -73,11 +74,10 @@ export class SmsController {
   @Get('/conversations')
   async getConversations(
     @LoginUser() inf: UserEntity,
-    @Query('page') page?: number,
-    @Query('perPage') perPage?: number,
+    @Query() data?: PaginationDto,
   ) {
     try {
-      return this.service.getConversations(inf, perPage, page);
+      return this.service.getConversations(inf, data.perPage, data.page);
     } catch (e) {
       throw e;
     }
@@ -88,11 +88,15 @@ export class SmsController {
   async getConversation(
     @LoginUser() inf: UserEntity,
     @Param('conversationId') conversationId: string,
-    @Query('page') page?: number,
-    @Query('perPage') perPage?: number,
+    @Query() data?: PaginationDto,
   ) {
     try {
-      return this.service.getConversation(inf, conversationId, perPage, page);
+      return this.service.getConversation(
+        inf,
+        conversationId,
+        data.perPage,
+        data.page,
+      );
     } catch (e) {
       throw e;
     }
@@ -215,11 +219,10 @@ export class SmsController {
   @Get('broadcasts')
   async getBroadcasts(
     @LoginUser() user: UserEntity,
-    @Query('page') page?: number,
-    @Query('perPage') perPage?: number,
+    @Query() data: PaginationDto,
   ) {
     try {
-      return this.broadcastService.getBroadcasts(user, perPage, page);
+      return this.broadcastService.getBroadcasts(user, data.perPage, data.page);
     } catch (e) {
       throw e;
     }

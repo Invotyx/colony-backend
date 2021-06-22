@@ -27,6 +27,7 @@ import { SMSTemplatesRepository } from './repo/sms-templates.repo';
 @Injectable()
 export class SmsService {
   private client;
+  private pusher;
   constructor(
     private readonly smsTemplateRepo: SMSTemplatesRepository,
     private readonly presetRepo: PresetMessagesRepository,
@@ -47,6 +48,15 @@ export class SmsService {
         lazyLoading: true,
       },
     );
+    const Pusher = require('pusher');
+
+    this.pusher = new Pusher({
+      appId: env.PUSHER_APP_ID,
+      key: env.PUSHER_APP_KEY,
+      secret: env.PUSHER_APP_SECRET,
+      cluster: env.PUSHER_APP_CLUSTER,
+      encrypted: true,
+    });
   }
 
   public async findOneInTemplates(condition?: any) {

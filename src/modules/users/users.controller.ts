@@ -174,7 +174,6 @@ export class UsersController {
     }
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('update-password')
   @UsePipes(ValidationPipe)
   async updatePwd(@Body() data: PasswordChange) {

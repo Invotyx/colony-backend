@@ -284,14 +284,16 @@ export class SmsService {
   ) {
     try {
       const _contact = await this.contactService.findOne({
-        where: { phoneNumber: contact, user: inf },
+        where: { phoneNumber: contact },
       });
+      console.log("initiate sms", _contact);
       if (_contact) {
         const conversation = await this.conversationsRepo.findOne({
           where: { contact: _contact, user: inf },
           relations: ['user', 'contact', 'phone'],
         });
 
+      console.log('initiate sms', conversation);
         let _inf_phone = conversation.phone;
         if (_inf_phone && _inf_phone.status != 'in-use') {
           const __inf_phone = await this.phoneService.findOne({
@@ -305,6 +307,8 @@ export class SmsService {
             );
           }
         }
+        
+      console.log('initiate sms', _inf_phone);
         if (_inf_phone)
           if (scheduled) {
             //handle schedule here
@@ -342,6 +346,8 @@ export class SmsService {
         );
       }
     } catch (e) {
+      
+      console.error('initiateSms', e);
       throw e;
     }
   }
@@ -357,12 +363,14 @@ export class SmsService {
         influencerNumber.user,
       );
 
+      console.log('sendSms', checkThreshold);
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },
       });
 
       const plan = await this.subService.planService.findOne();
 
+      console.log('sendSms', plan);
       if (
         !checkThreshold ||
         checkThreshold.cost + country.smsCost < plan.threshold

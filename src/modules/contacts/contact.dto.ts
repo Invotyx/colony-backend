@@ -148,7 +148,7 @@ export class ContactFilter {
   public city?: string;
 
   @ApiPropertyOptional()
-  @IsNotEmpty()
+  @IsOptional()
   @Length(2, 10)
   public country?: string;
 

@@ -298,6 +298,7 @@ export class SmsService {
         if (_inf_phone && _inf_phone.status != 'in-use') {
           const __inf_phone = await this.phoneService.findOne({
             where: { user: inf, country: _contact.cCode, status: 'in-use' },
+            relations:['user']
           });
           if (__inf_phone) {
             _inf_phone = __inf_phone;
@@ -316,9 +317,9 @@ export class SmsService {
               contact: _contact,
               inf_phone: _inf_phone,
               message: tagReplace(message, {
-                name: _contact.name,
+                name: _contact?.name,
                 inf_name:
-                  _inf_phone.user.firstName + ' ' + _inf_phone.user.firstName,
+                  _inf_phone.user?.firstName + ' ' + _inf_phone.user?.firstName,
               }),
               type: 'outBound',
             };
@@ -334,9 +335,9 @@ export class SmsService {
           _contact,
           _inf_phone,
           tagReplace(message, {
-            name: _contact.name,
+            name: _contact?.name,
             inf_name:
-              _inf_phone.user.firstName + ' ' + _inf_phone.user.firstName,
+              _inf_phone.user?.firstName + ' ' + _inf_phone.user?.firstName,
           }),
           'outBound',
         );

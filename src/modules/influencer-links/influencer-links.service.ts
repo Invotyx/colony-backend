@@ -41,6 +41,19 @@ export class InfluencerLinksService {
     }
   }
 
+  public validURL(str) {
+    var pattern = new RegExp(
+      '^(https?:\\/\\/)?' + // protocol
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+        '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+        '(\\#[-a-z\\d_]*)?$',
+      'i',
+    ); // fragment locator
+    return !!pattern.test(str);
+  }
+
   async getLinkDetailsByUniqueId(id: any) {
     try {
       return this.repository.findOne({
@@ -54,7 +67,8 @@ export class InfluencerLinksService {
 
   async deleteLink(id: number, user: UserEntity) {
     try {
-      return this.repository.delete({ id: id, user: user });
+      const link = await this.repository.findOne({ id: id, user: user });
+      return this.repository.remove(link);
     } catch (e) {
       throw e;
     }

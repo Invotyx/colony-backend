@@ -16,6 +16,7 @@ import {
   PaginatorError,
   PaginatorErrorHandler,
 } from 'src/shared/paginator';
+import { Like } from 'typeorm';
 import { CountryCost } from './country-cost.dto';
 import { CityRepository } from './repos/city.repo';
 import { CountryRepository } from './repos/country.repo';
@@ -32,7 +33,9 @@ export class CityCountryController {
   @Get()
   async getCountries() {
     try {
-      const countries = await this.countryRepo.find();
+      const countries = await this.countryRepo.find({
+        order: { name: 'ASC' },
+      });
       return { countries: countries };
     } catch (e) {
       throw e;
@@ -63,57 +66,13 @@ export class CityCountryController {
     @Query('city') city: string,
   ) {
     try {
-      if (!page) {
-        page = 1;
-      }
-      if (!limit) {
-        limit = 20;
-      }
-      const data: any = {
-        filter: {
-          condition: 'AND',
-          rules: [
-            {
-              field: 'countryId',
-              operator: 'equal',
-              value: id,
-            },
-            {
-              condition: 'OR',
-              rules: [
-                {
-                  field: 'name',
-                  operator: 'begins_with',
-                  value: city ? city.toUpperCase() : '',
-                  type: 'string',
-                  input: 'text',
-                },
-                {
-                  field: 'name',
-                  operator: 'begins_with',
-                  value: city
-                    ? city
-                        .substr(0, 1)
-                        .toUpperCase()
-                        .concat(city.substring(1, city.length))
-                    : '',
-                  type: 'string',
-                  input: 'text',
-                },
-              ],
-            },
-          ],
-          valid: true,
-        },
-        config: {
-          sort: 'name',
-          order: 'ASC',
-          page: page,
-          limit: limit,
-        },
-      };
-
-      return this.getAllCities(data);
+      const country = await this.countryRepo.findOne({ where: { id: id } });
+      const cities = await this.cityRepo.find({
+        where: { country: country, name: Like(city) },
+        order: { name: 'ASC' },
+        take: limit,
+        skip: limit * page - limit,
+      });
     } catch (ex) {
       throw ex;
     }
@@ -128,7 +87,6 @@ export class CityCountryController {
         countryId: { table: citiesTable, column: 'countryId' },
       };
       const sortList = {
-        id: { table: citiesTable, column: 'id' },
         name: { table: citiesTable, column: 'name' },
       };
       const filterList = {

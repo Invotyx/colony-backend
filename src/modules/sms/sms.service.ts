@@ -293,6 +293,7 @@ export class SmsService {
           relations: ['user', 'contact', 'phone'],
         });
 
+        conversation.phone.user = conversation.user as any;
         let _inf_phone = conversation.phone;
         if (_inf_phone && _inf_phone.status != 'in-use') {
           const __inf_phone = await this.phoneService.findOne({

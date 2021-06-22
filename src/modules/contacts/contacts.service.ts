@@ -178,6 +178,19 @@ export class ContactsService {
       `;
     }
 
+    if (data.radius && data.lat && data.long) {
+      query =
+        query +
+        `
+        left join ${TABLES.CITY.name} ci on ("ci"."id"="c"."cityId" and
+          acos(sin("ci"."lat" * 0.0175) * sin(${data.lat} * 0.0175) 
+               + cos("ci"."lat" * 0.0175) * cos(${data.lat} * 0.0175) *    
+                 cos((${data.long} * 0.0175) - ("ci"."long" * 0.0175))
+              ) * 3959 <= ${data.radius}
+          )
+      `;
+    }
+
     query += `, json_array_elements(c."socialLinks"#>'{objects}') clinks `;
     //has facebook
     if (data.hasFb) {
@@ -225,11 +238,11 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE date_part('year', age(c."dob")) BETWEEN ${data.ageFrom} and ${data.ageTo}`;
+          ` WHERE date_part('year', age(c."dob")) BETWEEN ${data.ageFrom} and ${data.ageTo} `;
       } else {
         query =
           query +
-          ` and date_part('year', age(c."dob")) BETWEEN ${data.ageFrom} and ${data.ageTo}`;
+          ` and date_part('year', age(c."dob")) BETWEEN ${data.ageFrom} and ${data.ageTo} `;
       }
     }
 

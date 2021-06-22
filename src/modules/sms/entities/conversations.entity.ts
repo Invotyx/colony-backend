@@ -67,10 +67,11 @@ export class ConversationsEntity {
       .createQueryBuilder()
       .select('*')
       .where('"conversationsId" = :id', { id: this.id })
+      .andWhere('"type" <> :type', { type: 'broadcastOutbound' })
       .orderBy('"createdAt"', 'DESC');
-    
+
     const lastSms = await query.getRawOne();
-    
+
     this.lastMessage = lastSms?.sms;
     this.lastSmsTime = lastSms?.createdAt;
   }

@@ -286,19 +286,18 @@ export class SmsService {
       const _contact = await this.contactService.findOne({
         where: { phoneNumber: contact },
       });
-      console.log("initiate sms", _contact);
+
       if (_contact) {
         const conversation = await this.conversationsRepo.findOne({
           where: { contact: _contact, user: inf },
           relations: ['user', 'contact', 'phone'],
         });
 
-      console.log('initiate sms', conversation);
         let _inf_phone = conversation.phone;
         if (_inf_phone && _inf_phone.status != 'in-use') {
           const __inf_phone = await this.phoneService.findOne({
             where: { user: inf, country: _contact.cCode, status: 'in-use' },
-            relations:['user']
+            relations: ['user'],
           });
           if (__inf_phone) {
             _inf_phone = __inf_phone;
@@ -308,29 +307,29 @@ export class SmsService {
             );
           }
         }
-        
-      console.log('initiate sms', _inf_phone);
-        if (_inf_phone)
-          if (scheduled) {
-            //handle schedule here
-            const q_obj = {
-              contact: _contact,
-              inf_phone: _inf_phone,
-              message: tagReplace(message, {
-                name: _contact?.name,
-                inf_name:
-                  _inf_phone.user?.firstName + ' ' + _inf_phone.user?.firstName,
-              }),
-              type: 'outBound',
-            };
-            await this.queue.add('scheduled_message', q_obj, {
-              removeOnComplete: true,
-              removeOnFail: true,
-              attempts: 2,
-              delay: 1000,
-            });
-            return;
-          }
+
+        if (scheduled) {
+          //handle schedule here
+          const q_obj = {
+            contact: _contact,
+            inf_phone: _inf_phone,
+            message: tagReplace(message, {
+              name: _contact?.name,
+              inf_name:
+                _inf_phone.user?.firstName + ' ' + _inf_phone.user?.firstName,
+            }),
+            type: 'outBound',
+          };
+          await this.queue.add('scheduled_message', q_obj, {
+            removeOnComplete: true,
+            removeOnFail: true,
+            attempts: 2,
+            delay: 1000,
+          });
+          console.log(q_obj, 'Added to queue');
+          return;
+        }
+        console.log('initiateSms sendSms Called');
         await this.sendSms(
           _contact,
           _inf_phone,
@@ -341,13 +340,13 @@ export class SmsService {
           }),
           'outBound',
         );
+        return;
       } else {
         throw new BadRequestException(
           'You cannot send message to contact who has not subscribed you yet.',
         );
       }
     } catch (e) {
-      
       console.error('initiateSms', e);
       throw e;
     }
@@ -359,19 +358,23 @@ export class SmsService {
     type: string,
   ) {
     try {
+      console.log("entered sendSms");
       const checkThreshold = await this.paymentHistory.getDues(
         'sms',
         influencerNumber.user,
       );
 
-      console.log('sendSms', checkThreshold);
+      console.log('sendSms checkThreshold', checkThreshold);
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },
       });
 
+      console.log('sendSms country', country);
+
+
       const plan = await this.subService.planService.findOne();
 
-      console.log('sendSms', plan);
+      console.log('sendSms plan', plan);
       if (
         !checkThreshold ||
         checkThreshold.cost + country.smsCost < plan.threshold
@@ -381,6 +384,7 @@ export class SmsService {
           to: contact.phoneNumber, //recipient(s)
           from: influencerNumber.number,
         });
+      console.log('sendSms message', message);
 
         if (message.status != 'sent') {
           //failure case

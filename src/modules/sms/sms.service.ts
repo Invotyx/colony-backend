@@ -308,7 +308,7 @@ export class SmsService {
           }
         }
 
-        if (scheduled) {
+        if (scheduled != null) {
           //handle schedule here
           const q_obj = {
             contact: _contact,
@@ -324,7 +324,6 @@ export class SmsService {
             removeOnComplete: true,
             removeOnFail: true,
             attempts: 2,
-            delay: 1000,
           });
           console.log(q_obj, 'Added to queue');
           return;
@@ -358,7 +357,7 @@ export class SmsService {
     type: string,
   ) {
     try {
-      console.log("entered sendSms");
+      console.log('entered sendSms');
       const checkThreshold = await this.paymentHistory.getDues(
         'sms',
         influencerNumber.user,
@@ -370,7 +369,6 @@ export class SmsService {
       });
 
       console.log('sendSms country', country);
-
 
       const plan = await this.subService.planService.findOne();
 
@@ -384,7 +382,7 @@ export class SmsService {
           to: contact.phoneNumber, //recipient(s)
           from: influencerNumber.number,
         });
-      console.log('sendSms message', message);
+        console.log('sendSms message', message);
 
         if (message.status != 'sent') {
           //failure case

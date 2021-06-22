@@ -12,6 +12,7 @@ import { ProductsModule } from '../products/products.module';
 import { UsersModule } from '../users/users.module';
 import { BroadcastService } from './broadcast.service';
 import { InboundSmsProcessor } from './sms-inbound.processor';
+import { ScheduledSmsProcessor } from './sms-scheduled.processor';
 import { SmsController } from './sms.controller';
 import { SmsService } from './sms.service';
 
@@ -37,6 +38,7 @@ import { SmsService } from './sms.service';
   providers: [
     SmsService,
     InboundSmsProcessor,
+    ScheduledSmsProcessor,
     PaymentHistoryService,
     CityCountryService,
     PhoneService,

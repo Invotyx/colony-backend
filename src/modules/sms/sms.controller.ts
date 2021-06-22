@@ -130,7 +130,12 @@ export class SmsController {
     @Body('scheduled') scheduled?: Date,
   ) {
     try {
-      return this.service.initiateSendSms(inf, contact, message, scheduled);
+      return this.service.initiateSendSms(
+        inf,
+        contact,
+        message,
+        scheduled ? scheduled : null,
+      );
     } catch (e) {
       throw e;
     }

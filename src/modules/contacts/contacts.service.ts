@@ -124,12 +124,14 @@ export class ContactsService {
         left join ${TABLES.CONVERSATION_MESSAGES.name} com on
         ("com"."conversationsId"="co"."id" and
           (
-            date_part('month', age(com."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
+            date_part('month', date com."createdAt") = date_part('month', CURRENT_DATE::date)
             and
-            date_part('day', age(com."createdAt"::date)) between
-            (date_part('day', age(CURRENT_DATE::date))-7)
+            date_part('year', date com."createdAt") = date_part('year', CURRENT_DATE::date) and
+            date_part('day', date com."createdAt") between
+            (date_part('day',CURRENT_DATE::date)-7)
             and
-            date_part('day', age(CURRENT_DATE::date))
+            date_part('day', CURRENT_DATE::date)
+
           )
         )
       `;
@@ -144,10 +146,9 @@ export class ContactsService {
         left join ${TABLES.CONVERSATION_MESSAGES.name} com on
         ("com"."conversationsId"="co"."id" and
           (
-            date_part('month', age(com."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
+            date_part('month', date com."createdAt") = date_part('month', CURRENT_DATE)
             and
-            date_part('day', age(com."createdAt"::date)) between
-            1 and date_part('day', age(CURRENT_DATE::date))
+            date_part('year', date com."createdAt") = date_part('year', CURRENT_DATE::date))
           )
         )
       `;
@@ -162,7 +163,7 @@ export class ContactsService {
         left join ${TABLES.CONVERSATION_MESSAGES.name} com on
         ("com"."conversationsId"="co"."id" and
           (
-            date_part('year', age(com."createdAt"::date)) = date_part('year', age(CURRENT_DATE::date))
+            date_part('year', date com."createdAt") = date_part('year', CURRENT_DATE::date))
           )
         )
       `;
@@ -173,8 +174,7 @@ export class ContactsService {
       query =
         query +
         `
-        left join ${TABLES.CONVERSATIONS.name} co on ("co"."userId"=${influencerId} and "co"."contactId"="c"."id")
-        left join ${TABLES.CONVERSATION_MESSAGES.name} com on ("com"."conversationsId"<>"co"."id")
+        left join ${TABLES.CONVERSATIONS.name} co on ("co"."userId"=${influencerId} and "co"."contactId"<>"c"."id")
       `;
     }
 
@@ -239,11 +239,11 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE date_part('year', age(c."dob")) BETWEEN ${data.ageFrom} and ${data.ageTo} `;
+          ` WHERE date_part('year', age(timestamp c."dob")) BETWEEN ${data.ageFrom} and ${data.ageTo} `;
       } else {
         query =
           query +
-          ` and date_part('year', age(c."dob")) BETWEEN ${data.ageFrom} and ${data.ageTo} `;
+          ` and date_part('year', age(timestamp c."dob")) BETWEEN ${data.ageFrom} and ${data.ageTo} `;
       }
     }
 
@@ -252,15 +252,15 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE date_part('month', age(c."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
-            and date_part('day', age(c."createdAt"::date)) between (date_part('day', age(CURRENT_DATE::date))-2)
-            and date_part('day', age(CURRENT_DATE::date))`;
+          ` WHERE date_part('month', c."createdAt"::date) = date_part('month',CURRENT_DATE::date)
+            and date_part('day', c."createdAt"::date) between (date_part('day', CURRENT_DATE::date)-2)
+            and date_part('day', CURRENT_DATE::date)`;
       } else {
         query =
           query +
-          `and date_part('month', age(c."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
-           and date_part('day', age(c."createdAt"::date)) between (date_part('day', age(CURRENT_DATE::date))-2)
-           and date_part('day', age(CURRENT_DATE::date))`;
+          `and date_part('month', c."createdAt"::date) = date_part('month',CURRENT_DATE::date)
+            and date_part('day', c."createdAt"::date) between (date_part('day', CURRENT_DATE::date)-2)
+            and date_part('day', CURRENT_DATE::date)`;
       }
     }
 
@@ -269,16 +269,16 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE date_part('month', age(c."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
-            AND date_part('day', age(c."createdAt"::date)) between (date_part('day', age(CURRENT_DATE::date))-7)
-            and date_part('day', age(CURRENT_DATE::date))
+          ` WHERE date_part('month', c."createdAt"::date) = date_part('month',CURRENT_DATE::date)
+            and date_part('day', c."createdAt"::date) between (date_part('day', CURRENT_DATE::date)-7)
+            and date_part('day', CURRENT_DATE::date)
           `;
       } else {
         query =
           query +
-          ` and  date_part('month', age(c."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
-            AND date_part('day', age(c."createdAt"::date)) between (date_part('day', age(CURRENT_DATE::date))-7) and
-            date_part('day', age(CURRENT_DATE::date))
+          ` and date_part('month', c."createdAt"::date) = date_part('month',CURRENT_DATE::date)
+            and date_part('day', c."createdAt"::date) between (date_part('day', CURRENT_DATE::date)-7)
+            and date_part('day', CURRENT_DATE::date)
             `;
       }
     }
@@ -288,14 +288,14 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE date_part('month', age(c."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
-            AND date_part('day', age(c."createdAt"::date)) between 1 and date_part('day', age(CURRENT_DATE::date))
+          ` WHERE date_part('month', c."createdAt"::date) = date_part('month', CURRENT_DATE::date)
+            AND date_part('day', c."createdAt"::date) between 1 and date_part('day', CURRENT_DATE::date)
           `;
       } else {
         query =
           query +
-          ` and  date_part('month', age(c."createdAt"::date)) = date_part('month', age(CURRENT_DATE::date))
-            AND date_part('day', age(c."createdAt"::date)) between 1 and date_part('day', age(CURRENT_DATE::date))
+          ` and  date_part('month', c."createdAt"::date) = date_part('month', CURRENT_DATE::date)
+            AND date_part('day', c."createdAt"::date) between 1 and date_part('day', CURRENT_DATE::date)
             `;
       }
     }
@@ -305,14 +305,14 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE date_part('day', age(c."dob"::date)) = date_part('day', age(CURRENT_DATE::date))
-            AND date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))
+          ` WHERE date_part('day', c."dob"::date) = date_part('day', CURRENT_DATE::date)
+            AND date_part('month', c."dob"::date) = date_part('month', CURRENT_DATE::date)
           `;
       } else {
         query =
           query +
-          `AND date_part('day', age(c."dob"::date)) = date_part('day', age(CURRENT_DATE::date))
-            AND date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))`;
+          `AND date_part('day', c."dob"::date) = date_part('day',CURRENT_DATE::date)
+            AND date_part('month', c."dob"::date) = date_part('month', CURRENT_DATE::date)`;
       }
     }
 
@@ -321,16 +321,16 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))
-            AND date_part('day', age(c."dob"::date)) between date_part('day', age(CURRENT_DATE::date))
-            and (date_part('day', age(CURRENT_DATE::date))+7)
+          ` WHERE date_part('month', c."dob"::date) = date_part('month',CURRENT_DATE::date)
+            AND date_part('day', c."dob"::date) between date_part('day', CURRENT_DATE::date)
+            and (date_part('day', CURRENT_DATE::date)+7)
           `;
       } else {
         query =
           query +
-          `AND  date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))
-            AND date_part('day', age(c."dob"::date)) between date_part('day', age(CURRENT_DATE::date))
-            and (date_part('day', age(CURRENT_DATE::date))+7)`;
+          `AND  date_part('month', c."dob"::date) = date_part('month',CURRENT_DATE::date)
+            AND date_part('day', c."dob"::date) between date_part('day', CURRENT_DATE::date)
+            and (date_part('day', CURRENT_DATE::date)+7)`;
       }
     }
     //dob month
@@ -338,14 +338,14 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))
-            AND date_part('day', age(c."dob"::date)) >= date_part('day', age(CURRENT_DATE::date))
+          ` WHERE date_part('month', c."dob"::date) = date_part('month',CURRENT_DATE::date)
+            AND date_part('day', c."dob"::date) >= date_part('day', CURRENT_DATE::date)
           `;
       } else {
         query =
           query +
-          ` and date_part('month', age(c."dob"::date)) = date_part('month', age(CURRENT_DATE::date))
-            AND date_part('day', age(c."dob"::date)) >= date_part('day', age(CURRENT_DATE::date))
+          ` and  date_part('month', c."dob"::date) = date_part('month',CURRENT_DATE::date)
+            AND date_part('day', c."dob"::date) >= date_part('day', CURRENT_DATE::date)
           `;
       }
     }
@@ -471,8 +471,8 @@ export class ContactsService {
       contactDetails.city = data.city;
       flag++;
     }
-    if (data.socialLinks.length > 0) {
-      contactDetails.socialLinks = JSON.parse(JSON.stringify(data.socialLinks));
+    if (data.socialLinks.objects.length > 0) {
+      contactDetails.socialLinks = data.socialLinks;
       flag++;
     }
 

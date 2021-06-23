@@ -52,9 +52,13 @@ export class ContactDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  public socialLinks: SocialLinks[];
+  public socialLinks: Objects;
 }
 
+export class Objects {
+  @IsOptional()
+  public objects: SocialLinks[];
+}
 export class SocialLinks {
   @IsNotEmpty()
   public link: string;

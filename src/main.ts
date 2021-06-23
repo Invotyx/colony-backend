@@ -70,7 +70,12 @@ async function bootstrap() {
     new ValidationPipe({
       errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
       transform: true,
-      transformOptions: { enableImplicitConversion: true },
+      skipMissingProperties: true,
+      skipNullProperties: true,
+      skipUndefinedProperties: true,
+      transformOptions: {
+        enableImplicitConversion: true, 
+      },
       exceptionFactory: (errors) => {
         errors = Object.assign(
           {},

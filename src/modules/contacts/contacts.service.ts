@@ -6,7 +6,6 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { Console } from 'console';
 import * as fs from 'fs';
 import { join } from 'path';
 import { TABLES } from 'src/consts/tables.const';
@@ -375,9 +374,13 @@ export class ContactsService {
     //join date
     if (data.joinDate) {
       if (!query.includes('WHERE')) {
-        query = query + ` WHERE c."createdAt"::date = '${data.joinDate}'`;
+        query = query + ` WHERE c."createdAt"::date = '${data.joinDate}'::date`;
       } else {
-        query = query + ` and c."createdAt"::date = '${data.joinDate}'`;
+        query =
+          query +
+          ` and c."createdAt"::date = '${JSON.stringify(
+            new Date(data.joinDate),
+          ).slice(1, 11)}'::date`;
       }
     }
 

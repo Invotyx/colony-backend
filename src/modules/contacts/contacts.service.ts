@@ -124,10 +124,10 @@ export class ContactsService {
         left join ${TABLES.CONVERSATION_MESSAGES.name} com on
         ("com"."conversationsId"="co"."id" and
           (
-            date_part('month', date com."createdAt") = date_part('month', CURRENT_DATE::date)
+            date_part('month', com."createdAt"::date) = date_part('month', CURRENT_DATE::date)
             and
-            date_part('year', date com."createdAt") = date_part('year', CURRENT_DATE::date) and
-            date_part('day', date com."createdAt") between
+            date_part('year', com."createdAt"::date) = date_part('year', CURRENT_DATE::date) and
+            date_part('day', com."createdAt"::date) between
             (date_part('day',CURRENT_DATE::date)-7)
             and
             date_part('day', CURRENT_DATE::date)
@@ -146,9 +146,9 @@ export class ContactsService {
         left join ${TABLES.CONVERSATION_MESSAGES.name} com on
         ("com"."conversationsId"="co"."id" and
           (
-            date_part('month', date com."createdAt") = date_part('month', CURRENT_DATE)
+            date_part('month', com."createdAt"::date) = date_part('month', CURRENT_DATE)
             and
-            date_part('year', date com."createdAt") = date_part('year', CURRENT_DATE::date))
+            date_part('year', com."createdAt"::date) = date_part('year', CURRENT_DATE::date))
           )
         )
       `;
@@ -163,7 +163,7 @@ export class ContactsService {
         left join ${TABLES.CONVERSATION_MESSAGES.name} com on
         ("com"."conversationsId"="co"."id" and
           (
-            date_part('year', date com."createdAt") = date_part('year', CURRENT_DATE::date))
+            date_part('year', com."createdAt"::date) = date_part('year', CURRENT_DATE::date))
           )
         )
       `;

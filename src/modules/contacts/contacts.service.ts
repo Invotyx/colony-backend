@@ -423,8 +423,7 @@ export class ContactsService {
     try {
       const contacts = await this.repository.query(`
         select "c".* from "contacts" "c"
-        left join "influencer_contacts" "ic" on "ic"."contactId"="c"."id"
-        left join "users" "u" on ("u"."id"="ic"."userId" and "u"."id"=${user.id} )
+        inner join "influencer_contacts" "ic" on ("ic"."contactId"="c"."id" and "ic"."userId"=${user.id})
         WHERE extract(month from "c"."dob") = extract(month from current_date)
         and extract(day from "c"."dob") = extract(day from current_date);
       `);

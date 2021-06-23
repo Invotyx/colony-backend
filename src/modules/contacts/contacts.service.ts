@@ -6,6 +6,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { Console } from 'console';
 import * as fs from 'fs';
 import { join } from 'path';
 import { TABLES } from 'src/consts/tables.const';
@@ -379,6 +380,8 @@ export class ContactsService {
         query = query + ` and c."createdAt"::date = '${data.joinDate}'`;
       }
     }
+
+    console.log(query);
 
     const contacts = await this.repository.query(query);
     return { contacts: contacts, count: contacts.length };

@@ -239,11 +239,11 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE date_part('year', age(timestamp c."dob")) BETWEEN ${data.ageFrom} and ${data.ageTo} `;
+          ` WHERE date_part('year', age(c."dob"::date)) BETWEEN ${data.ageFrom} and ${data.ageTo} `;
       } else {
         query =
           query +
-          ` and date_part('year', age(timestamp c."dob")) BETWEEN ${data.ageFrom} and ${data.ageTo} `;
+          ` and date_part('year', age(c."dob"::date)) BETWEEN ${data.ageFrom} and ${data.ageTo} `;
       }
     }
 

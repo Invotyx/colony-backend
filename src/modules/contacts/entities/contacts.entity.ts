@@ -18,7 +18,6 @@ import { InfluencerLinksTrackingEntity } from '../../influencer-links/entities/i
 import { BroadcastsContactsEntity } from '../../sms/entities/broadcast-contacts.entity';
 import { ConversationsEntity } from '../../sms/entities/conversations.entity';
 import { UserEntity } from '../../users/entities/user.entity';
-import { Objects } from '../contact.dto';
 import { FavoriteContactsEntity } from './favorite-contacts.entity';
 import { InfluencerContactsEntity } from './influencer-contacts.entity';
 
@@ -49,7 +48,7 @@ export class ContactsEntity {
   public dob: Date;
 
   @Column({ nullable: true, type: 'json' })
-  public socialLinks: Objects;
+  public socialLinks: JSON;
 
   @Column({ nullable: true })
   public profileImage: string;

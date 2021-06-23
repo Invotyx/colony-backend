@@ -472,7 +472,7 @@ export class ContactsService {
       flag++;
     }
     if (data.socialLinks.objects.length > 0) {
-      contactDetails.socialLinks = data.socialLinks;
+      contactDetails.socialLinks = JSON.parse(JSON.stringify(data.socialLinks));
       flag++;
     }
 

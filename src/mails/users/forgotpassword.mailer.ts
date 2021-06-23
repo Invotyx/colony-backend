@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { env } from 'process';
 import { ForgotPassword } from 'src/modules/users/entities/forgottenpassword.entity';
 import { ForgotPasswordRepository } from 'src/modules/users/repos/forgotpassword.repo';
 import { AppConfig } from '../../configs/app.config';
 import { MailBuilder, MailClient } from '../../services/mail/mail.service';
-import { MarkDown } from '../../shared/marked';
 
 @Injectable()
 export class ForgotPasswordTokenSender {
@@ -18,36 +18,115 @@ export class ForgotPasswordTokenSender {
       console.log('model: ', model);
       if (model && model.newPasswordToken) {
         const appConfig = await AppConfig();
-        const markdownContent = [
-          'You are receiving this email because we received a request for password reset.',
-          `#### Click this link to reset your password`,
-          `** ${
-            process.env.PUBLIC_APP_URL +
-            '/reset-password/' +
-            model.newPasswordToken +
-            '/' +
-            model.email +
-            '/verify'
-          } **`,
-          '---',
-          'Best Regards,',
-          `${appConfig.name} IT Team`,
-        ].join('\n\n');
-        const markdownHTML = await MarkDown(markdownContent);
-        const htmlContent = await this.mailBuilder.build({
-          content: markdownHTML,
-        });
+
+        const html = `
+                    
+            <!doctype html>
+            <html lang="en-US">
+
+            <head>
+                <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+                <title>Reset Password Email Template</title>
+                <meta name="description" content="Reset Password Email Template.">
+                <style type="text/css">
+                    a:hover {text-decoration: underline !important;}
+                </style>
+            </head>
+
+            <body marginheight="0" topmargin="0" marginwidth="0" style="margin: 0px; background-color: #f2f3f8;" leftmargin="0">
+                <!--100% body table-->
+                <table cellspacing="0" border="0" cellpadding="0" width="100%" bgcolor="#f2f3f8"
+                    style="@import url(https://fonts.googleapis.com/css?family=Rubik:300,400,500,700|Open+Sans:300,400,600,700); font-family: 'Open Sans', sans-serif;">
+                    <tr>
+                        <td>
+                            <table style="background-color: #f2f3f8; max-width:670px;  margin:0 auto;" width="100%" border="0"
+                                align="center" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="height:80px;">&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;">
+                                      <a href="${
+                                        env.PUBLIC_APP_URL
+                                      }" title="logo" target="_blank">
+                                        <img width="180" src="https://dev.colony.ga/_next/image?url=%2Fimages%2Findex-logo.svg&w=256&q=75" title="logo" alt="Colony">
+                                      </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="height:20px;">&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0"
+                                            style="max-width:670px;background:#fff; border-radius:3px; text-align:center;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);-moz-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);box-shadow:0 6px 18px 0 rgba(0,0,0,.06);">
+                                            <tr>
+                                                <td style="height:40px;">&nbsp;</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:0 35px;">
+                                                    <h1 style="color:#1e1e2d; font-weight:500; margin:0;font-size:32px;font-family:'Rubik',sans-serif;">You have
+                                                        requested to reset your password</h1>
+                                                    <span
+                                                        style="display:inline-block; vertical-align:middle; margin:29px 0 26px; border-bottom:1px solid #cecece; width:100px;"></span>
+                                                    <p style="color:#455056; font-size:15px;line-height:24px; margin:0;">
+                                                        We cannot simply send you your old password. A unique link to reset your
+                                                        password has been generated for you. To reset your password, click the
+                                                        following link and follow the instructions.
+                                                    </p>
+                                                    <a href="${
+                                                      process.env
+                                                        .PUBLIC_APP_URL +
+                                                      '/reset-password/' +
+                                                      model.newPasswordToken +
+                                                      '/' +
+                                                      model.email +
+                                                      '/verify'
+                                                    }"
+                                                        style="background:#f37334;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">Reset
+                                                        Password</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="height:40px;">&nbsp;</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                <tr>
+                                    <td style="height:20px;">&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;">
+                                        <p style="font-size:14px; color:rgba(69, 80, 86, 0.7411764705882353); line-height:18px; margin:0 0 0;">&copy; <strong>${
+                                          env.PUBLIC_APP_URL
+                                        }</strong></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="height:80px;">&nbsp;</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <!--/100% body table-->
+            </body>
+
+            </html>
+        `;
+
         const mail = await this.mailClient.send({
           to: { name: model.email, address: model.email },
           subject: 'Password Reset Request',
-          html: htmlContent,
-          text: markdownContent,
+          html: html,
+          text: html,
         });
         return mail;
       }
     } catch (ex) {
+      console.log(ex);
       throw new HttpException(
-        'Mail server down, unable to send account verification email!',
+        'Mail server down, unable to send reset password email!',
         HttpStatus.SERVICE_UNAVAILABLE,
       );
     }

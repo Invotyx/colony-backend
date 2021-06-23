@@ -372,9 +372,13 @@ export class ContactsService {
     }
 
     //join date
-    if (data.joinDate) {
+    if (data.joinDate && data.joinDate.toString() != 'Invalid Date') {
       if (!query.includes('WHERE')) {
-        query = query + ` WHERE c."createdAt"::date = '${data.joinDate}'::date`;
+        query =
+          query +
+          ` WHERE c."createdAt"::date = '${JSON.stringify(
+            new Date(data.joinDate),
+          ).slice(1, 11)}'::date`;
       } else {
         query =
           query +

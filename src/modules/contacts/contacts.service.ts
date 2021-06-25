@@ -475,7 +475,7 @@ export class ContactsService {
       contactDetails.city = data.city;
       flag++;
     }
-    if (data.socialLinks.objects.length > 0) {
+    if (data.socialLinks) {
       contactDetails.socialLinks = JSON.parse(JSON.stringify(data.socialLinks));
       flag++;
     }

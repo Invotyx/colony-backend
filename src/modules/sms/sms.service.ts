@@ -6,6 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Queue } from 'bull';
+import { PusherService } from 'nestjs-pusher';
 import { env } from 'process';
 import { CityCountryService } from '../../services/city-country/city-country.service';
 import { tagReplace } from '../../shared/tag-replace';
@@ -17,6 +18,7 @@ import { PhoneService } from '../phone/phone.service';
 import { SubscriptionsService } from '../products/subscription/subscriptions.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { PresetsDto, PresetsUpdateDto } from './dtos/preset.dto';
+import { ConversationMessagesEntity } from './entities/conversation-messages.entity';
 import { ConversationsEntity } from './entities/conversations.entity';
 import { presetTrigger } from './entities/preset-message.entity';
 import { ConversationsRepository } from './repo/conversation-messages.repo';
@@ -27,7 +29,6 @@ import { SMSTemplatesRepository } from './repo/sms-templates.repo';
 @Injectable()
 export class SmsService {
   private client;
-  private pusher;
   constructor(
     private readonly smsTemplateRepo: SMSTemplatesRepository,
     private readonly presetRepo: PresetMessagesRepository,
@@ -38,6 +39,7 @@ export class SmsService {
     private readonly conversationsMessagesRepo: ConversationMessagesRepository,
     private readonly subService: SubscriptionsService,
     private readonly paymentHistory: PaymentHistoryService,
+    private readonly pusher: PusherService,
     private readonly countryService: CityCountryService,
     @InjectQueue('sms_q') private readonly queue: Queue,
   ) {
@@ -48,15 +50,6 @@ export class SmsService {
         lazyLoading: true,
       },
     );
-    const Pusher = require('pusher');
-
-    this.pusher = new Pusher({
-      appId: env.PUSHER_APP_ID,
-      key: env.PUSHER_APP_KEY,
-      secret: env.PUSHER_APP_SECRET,
-      cluster: env.PUSHER_APP_CLUSTER,
-      encrypted: true,
-    });
   }
 
   public async findOneInTemplates(condition?: any) {
@@ -139,13 +132,18 @@ export class SmsService {
 
           if (rel && conversation) {
             console.log('conversation found');
-            await this.saveSms(
+            const message = await this.saveSms(
               contact,
               influencerNumber,
               body,
               receivedAt,
               'inBound',
               sid,
+            );
+            await this.pusher.trigger(
+              'private-colony-dev',
+              'sms-received-' + influencerNumber.user.id,
+              message,
             );
 
             console.log(
@@ -252,7 +250,7 @@ export class SmsService {
       where: { contact: contact, user: influencerPhone.user },
       relations: ['contact', 'phone'],
     });
-    let message;
+    let message: ConversationMessagesEntity;
     if (conversation) {
       message = await this.conversationsMessagesRepo.save({
         conversations: conversation,
@@ -472,7 +470,7 @@ export class SmsService {
   ) {
     try {
       const conversations = await this.conversationsRepo.find({
-        where: { user: inf },
+        where: { user: inf, isActive: true },
         order: { updatedAt: 'DESC' },
         relations: ['phone', 'contact'],
         take: count,

@@ -1,5 +1,4 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
 import {
   IsIn,
   IsNotEmpty,
@@ -21,28 +20,28 @@ export enum gender {
 
 export class ContactDto {
   @ApiPropertyOptional()
-  @IsOptional()
+  @IsNotEmpty()
   @Length(3, 60)
   public name: string;
 
   @ApiPropertyOptional({ enum: gender })
-  @IsOptional()
+  @IsNotEmpty()
   public gender: gender;
 
   @ApiPropertyOptional()
-  @IsOptional()
+  @IsNotEmpty()
   public dob: Date;
 
   @ApiPropertyOptional()
-  @IsOptional()
+  @IsNotEmpty()
   public country: CountryEntity;
 
   @ApiPropertyOptional()
-  @IsOptional()
+  @IsNotEmpty()
   public city: CityEntity;
 
   @ApiPropertyOptional()
-  @IsOptional()
+  @IsNotEmpty()
   @Length(3, 100)
   public state: string;
 

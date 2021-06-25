@@ -6,8 +6,8 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Queue } from 'bull';
-import { PusherService } from 'nestjs-pusher';
 import { env } from 'process';
+import Pusher from 'pusher';
 import { CityCountryService } from '../../services/city-country/city-country.service';
 import { tagReplace } from '../../shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
@@ -29,6 +29,7 @@ import { SMSTemplatesRepository } from './repo/sms-templates.repo';
 @Injectable()
 export class SmsService {
   private client;
+  private pusher;
   constructor(
     private readonly smsTemplateRepo: SMSTemplatesRepository,
     private readonly presetRepo: PresetMessagesRepository,
@@ -39,7 +40,6 @@ export class SmsService {
     private readonly conversationsMessagesRepo: ConversationMessagesRepository,
     private readonly subService: SubscriptionsService,
     private readonly paymentHistory: PaymentHistoryService,
-    private readonly pusher: PusherService,
     private readonly countryService: CityCountryService,
     @InjectQueue('sms_q') private readonly queue: Queue,
   ) {
@@ -50,6 +50,13 @@ export class SmsService {
         lazyLoading: true,
       },
     );
+
+    this.pusher = new Pusher({
+      key: env.PUSHER_APP_KEY,
+      appId: env.PUSHER_APP_ID,
+      secret: env.PUSHER_APP_SECRET,
+      cluster: env.PUSHER_APP_CLUSTER,
+    });
   }
 
   public async findOneInTemplates(condition?: any) {

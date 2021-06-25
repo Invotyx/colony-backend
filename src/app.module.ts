@@ -3,9 +3,7 @@ import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { PusherModule } from 'nestjs-pusher';
 import { join } from 'path';
-import { env } from 'process';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
@@ -33,21 +31,8 @@ import { AppLogger } from './services/logs/log.service';
 import { MailModule } from './services/mail/mail.module';
 import { MainMysqlModule } from './shared/main-mysql.module';
 
-const yourPusherOptions = {
-  key: env.PUSHER_APP_KEY,
-  appId: env.PUSHER_APP_ID,
-  secret: env.PUSHER_APP_SECRET,
-  cluster: env.PUSHER_APP_CLUSTER,
-};
-
-const chunkingOptions = {
-  limit: 10000, //4mb
-  enabled: false,
-};
-
 @Module({
   imports: [
-    PusherModule.forRoot(yourPusherOptions, chunkingOptions, true),
     ScheduleModule.forRoot(),
     MulterModule.register({
       dest: './uploads',

@@ -47,8 +47,6 @@ export class ContactsEntity {
   @Column({ nullable: true })
   public dob: Date;
 
-  @Column({ nullable: true, type: 'json' })
-  public socialLinks: JSON;
 
   @Column({ nullable: true })
   public profileImage: string;
@@ -95,6 +93,18 @@ export class ContactsEntity {
     inverseJoinColumn: { name: 'userId', referencedColumnName: 'id' },
   })
   user: UserEntity[];
+
+  @Column({ length: 200, nullable: true })
+  public facebook: string;
+
+  @Column({ length: 200, nullable: true })
+  public instagram: string;
+
+  @Column({ length: 200, nullable: true })
+  public linkedin: string;
+
+  @Column({ length: 200, nullable: true })
+  public twitter: string;
 
   @ManyToMany(() => UserEntity, (u) => u.favorites)
   public influencers!: UserEntity[];

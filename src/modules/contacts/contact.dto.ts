@@ -52,19 +52,21 @@ export class ContactDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  public socialLinks: {
-    objects: SocialLinks[];
-  };
+  public facebook: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public instagram: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public twitter: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public linkedin: string;
 }
 
-export class SocialLinks {
-  @IsNotEmpty()
-  public link: string;
-
-  @IsNotEmpty()
-  @Length(2, 30)
-  public title: string;
-}
 
 export class PaginationDto {
   @IsOptional()

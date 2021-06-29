@@ -113,7 +113,7 @@ export class ContactsService {
     influencerId: number,
     data: ContactFilter,
   ): Promise<{ contacts: ContactsEntity[]; count: number }> {
-    let query = `SELECT c.* FROM ${TABLES.CONTACTS.name} c Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
+    let query = `SELECT  c.* FROM ${TABLES.CONTACTS.name} c Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
 
     //contacted_week
     if (data.contacted == contacted.week) {
@@ -191,46 +191,35 @@ export class ContactsService {
       `;
     }
 
-    if (data.hasFb || data.hasTw || data.hasLi || data.hasIg)
-      query += `, json_array_elements(c."socialLinks"#>'{objects}') clinks `;
-    //has facebook
     if (data.hasFb) {
       if (!query.includes('WHERE')) {
-        query =
-          query + `WHERE clinks->>'title'='facebook' and clinks->>'link'<>''`;
+        query = query + `WHERE "c"."facebook"<>null`;
       } else {
-        query =
-          query + ` and clinks->>'title'='facebook' and clinks->>'link'<>''`;
+        query = query + ` and  "c"."facebook"<>null`;
       }
     }
     //has twitter
-    if (data.hasTw) {
+    if (data.hasIg) {
       if (!query.includes('WHERE')) {
-        query =
-          query + ` WHERE clinks->>'title'='twitter' and clinks->>'link'<>''`;
+        query = query + ` WHERE  "c"."instagram"<>null`;
       } else {
-        query =
-          query + ` and clinks->>'title'='twitter' and clinks->>'link'<>''`;
+        query = query + ` and "c"."instagram"<>null`;
       }
     }
     //has LinkedIn
     if (data.hasLi) {
       if (!query.includes('WHERE')) {
-        query =
-          query + ` WHERE clinks->>'title'='linkedin' and clinks->>'link'<>''`;
+        query = query + ` WHERE "c"."linkedin"<>null`;
       } else {
-        query =
-          query + ` and clinks->>'title'='linkedin' and clinks->>'link'<>''`;
+        query = query + ` and "c"."linkedin"<>null`;
       }
     }
     //has Instagram
-    if (data.hasIg) {
+    if (data.hasTw) {
       if (!query.includes('WHERE')) {
-        query =
-          query + ` WHERE clinks->>'title'='instagram' and clinks->>'link'<>''`;
+        query = query + ` WHERE "c"."twitter"<>null`;
       } else {
-        query =
-          query + ` and clinks->>'title'='instagram' and clinks->>'link'<>''`;
+        query = query + ` and "c"."twitter"<>null`;
       }
     }
 
@@ -475,8 +464,23 @@ export class ContactsService {
       contactDetails.city = data.city;
       flag++;
     }
-    if (data.socialLinks) {
-      contactDetails.socialLinks = JSON.parse(JSON.stringify(data.socialLinks));
+    if (data.facebook) {
+      contactDetails.facebook = data.facebook;
+      flag++;
+    }
+
+    if (data.instagram) {
+      contactDetails.instagram = data.instagram;
+      flag++;
+    }
+
+    if (data.twitter) {
+      contactDetails.twitter = data.twitter;
+      flag++;
+    }
+
+    if (data.linkedin) {
+      contactDetails.linkedin = data.linkedin;
       flag++;
     }
 

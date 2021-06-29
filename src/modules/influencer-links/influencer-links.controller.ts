@@ -8,10 +8,9 @@ import {
   Post,
   Put,
   Query,
-  UnprocessableEntityException
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { IsUrl } from 'class-validator';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { UserEntity } from '../../modules/users/entities/user.entity';
@@ -32,7 +31,7 @@ export class InfluencerLinksController {
   ) {
     try {
       if (!this.service.validURL(link))
-        throw new UnprocessableEntityException("Invalid link");
+        throw new UnprocessableEntityException('Invalid link');
       return {
         data: await this.service.addLink(link, influencer),
         message: 'Link added successfully.',
@@ -41,8 +40,6 @@ export class InfluencerLinksController {
       throw e;
     }
   }
-
-  
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Get('shareable-link')
@@ -65,6 +62,8 @@ export class InfluencerLinksController {
     @Body('link') link: string,
   ) {
     try {
+      if (!this.service.validURL(link))
+        throw new UnprocessableEntityException('Invalid link');
       return {
         data: await this.service.updateLink(id, link, influencer),
         message: 'Link updated successfully.',

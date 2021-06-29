@@ -148,7 +148,7 @@ export class SmsService {
               sid,
             );
             await this.pusher.trigger(
-              'private-colony-dev',
+              'colony-dev',
               'sms-received-' + influencerNumber.user.id,
               message,
             );

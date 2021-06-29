@@ -143,6 +143,7 @@ export class SmsService {
               receivedAt,
               'inBound',
               sid,
+              'received'
             );
             message.conversations = message.conversations.id as any;
             message.conversations_contact = message.conversations.contact
@@ -285,7 +286,7 @@ export class SmsService {
       message = await this.conversationsMessagesRepo.save({
         conversations: conversation,
         sms: body,
-        status: '',
+        status: status,
         type: type,
         receivedAt: receivedAt,
         sid: sid,

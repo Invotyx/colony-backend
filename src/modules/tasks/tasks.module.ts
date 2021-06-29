@@ -7,13 +7,20 @@ import { PaymentHistoryModule } from '../payment-history/payment-history.module'
 import { PhoneModule } from '../phone/phone.module';
 import { ProductsModule } from '../products/products.module';
 import { SmsModule } from '../sms/sms.module';
+import { OutboundBroadcastSmsProcessor } from './broadcast.processor';
+import { ScheduledSmsProcessor } from './sms-scheduled.processor';
 import { TasksService } from './tasks.service';
 
 @Module({
   imports: [
-    BullModule.registerQueue({
-      name: 'broadcast_q',
-    }),
+    BullModule.registerQueue(
+      {
+        name: 'broadcast_q',
+      },
+      {
+        name: 'sms_q',
+      },
+    ),
     MainMysqlModule,
     forwardRef(() => ContactsModule),
     forwardRef(() => SmsModule),
@@ -22,6 +29,10 @@ import { TasksService } from './tasks.service';
     forwardRef(() => PhoneModule),
     forwardRef(() => InfluencerLinksModule),
   ],
-  providers: [TasksService],
+  providers: [
+    TasksService,
+    OutboundBroadcastSmsProcessor,
+    ScheduledSmsProcessor,
+  ],
 })
 export class TasksModule {}

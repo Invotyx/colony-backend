@@ -30,6 +30,9 @@ export class ConversationMessagesEntity {
   @Column({ length: 1000 })
   public sms: string;
 
+  @Column({ nullable: true })
+  public scheduled: Date;
+  
   @Column({ length: 10 })
   public status: string;
 

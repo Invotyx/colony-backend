@@ -90,6 +90,15 @@ export class InfluencerLinksController {
   }
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('search')
+  async searchLink(
+    @LoginUser() influencer: UserEntity,
+    @Query('link') link: string,
+  ) {
+    return this.service.searchLink(link, influencer);
+  }
+
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Put(':uniqueId/open')
   async linkOpened(@Param('uniqueId') uniqueId: string) {
     try {

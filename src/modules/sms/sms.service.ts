@@ -1,11 +1,9 @@
-import { InjectQueue } from '@nestjs/bull';
 import {
   BadRequestException,
   forwardRef,
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { Queue } from 'bull';
 import { env } from 'process';
 import Pusher from 'pusher';
 import { CityCountryService } from '../../services/city-country/city-country.service';
@@ -41,7 +39,6 @@ export class SmsService {
     private readonly subService: SubscriptionsService,
     private readonly paymentHistory: PaymentHistoryService,
     private readonly countryService: CityCountryService,
-    @InjectQueue('sms_q') private readonly queue: Queue,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -253,6 +250,7 @@ export class SmsService {
     type: string,
     sid: string,
     status?: string,
+    scheduled?: Date,
   ) {
     //create conversation if not created yet.
     //add sms to conversation
@@ -265,7 +263,8 @@ export class SmsService {
       message = await this.conversationsMessagesRepo.save({
         conversations: conversation,
         sms: body,
-        status: '',
+        status: status,
+        scheduled: scheduled ? scheduled : null,
         type: type,
         receivedAt: receivedAt,
         sid: sid,
@@ -330,22 +329,22 @@ export class SmsService {
 
         if (scheduled != null) {
           //handle schedule here
-          const q_obj = {
-            contact: _contact,
-            inf_phone: _inf_phone,
-            message: tagReplace(message, {
+          scheduled = new Date(new Date().getTime() + 3 * 60000);
+
+          this.saveSms(
+            _contact,
+            _inf_phone,
+            tagReplace(message, {
               name: _contact?.name,
               inf_name:
                 _inf_phone.user?.firstName + ' ' + _inf_phone.user?.firstName,
             }),
-            type: 'outBound',
-          };
-          await this.queue.add('scheduled_message', q_obj, {
-            removeOnComplete: true,
-            removeOnFail: true,
-            attempts: 2,
-          });
-          console.log(q_obj, 'Added to queue');
+            null,
+            'outBound',
+            '',
+            'scheduled',
+            scheduled,
+          );
           return;
         }
         console.log('initiateSms sendSms Called');
@@ -370,11 +369,13 @@ export class SmsService {
       throw e;
     }
   }
+
   async sendSms(
     contact: ContactsEntity,
     influencerNumber: PhonesEntity,
     body: string,
     type: string,
+    status?: string,
   ) {
     try {
       console.log('entered sendSms');
@@ -404,7 +405,20 @@ export class SmsService {
         });
         console.log('sendSms message', message);
 
-        if (message.status != 'sent') {
+        if (status && status == 'scheduled') {
+          const sms = await this.conversationsMessagesRepo.findOne({
+            where: { id: parseInt(body) },
+          });
+          sms.sid = message.sid;
+          sms.status = message.status;
+          await this.paymentHistory.updateDues({
+            cost: country.smsCost,
+            type: 'sms',
+            user: influencerNumber.user,
+          });
+          return this.conversationsMessagesRepo.save(sms);
+        }
+        if (message.status == 'failed') {
           //failure case
           return this.saveSms(
             contact,

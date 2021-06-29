@@ -1,7 +1,7 @@
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import { SmsService } from './sms.service';
+import { SmsService } from '../sms/sms.service';
 
 @Processor('sms_q')
 export class ScheduledSmsProcessor {
@@ -15,8 +15,9 @@ export class ScheduledSmsProcessor {
     await this.service.sendSms(
       body.contact,
       body.inf_phone,
-      body.message,
+      body.id,
       body.type,
+      'scheduled',
     );
   }
 }

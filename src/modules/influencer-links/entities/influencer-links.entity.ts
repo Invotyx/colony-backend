@@ -47,6 +47,6 @@ export class InfluencerLinksEntity {
 
   @BeforeInsert()
   async setTitle() {
-    this.title = 'Link ' + this.id;
+    this.title = 'Link ' + this.urlMapper;
   }
 }

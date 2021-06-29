@@ -9,7 +9,6 @@ import { LessThanOrEqual } from 'typeorm';
 import { ContactsService } from '../contacts/contacts.service';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
-import { PhonesRepository } from '../phone/phone.repo';
 import { PhoneService } from '../phone/phone.service';
 import { PaymentMethodsService } from '../products/payments/payment-methods.service';
 import { PlansService } from '../products/plan/plans.service';
@@ -33,6 +32,7 @@ export class TasksService {
     private readonly infLinks: InfluencerLinksService,
     private readonly broadcastService: BroadcastService,
     @InjectQueue('broadcast_q') private readonly queue: Queue,
+    @InjectQueue('sms_q') private readonly sms_q: Queue,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
@@ -46,13 +46,44 @@ export class TasksService {
       },
     );
   }
+  @Cron('10 * * * * *')
+  async checkForScheduledSms() {
+    const scheduledSms = await this.smsService.findOneConversationsMessages({
+      where: {
+        scheduled: LessThanOrEqual(this.getCurrentDatetime()),
+        status: 'scheduled',
+      },
+      relations: ['conversations'],
+    });
+    if (!scheduledSms) {
+      return;
+    }
+    const conversation = await this.smsService.findOneConversations({
+      where: {
+        id: scheduledSms.conversations.id,
+      },
+      relations: ['contact', 'phone'],
+    });
 
+    const q_obj = {
+      contact: conversation.contact,
+      inf_phone: conversation.phone,
+      id: scheduledSms.id,
+      type: 'outBound',
+    };
+
+    await this.sms_q.add('scheduled_message', q_obj, {
+      removeOnComplete: true,
+      removeOnFail: true,
+      attempts: 2,
+    });
+    console.log(q_obj, 'Added to queue');
+  }
   @Cron('10 * * * * *')
   async checkForBroadcasts() {
     //get all broadcasts where broadcast schedule is less than 1
     // get contact list for each broadcast
 
-    await this.broadcastService.find();
     const broadcasts = await this.broadcastService.find({
       where: {
         scheduled: LessThanOrEqual(this.getCurrentDatetime()),
@@ -156,7 +187,7 @@ export class TasksService {
         const metaPayment = {
           subscription: plan.amount_decimal,
           fan: fans.cost,
-          phones: []
+          phones: [],
         };
 
         let phonesCost = 0;
@@ -165,8 +196,8 @@ export class TasksService {
           const check = {
             number: phone.number,
             country: phone.country,
-            cost:phone.phonecost
-          }
+            cost: phone.phonecost,
+          };
           metaPayment.phones.push(check);
           phonesCost += parseInt(phone.phonecost);
         }

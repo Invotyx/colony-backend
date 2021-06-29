@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   dataViewer,
@@ -11,6 +12,7 @@ import {
   PaginatorError,
   PaginatorErrorHandler,
 } from 'src/shared/paginator';
+import { Like } from 'typeorm';
 import { TABLES } from '../../consts/tables.const';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { uniqueId } from '../../shared/random-keygen';
@@ -85,6 +87,24 @@ export class InfluencerLinksService {
       await this.repository.save(inf_links);
     } catch (e) {
       throw e;
+    }
+  }
+
+  async searchLink(_link: string, user: UserEntity) {
+    try {
+      const link = await this.repository.findOne({
+        where: {
+          link: Like(_link),
+          user: user,
+        },
+      });
+      if (!link) {
+        throw new NotFoundException("Link not found");
+      }
+      return link;
+    } catch (e) {
+      console.log(e);
+      throw new BadRequestException(e.message);
     }
   }
 

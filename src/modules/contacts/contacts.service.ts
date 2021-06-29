@@ -113,7 +113,9 @@ export class ContactsService {
     influencerId: number,
     data: ContactFilter,
   ): Promise<{ contacts: ContactsEntity[]; count: number }> {
-    let query = `SELECT  c.* FROM ${TABLES.CONTACTS.name} c Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
+    let query = `SELECT DISTINCT "c"."id",	"c"."name","c"."phoneNumber","c"."isComplete",
+    "c"."gender","c"."dob","c"."state", "c"."lat","c"."long","c"."facebook","c"."instagram","c"."linkedin", "c"."twitter"
+	  on (c.id),  c.* FROM ${TABLES.CONTACTS.name} c Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
 
     //contacted_week
     if (data.contacted == contacted.week) {

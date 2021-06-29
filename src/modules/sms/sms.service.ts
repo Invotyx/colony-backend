@@ -143,7 +143,7 @@ export class SmsService {
               receivedAt,
               'inBound',
               sid,
-              'received'
+              'received',
             );
             message.conversations = message.conversations.id as any;
             message.conversations_contact = message.conversations.contact
@@ -257,7 +257,7 @@ export class SmsService {
     //add sms to conversation
     let conversation = await this.conversationsRepo.findOne({
       where: { contact: contact, user: influencerPhone.user },
-      relations: ['contact', 'phone'],
+      relations: ['contact', 'phone', 'user'],
     });
     let message: ConversationMessagesEntity;
     if (conversation) {
@@ -290,6 +290,18 @@ export class SmsService {
         type: type,
         receivedAt: receivedAt,
         sid: sid,
+      });
+    }
+
+    const country = await this.countryService.countryRepo.findOne({
+      where: { code: conversation.phone.country },
+    });
+
+    if (status != 'failed') {
+      await this.paymentHistory.updateDues({
+        cost: country.smsCost,
+        type: 'sms',
+        user: conversation.user,
       });
     }
     return message;
@@ -412,41 +424,17 @@ export class SmsService {
           });
           sms.sid = message.sid;
           sms.status = message.status;
-          await this.paymentHistory.updateDues({
-            cost: country.smsCost,
-            type: 'sms',
-            user: influencerNumber.user,
-          });
           return this.conversationsMessagesRepo.save(sms);
         }
-        if (message.status == 'failed') {
-          //failure case
-          return this.saveSms(
-            contact,
-            influencerNumber,
-            body,
-            new Date(),
-            type,
-            message.sid,
-            message.status,
-          );
-        } else {
-          await this.paymentHistory.updateDues({
-            cost: country.smsCost,
-            type: 'sms',
-            user: influencerNumber.user,
-          });
-          return this.saveSms(
-            contact,
-            influencerNumber,
-            body,
-            new Date(),
-            type,
-            message.sid,
-            'sent',
-          );
-          //success scenario
-        }
+        return this.saveSms(
+          contact,
+          influencerNumber,
+          body,
+          new Date(),
+          type,
+          message.sid,
+          message.status,
+        );
       } else {
         console.log('Threshold reached');
         throw new BadRequestException(
@@ -467,6 +455,7 @@ export class SmsService {
 
       const influencerNumber = await this.phoneService.findOne({
         where: { number: from },
+        relations: ['user'],
       });
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },

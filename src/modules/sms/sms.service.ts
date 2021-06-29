@@ -271,6 +271,7 @@ export class SmsService {
 
       conversation.removedFromList = false;
       conversation.isActive = true;
+      conversation.updatedAt = new Date();
       await this.conversationsRepo.save(conversation);
     } else {
       conversation = await this.conversationsRepo.save({

@@ -147,6 +147,7 @@ export class SmsService {
               'inBound',
               sid,
             );
+            message.conversations = message.conversations.id as any;
             await this.pusher.trigger(
               'colony-dev',
               'sms-received-' + influencerNumber.user.id,
@@ -275,7 +276,7 @@ export class SmsService {
       conversation = await this.conversationsRepo.save({
         contact: contact,
         phone: influencerPhone,
-        isActive: type == 'broadcast' ? false : true,
+        isActive: false,
         user: influencerPhone.user,
         removedFromList: false,
       });

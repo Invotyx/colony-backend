@@ -150,7 +150,7 @@ export class ContactsService {
           (
             date_part('month', com."createdAt"::date) = date_part('month', CURRENT_DATE)
             and
-            date_part('year', com."createdAt"::date) = date_part('year', CURRENT_DATE::date))
+            date_part('year', com."createdAt"::date) = date_part('year', CURRENT_DATE::date)
           )
         )
       `;

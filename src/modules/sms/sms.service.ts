@@ -145,9 +145,8 @@ export class SmsService {
               sid,
               'received',
             );
-            message.conversations = message.conversations.id as any;
-            message.conversations_contact = message.conversations.contact
-              .name as any;
+            message.conversations = conversation.id as any;
+            message.conversations_contact = conversation.contact.name as any;
             await this.pusher.trigger(
               'colony-dev',
               'sms-received-' + influencerNumber.user.id,

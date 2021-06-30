@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { isDate } from 'moment';
 import { env } from 'process';
 import Pusher from 'pusher';
 import { CityCountryService } from '../../services/city-country/city-country.service';
@@ -339,7 +340,7 @@ export class SmsService {
           }
         }
 
-        if (scheduled != null) {
+        if (isDate(scheduled)) {
           //handle schedule here
           scheduled = new Date(new Date().getTime() + 3 * 60000);
           console.log('case scheduled : sms saved');

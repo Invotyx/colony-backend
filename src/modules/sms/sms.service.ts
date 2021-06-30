@@ -109,6 +109,7 @@ export class SmsService {
         where: { number: receiver, status: 'in-use', country: fromCountry },
         relations: ['user'],
       });
+
       if (influencerNumber) {
         const contact = await this.contactService.findOne({
           where: { phoneNumber: sender },
@@ -124,6 +125,13 @@ export class SmsService {
           };
         }
         if (contact) {
+          const check = await this.contactService.checkBlockList(
+            influencerNumber.user,
+            contact.id,
+          );
+          if (check) {
+            return { message: 'Arrrgh! You are blocked by this influencer.' };
+          }
           const rel = await this.contactService.checkRelation(
             influencerNumber.user.id,
             contact.id,

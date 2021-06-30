@@ -199,4 +199,56 @@ export class ContactsController {
       throw e;
     }
   }
+
+  //#region  block list
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Post('blocked/:contactId')
+  async addToBlockList(
+    @LoginUser() _user: UserEntity,
+    @Param('contactId') contactId: number,
+  ) {
+    try {
+      return this.service.addToBlockList(_user, contactId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('blocked/:contactId')
+  async checkBlockList(
+    @LoginUser() _user: UserEntity,
+    @Param('contactId') contactId: number,
+  ) {
+    try {
+      return this.service.checkBlockList(_user, contactId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Delete('blocked/:contactId')
+  async removeFromBlockList(
+    @LoginUser() _user: UserEntity,
+    @Param('contactId') contactId: number,
+  ) {
+    try {
+      return this.service.removeFromBlockList(_user, contactId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('blocked')
+  async myBlockList(@LoginUser() _user: UserEntity) {
+    try {
+      return this.service.myBlockList(_user);
+    } catch (e) {
+      throw e;
+    }
+  }
+  //#endregion
 }

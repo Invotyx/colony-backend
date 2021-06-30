@@ -23,6 +23,7 @@ import {
   dob,
   newContacts,
 } from './contact.dto';
+import { BlockedContactRepository } from './repo/blocked-contact.repo';
 import { ContactsRepository } from './repo/contact.repo';
 import { FavoriteContactRepository } from './repo/favorite-contact.repo';
 import { InfluencerContactRepository } from './repo/influencer-contact.repo';
@@ -38,6 +39,7 @@ export class ContactsService {
     private readonly smsService: SmsService,
     private readonly phoneService: PhoneService,
     private readonly favoriteRepo: FavoriteContactRepository,
+    private readonly blockedRepo: BlockedContactRepository,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -603,18 +605,6 @@ export class ContactsService {
     }
   }
 
-  async findContactSpecificCountries(_user: UserEntity) {
-    try {
-      const countries = await this.repository.query(`
-          SELECT DISTINCT "c".* from "phones" "p" left join "country" "c" on ("c"."code"="p"."country" ) WHERE "p"."userId"=${_user.id};
-          `);
-      return countries;
-    } catch (e) {
-      console.error(e);
-      throw new BadRequestException(e.message);
-    }
-  }
-
   async checkFavorites(_user: UserEntity, contactId: number) {
     try {
       const check = await this.favoriteRepo.findOne({
@@ -648,6 +638,24 @@ export class ContactsService {
     }
   }
 
+  async myFavorites(_user: UserEntity) {
+    try {
+      const user = await this.users.findOne({
+        where: { id: _user.id },
+        relations: ['favorites'],
+      });
+
+      if (user && user.favorites) {
+        return user.favorites;
+      }
+
+      throw new BadRequestException('User not found.');
+    } catch (e) {
+      console.error(e);
+      throw new BadRequestException(e.message);
+    }
+  }
+
   async removeFromList(_user: UserEntity, contactId: number) {
     try {
       const contact = await this.findOne({ where: { id: contactId } });
@@ -672,15 +680,81 @@ export class ContactsService {
     }
   }
 
-  async myFavorites(_user: UserEntity) {
+  async findContactSpecificCountries(_user: UserEntity) {
+    try {
+      const countries = await this.repository.query(`
+          SELECT DISTINCT "c".* from "phones" "p" left join "country" "c" on ("c"."code"="p"."country" ) WHERE "p"."userId"=${_user.id};
+          `);
+      return countries;
+    } catch (e) {
+      console.error(e);
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  //#region  blocked contacts
+
+  async addToBlockList(_user: UserEntity, contactId: number) {
     try {
       const user = await this.users.findOne({
         where: { id: _user.id },
-        relations: ['favorites'],
+        relations: ['blocked'],
+      });
+      const contact = await this.findOne({ where: { id: contactId } });
+      if (contact) {
+        user.blocked.push(contact);
+        await this.users.save(user);
+        return { message: 'Contact added to block list.' };
+      }
+      throw new BadRequestException('Contact not found');
+    } catch (e) {
+      console.error(e);
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  async checkBlockList(_user: UserEntity, contactId: number) {
+    try {
+      const check = await this.blockedRepo.findOne({
+        where: { userId: _user.id, contactId: contactId },
+      });
+      if (check) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error(e);
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  async removeFromBlockList(_user: UserEntity, contactId: number) {
+    try {
+      const user = await this.users.findOne({
+        where: { id: _user.id },
+        relations: ['blocked'],
+      });
+      const contact = await this.findOne({ where: { id: contactId } });
+      if (contact) {
+        await this.blockedRepo.delete({ user: user, contact: contact });
+        return { message: 'Contact removed from blocked list.' };
+      }
+      throw new BadRequestException('Contact not found');
+    } catch (e) {
+      console.error(e);
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  async myBlockList(_user: UserEntity) {
+    try {
+      const user = await this.users.findOne({
+        where: { id: _user.id },
+        relations: ['blocked'],
       });
 
-      if (user && user.favorites) {
-        return user.favorites;
+      if (user && user.blocked) {
+        return user.blocked;
       }
 
       throw new BadRequestException('User not found.');
@@ -689,4 +763,6 @@ export class ContactsService {
       throw new BadRequestException(e.message);
     }
   }
+
+  //#endregion
 }

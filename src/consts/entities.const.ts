@@ -1,4 +1,5 @@
 import { TimezonesEntity } from '../entities/timezones.entity';
+import { BlockedContactsEntity } from '../modules/contacts/entities/blocked-contacts.entity';
 import { ContactsEntity } from '../modules/contacts/entities/contacts.entity';
 import { FavoriteContactsEntity } from '../modules/contacts/entities/favorite-contacts.entity';
 import { InfluencerContactsEntity } from '../modules/contacts/entities/influencer-contacts.entity';
@@ -63,6 +64,7 @@ export const EntitiesRegister: any = {
   ConversationMessagesEntity,
   PaymentDuesEntity,
   FavoriteContactsEntity,
+  BlockedContactsEntity,
 };
 
 export const Entities: any = Object.values(EntitiesRegister);

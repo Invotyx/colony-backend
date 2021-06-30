@@ -43,6 +43,7 @@ const TablesList: any = {
   PAYMENT_HISTORY: new TableData(),
   DUE_PAYMENTS: new TableData(),
   FAVORITE_CONTACTS: new TableData(),
+  BLOCKED_CONTACTS: new TableData(),
 };
 
 const numHash = (t: string) =>

@@ -1,4 +1,5 @@
 import { classToPlain, Exclude } from 'class-transformer';
+import { BlockedContactsEntity } from 'src/modules/contacts/entities/blocked-contacts.entity';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
 import { FavoriteContactsEntity } from 'src/modules/contacts/entities/favorite-contacts.entity';
 import { InfluencerContactsEntity } from 'src/modules/contacts/entities/influencer-contacts.entity';
@@ -169,6 +170,9 @@ export class UserEntity {
   @OneToMany(() => FavoriteContactsEntity, (cToI) => cToI.user)
   public influencerFavorites!: FavoriteContactsEntity[];
 
+  @OneToMany(() => BlockedContactsEntity, (cToI) => cToI.user)
+  public influencerBlocked!: BlockedContactsEntity[];
+
   @ManyToMany(() => ContactsEntity, (c) => c.influencers, {
     eager: false,
     nullable: true,
@@ -179,6 +183,17 @@ export class UserEntity {
     inverseJoinColumn: { name: 'contactId', referencedColumnName: 'id' },
   })
   favorites: ContactsEntity[];
+
+  @ManyToMany(() => ContactsEntity, (c) => c.blockers, {
+    eager: false,
+    nullable: true,
+  })
+  @JoinTable({
+    name: TABLES.BLOCKED_CONTACTS.name,
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'contactId', referencedColumnName: 'id' },
+  })
+  blocked: ContactsEntity[];
 
   @OneToOne(() => CityEntity, { nullable: true, eager: true })
   @JoinColumn()

@@ -1,3 +1,4 @@
+import { BlockedContactRepository } from '../modules/contacts/repo/blocked-contact.repo';
 import { ContactsRepository } from '../modules/contacts/repo/contact.repo';
 import { FavoriteContactRepository } from '../modules/contacts/repo/favorite-contact.repo';
 import { InfluencerContactRepository } from '../modules/contacts/repo/influencer-contact.repo';
@@ -64,4 +65,5 @@ export const REPOS = [
   PaymentHistoryRepository,
   PaymentDuesRepository,
   FavoriteContactRepository,
+  BlockedContactRepository,
 ];

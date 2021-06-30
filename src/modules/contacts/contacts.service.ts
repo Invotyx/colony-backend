@@ -482,6 +482,10 @@ export class ContactsService {
       contactDetails.twitter = data.twitter;
       flag++;
     }
+    if (data.email) {
+      contactDetails.email = data.email;
+      flag++;
+    }
 
     if (data.linkedin) {
       contactDetails.linkedin = data.linkedin;

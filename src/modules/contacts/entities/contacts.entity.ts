@@ -36,6 +36,9 @@ export class ContactsEntity {
   @Column({ length: 100, nullable: true })
   public name: string;
 
+  @Column({ length: 100, nullable: true })
+  public email: string;
+
   @Column({ length: 20, nullable: false })
   public phoneNumber: string;
 

@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsEmail,
   IsIn,
   IsNotEmpty,
   IsNumber,
@@ -65,8 +66,12 @@ export class ContactDto {
   @ApiPropertyOptional()
   @IsOptional()
   public linkedin: string;
-}
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsEmail()
+  public email: string;
+}
 
 export class PaginationDto {
   @IsOptional()

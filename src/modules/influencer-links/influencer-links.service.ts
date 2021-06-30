@@ -30,13 +30,13 @@ export class InfluencerLinksService {
     private readonly contactService: ContactsService,
   ) {}
 
-  async addLink(link: string, user: UserEntity) {
+  async addLink(link: string, user: UserEntity, title?: string) {
     try {
       const inf_links = new InfluencerLinksEntity();
       inf_links.link = link;
       inf_links.urlMapper = uniqueId(6);
       inf_links.user = user;
-
+      inf_links.title = title ? title : null;
       return this.repository.save(inf_links);
     } catch (e) {
       throw e;
@@ -99,7 +99,7 @@ export class InfluencerLinksService {
         },
       });
       if (!link) {
-        throw new NotFoundException("Link not found");
+        throw new NotFoundException('Link not found');
       }
       return link;
     } catch (e) {

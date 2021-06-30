@@ -28,12 +28,13 @@ export class InfluencerLinksController {
   async addLink(
     @LoginUser() influencer: UserEntity,
     @Body('link') link: string,
+    @Body('title') title?: string,
   ) {
     try {
       if (!this.service.validURL(link))
         throw new UnprocessableEntityException('Invalid link');
       return {
-        data: await this.service.addLink(link, influencer),
+        data: await this.service.addLink(link, influencer, title),
         message: 'Link added successfully.',
       };
     } catch (e) {

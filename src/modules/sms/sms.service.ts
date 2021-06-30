@@ -316,13 +316,13 @@ export class SmsService {
       const _contact = await this.contactService.findOne({
         where: { phoneNumber: contact },
       });
-
+      console.log('contact entity: ', contact);
       if (_contact) {
         const conversation = await this.conversationsRepo.findOne({
           where: { contact: _contact, user: inf },
           relations: ['user', 'contact', 'phone'],
         });
-
+        console.log('conversation entity: ', conversation);
         conversation.phone.user = conversation.user as any;
         let _inf_phone = conversation.phone;
         if (_inf_phone && _inf_phone.status != 'in-use') {
@@ -342,7 +342,7 @@ export class SmsService {
         if (scheduled != null) {
           //handle schedule here
           scheduled = new Date(new Date().getTime() + 3 * 60000);
-
+          console.log('case scheduled : sms saved');
           this.saveSms(
             _contact,
             _inf_phone,
@@ -357,9 +357,11 @@ export class SmsService {
             'scheduled',
             scheduled,
           );
+          console.log('save sms closed *************** ');
           return;
         }
-        console.log('initiateSms sendSms Called');
+        console.log('case not scheduled : send sms called');
+
         await this.sendSms(
           _contact,
           _inf_phone,
@@ -370,6 +372,7 @@ export class SmsService {
           }),
           'outBound',
         );
+        console.log("send sms closed *************** ");
         return;
       } else {
         throw new BadRequestException(
@@ -410,21 +413,28 @@ export class SmsService {
         !checkThreshold ||
         checkThreshold.cost + country.smsCost < plan.threshold
       ) {
+        if (status && status == 'scheduled') {
+          const sms = await this.conversationsMessagesRepo.findOne({
+            where: { id: parseInt(body) },
+          });
+
+          const msg = await this.client.messages.create({
+            body: sms.sms,
+            to: contact.phoneNumber, //recipient(s)
+            from: influencerNumber.number,
+          });
+          console.log("scheduled sms sent : ", msg);
+          sms.sid = msg.sid;
+          sms.status = msg.status;
+          return this.conversationsMessagesRepo.save(sms);
+        }
+
         const message = await this.client.messages.create({
           body: body,
           to: contact.phoneNumber, //recipient(s)
           from: influencerNumber.number,
         });
-        console.log('sendSms message', message);
-
-        if (status && status == 'scheduled') {
-          const sms = await this.conversationsMessagesRepo.findOne({
-            where: { id: parseInt(body) },
-          });
-          sms.sid = message.sid;
-          sms.status = message.status;
-          return this.conversationsMessagesRepo.save(sms);
-        }
+        console.log('regular sms sent : ', message);
         return this.saveSms(
           contact,
           influencerNumber,

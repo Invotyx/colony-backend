@@ -134,6 +134,12 @@ export class SmsController {
     @Body('scheduled') scheduled?: Date,
   ) {
     try {
+      console.log("SendSms start ****************** ");
+      console.log("to: ", contact);
+      console.log('message: ', message);
+      console.log('scheduled: ', scheduled);
+      console.log('Initiate SendSms Start *********************');
+      
       return this.service.initiateSendSms(
         inf,
         contact,

@@ -36,6 +36,7 @@ export class InboundSmsProcessor {
       body.MessageStatus == 'sent'
     ) {
       //
+      console.log('outBoundSmsStatus Queue processor: ', body);
       await this.service.updateStatus(
         body.MessageSid,
         body.MessageStatus,

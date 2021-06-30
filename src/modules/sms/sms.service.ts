@@ -217,7 +217,6 @@ export class SmsService {
       type: 'contacts',
       user: influencerNumber.user,
     });
-    console.log('subscription log added to dues');
     const text_body: string = tagReplace(preset_welcome.body, {
       name: contact.name ? contact.name : '',
       inf_name:
@@ -316,13 +315,11 @@ export class SmsService {
       const _contact = await this.contactService.findOne({
         where: { phoneNumber: contact },
       });
-      console.log('contact entity: ', contact);
       if (_contact) {
         const conversation = await this.conversationsRepo.findOne({
           where: { contact: _contact, user: inf },
           relations: ['user', 'contact', 'phone'],
         });
-        console.log('conversation entity: ', conversation);
         conversation.phone.user = conversation.user as any;
         let _inf_phone = conversation.phone;
         if (_inf_phone && _inf_phone.status != 'in-use') {
@@ -342,7 +339,6 @@ export class SmsService {
         if (scheduled != null) {
           //handle schedule here
           scheduled = new Date(new Date().getTime() + 3 * 60000);
-          console.log('case scheduled : sms saved');
           this.saveSms(
             _contact,
             _inf_phone,
@@ -357,11 +353,8 @@ export class SmsService {
             'scheduled',
             scheduled,
           );
-          console.log('save sms closed *************** ');
-          return;
+          return { message: 'Sms scheduled' };
         }
-        console.log('case not scheduled : send sms called');
-
         await this.sendSms(
           _contact,
           _inf_phone,
@@ -372,8 +365,7 @@ export class SmsService {
           }),
           'outBound',
         );
-        console.log('send sms closed *************** ');
-        return;
+        return { message: 'Sms sent' };
       } else {
         throw new BadRequestException(
           'You cannot send message to contact who has not subscribed you yet.',
@@ -393,22 +385,16 @@ export class SmsService {
     status?: string,
   ) {
     try {
-      console.log('entered sendSms');
       const checkThreshold = await this.paymentHistory.getDues(
         'sms',
         influencerNumber.user,
       );
 
-      console.log('sendSms checkThreshold', checkThreshold);
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },
       });
-
-      console.log('sendSms country', country);
-
       const plan = await this.subService.planService.findOne();
 
-      console.log('sendSms plan', plan);
       if (
         !checkThreshold ||
         checkThreshold.cost + country.smsCost < plan.threshold
@@ -423,9 +409,10 @@ export class SmsService {
             to: contact.phoneNumber, //recipient(s)
             from: influencerNumber.number,
           });
-          console.log('scheduled sms sent : ', msg);
+
           sms.sid = msg.sid;
           sms.status = msg.status;
+          sms.receivedAt = msg.dateUpdated;
           return this.conversationsMessagesRepo.save(sms);
         }
 
@@ -434,7 +421,6 @@ export class SmsService {
           to: contact.phoneNumber, //recipient(s)
           from: influencerNumber.number,
         });
-        console.log('regular sms sent : ', message);
         return this.saveSms(
           contact,
           influencerNumber,
@@ -445,7 +431,6 @@ export class SmsService {
           message.status,
         );
       } else {
-        console.log('Threshold reached');
         throw new BadRequestException(
           'Threshold value reached. Expedite your due payments.',
         );

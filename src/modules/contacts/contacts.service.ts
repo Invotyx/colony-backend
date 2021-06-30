@@ -627,11 +627,26 @@ export class ContactsService {
         relations: ['favorites'],
       });
       const contact = await this.findOne({ where: { id: contactId } });
-      if (contact) {
-        await this.favoriteRepo.delete({ user: user, contact: contact });
+      if (!contact) {
+        throw new BadRequestException('Contact not found.');
+      }
+
+      const checkRel = await this.influencerContactRepo.findOne({
+        where: { user: _user, contact: contact },
+      });
+      if (!checkRel) {
+        return {
+          message: 'You have removed this contact from fans list previously.',
+        };
+      }
+      const check = await this.favoriteRepo.findOne({
+        where: { user: _user, contact: contact },
+      });
+      if (check) {
+        await this.favoriteRepo.remove(check);
         return { message: 'Contact removed from favorite list.' };
       }
-      throw new BadRequestException('Contact not found');
+      return { message: 'Contact is not in your favorite list yet.' };
     } catch (e) {
       console.error(e);
       throw new BadRequestException(e.message);
@@ -663,14 +678,24 @@ export class ContactsService {
         const check = await this.influencerContactRepo.findOne({
           where: { user: _user, contact: contact },
         });
+
+        const checkFav = await this.favoriteRepo.findOne({
+          where: { user: _user, contact: contact },
+        });
+        if (checkFav) {
+          await this.favoriteRepo.remove(checkFav);
+        }
         if (!check) return { message: 'Contact already removed from list.' };
         const conversation = await this.smsService.findOneConversations({
           where: { user: _user, contact: contact },
           relations: ['contact', 'user'],
         });
+        
         conversation.removedFromList = true;
-        await this.smsService.saveConversation(conversation);
-        const check2 = await this.influencerContactRepo.remove(check);
+        Promise.all([
+          this.smsService.saveConversation(conversation),
+          this.influencerContactRepo.remove(check),
+        ]);
         return { message: 'Contact removed from list.' };
       }
       throw new BadRequestException('Contact not found');
@@ -700,8 +725,10 @@ export class ContactsService {
         where: { id: _user.id },
         relations: ['blocked'],
       });
+
       const contact = await this.findOne({ where: { id: contactId } });
       if (contact) {
+        await this.removeFromList(_user, contactId);
         user.blocked.push(contact);
         await this.users.save(user);
         return { message: 'Contact added to block list.' };

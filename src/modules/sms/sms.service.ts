@@ -4,7 +4,6 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { isDate } from 'moment';
 import { env } from 'process';
 import Pusher from 'pusher';
 import { CityCountryService } from '../../services/city-country/city-country.service';
@@ -311,7 +310,7 @@ export class SmsService {
     inf: UserEntity,
     contact: string,
     message: string,
-    scheduled?: Date,
+    scheduled?: any,
   ) {
     try {
       const _contact = await this.contactService.findOne({
@@ -340,7 +339,7 @@ export class SmsService {
           }
         }
 
-        if (isDate(scheduled)) {
+        if (scheduled != null) {
           //handle schedule here
           scheduled = new Date(new Date().getTime() + 3 * 60000);
           console.log('case scheduled : sms saved');
@@ -373,7 +372,7 @@ export class SmsService {
           }),
           'outBound',
         );
-        console.log("send sms closed *************** ");
+        console.log('send sms closed *************** ');
         return;
       } else {
         throw new BadRequestException(
@@ -424,7 +423,7 @@ export class SmsService {
             to: contact.phoneNumber, //recipient(s)
             from: influencerNumber.number,
           });
-          console.log("scheduled sms sent : ", msg);
+          console.log('scheduled sms sent : ', msg);
           sms.sid = msg.sid;
           sms.status = msg.status;
           return this.conversationsMessagesRepo.save(sms);

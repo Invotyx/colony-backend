@@ -131,7 +131,7 @@ export class SmsController {
     @LoginUser() inf: UserEntity,
     @Body('to') contact: string,
     @Body('message') message: string,
-    @Body('scheduled') scheduled?: Date,
+    @Body('scheduled') scheduled?: any,
   ) {
     try {
       console.log("SendSms start ****************** ");

@@ -307,7 +307,7 @@ export class SmsService {
       await this.paymentHistory.updateDues({
         cost: country.smsCost,
         type: 'sms',
-        user: conversation.user,
+        user: influencerPhone.user,
       });
     }
     return message;

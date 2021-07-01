@@ -143,7 +143,7 @@ export class UpdateProfileDto {
   oldPassword: string;
 
   @ApiProperty({ enum: ['male', 'female'], enumName: 'gender' })
-  @IsIn(['male', 'female'])
+  @IsIn(['male', 'female',''])
   @IsOptional()
   gender: gender;
 

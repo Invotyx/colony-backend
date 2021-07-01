@@ -55,6 +55,13 @@ export class BroadcastService {
       if (schedule && env.NODE_ENV == 'development') {
         schedule = new Date(new Date().getTime() + 15 * 60000);
       }
+      if (
+        (await this.contactService.filterContacts(user.id, filters)).count < 2
+      ) {
+        throw new BadRequestException(
+          'Broadcast must have more then 1 contacts.',
+        );
+      }
       return this.repository.save({
         body: body,
         user: user,

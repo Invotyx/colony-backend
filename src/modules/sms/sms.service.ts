@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { env } from 'process';
 import Pusher from 'pusher';
-import { smsCount } from '../../shared/sms-segment-counter';
 import { CityCountryService } from '../../services/city-country/city-country.service';
+import { smsCount } from '../../shared/sms-segment-counter';
 import { tagReplace } from '../../shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
 import { ContactsEntity } from '../contacts/entities/contacts.entity';
@@ -307,13 +307,6 @@ export class SmsService {
     const smsSegments: number = smsCount(body).segments;
 
     if (status != 'failed') {
-      console.log(
-        ' Charge ',
-        +country.smsCost * smsSegments,
-        ' added for this sms. Contains ',
-        smsSegments,
-        ' segments',
-      );
       await this.paymentHistory.updateDues({
         cost: +country.smsCost * smsSegments,
         type: 'sms',
@@ -411,12 +404,14 @@ export class SmsService {
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },
       });
+      if (!country.active) {
+        throw new BadRequestException("Sms for this country are not enabled yet.")
+      }
       const plan = await this.subService.planService.findOne();
 
-      if (
-        !checkThreshold ||
-        checkThreshold.cost + country.smsCost < plan.threshold
-      ) {
+
+      const cost = checkThreshold ? checkThreshold.cost + country.smsCost : 0;
+      if (cost < plan.threshold) {
         if (status && status == 'scheduled') {
           const sms = await this.conversationsMessagesRepo.findOne({
             where: { id: parseInt(body) },

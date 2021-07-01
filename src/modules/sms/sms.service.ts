@@ -222,7 +222,7 @@ export class SmsService {
 
     const plan = await this.subService.planService.findOne();
     await this.paymentHistory.updateDues({
-      cost: plan.subscriberCost,
+      cost: +plan.subscriberCost,
       type: 'contacts',
       user: influencerNumber.user,
     });

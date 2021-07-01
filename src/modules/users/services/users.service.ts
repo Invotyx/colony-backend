@@ -229,7 +229,10 @@ export class UsersService {
     }
   }
 
-  async verifyResetPasswordToken(token: string, email: string): Promise<UserEntity> {
+  async verifyResetPasswordToken(
+    token: string,
+    email: string,
+  ): Promise<UserEntity> {
     const emailVerif = await this.password.findOne({
       where: {
         newPasswordToken: token,
@@ -342,7 +345,9 @@ export class UsersService {
   }
 
   async updateUser(id: string | number | any, user: UpdateProfileDto) {
-    const updateData: any = {};
+    const updateData = await this.repository.findOne({
+      where: { id:id },
+    });;
     // let isAlreadyExist: any;
     try {
       /* if (user.email && this.isValidEmail(user.email)) {
@@ -362,8 +367,13 @@ export class UsersService {
         updateData.username = user.username;
       } */
 
-      console.log('===========', user);
-      updateData.id = id;
+      const phone = await this.repository.findOne({
+        where: { mobile: user.mobile },
+      });
+      if (phone) {
+        throw new BadRequestException('Phone number already exists.');
+      }
+
       if (user.password) {
         user.password = await PasswordHashEngine.make(user.password);
         updateData.password = user.password;

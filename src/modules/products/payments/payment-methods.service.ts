@@ -45,9 +45,18 @@ export class PaymentMethodsService {
         await this.stripe.paymentMethods.attach(pm.id, {
           customer: customer.customerId,
         });
+
         const def = await this.repository.findOne({
           where: { default: true, user: customer },
         });
+
+        const sameFinger = await this.repository.findOne({
+          where: { fingerprint: pm.card.fingerprint, user: customer },
+        });
+
+        if (sameFinger) {
+          await this.repository.remove(sameFinger);
+        }
         if (def) {
           def.default = false;
           await this.repository.save(def);

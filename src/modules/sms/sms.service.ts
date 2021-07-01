@@ -323,6 +323,9 @@ export class SmsService {
     scheduled?: any,
   ) {
     try {
+      if (message && message == null) {
+        throw new BadRequestException('Cannot send empty message.');
+      }
       const _contact = await this.contactService.findOne({
         where: { phoneNumber: contact },
       });
@@ -405,10 +408,11 @@ export class SmsService {
         where: { code: influencerNumber.country },
       });
       if (!country.active) {
-        throw new BadRequestException("Sms for this country are not enabled yet.")
+        throw new BadRequestException(
+          'Sms for this country are not enabled yet.',
+        );
       }
       const plan = await this.subService.planService.findOne();
-
 
       const cost = checkThreshold ? checkThreshold.cost + country.smsCost : 0;
       if (cost < plan.threshold) {
@@ -576,6 +580,10 @@ export class SmsService {
   //#region  sms templates
   async createSmsTemplate(title: string, body: string, influencer: UserEntity) {
     try {
+      if (title == null || body == null) {
+        throw new BadRequestException('Cannot save empty title or body.');
+      }
+
       const template = await this.smsTemplateRepo.save({
         body: body,
         title: title,
@@ -595,6 +603,10 @@ export class SmsService {
     influencer: UserEntity,
   ) {
     try {
+      if (title == null || body == null) {
+        throw new BadRequestException('Cannot send empty message.');
+      }
+
       const template = await this.smsTemplateRepo.findOne({
         where: { id: id, user: influencer },
       });
@@ -668,6 +680,9 @@ export class SmsService {
         where: { id: id, user: user },
       });
       if (existing) {
+        if (preset.body == null || preset.name == null) {
+          throw new BadRequestException('Cannot save empty body or name');
+        }
         if (preset.body) {
           existing.body = preset.body;
         }

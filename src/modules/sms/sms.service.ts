@@ -418,6 +418,7 @@ export class SmsService {
             from: influencerNumber.number,
           });
 
+          console.log(msg);
           sms.sid = msg.sid;
           sms.status = msg.status;
           sms.receivedAt = msg.dateUpdated;
@@ -429,6 +430,7 @@ export class SmsService {
           to: contact.phoneNumber, //recipient(s)
           from: influencerNumber.number,
         });
+        console.log(message);
         return this.saveSms(
           contact,
           influencerNumber,

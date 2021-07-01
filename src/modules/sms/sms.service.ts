@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { env } from 'process';
 import Pusher from 'pusher';
+import { smsCount } from '../../shared/sms-segment-counter';
 import { CityCountryService } from '../../services/city-country/city-country.service';
 import { tagReplace } from '../../shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
@@ -303,9 +304,18 @@ export class SmsService {
       where: { code: conversation.phone.country },
     });
 
+    const smsSegments: number = smsCount(body).segments;
+
     if (status != 'failed') {
+      console.log(
+        ' Charge ',
+        +country.smsCost * smsSegments,
+        ' added for this sms. Contains ',
+        smsSegments,
+        ' segments',
+      );
       await this.paymentHistory.updateDues({
-        cost: country.smsCost,
+        cost: +country.smsCost * smsSegments,
         type: 'sms',
         user: influencerPhone.user,
       });
@@ -417,8 +427,6 @@ export class SmsService {
             to: contact.phoneNumber, //recipient(s)
             from: influencerNumber.number,
           });
-
-          console.log(msg);
           sms.sid = msg.sid;
           sms.status = msg.status;
           sms.receivedAt = msg.dateUpdated;
@@ -430,7 +438,6 @@ export class SmsService {
           to: contact.phoneNumber, //recipient(s)
           from: influencerNumber.number,
         });
-        console.log(message);
         return this.saveSms(
           contact,
           influencerNumber,

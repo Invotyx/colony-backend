@@ -140,12 +140,10 @@ export class AuthController {
         !user.firstName ||
         !user.lastName ||
         !user.password ||
-        !user.timezone ||
-        !user.gender ||
         !user.username
       ) {
         throw new BadRequestException(
-          'One of mandatory fields(firstName,lastName,username,email,password,mobile,gender,timezone) missing.',
+          'One of mandatory fields(firstName,lastName,username,email,password,mobile) missing.',
         );
       }
       user.mobile = user.mobile
@@ -153,7 +151,6 @@ export class AuthController {
         .replace('(', '')
         .replace(')', '')
         .replace('-', '');
-      console.log(user);
       const newUser = await this.userService.createUser(user);
       return {
         data: newUser,

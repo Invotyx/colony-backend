@@ -28,13 +28,11 @@ export class PhoneController {
   @Get('my-numbers')
   async getPurchasedPhoneNumbers(@LoginUser() user: UserEntity) {
     try {
-      const countries = await this.countryRepo.find({
-        where: { active: true },
-      });
+      const countries = await this.countryRepo.find();
       const numbers = await this.service.getPurchasedPhoneNumbers(user);
       let nums = [];
       for (let number of numbers) {
-        var country = this.search(number.country, countries);
+        let country = this.search(number.country, countries);
         number.country = country as any;
         nums.push(number);
       }

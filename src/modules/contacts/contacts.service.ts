@@ -523,6 +523,7 @@ export class ContactsService {
 
       let infNum = await this.phoneService.findOne({
         where: { id: number },
+        relations:['user']
       });
 
       await this.repository.save(contactDetails);

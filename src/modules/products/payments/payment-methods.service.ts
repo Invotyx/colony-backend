@@ -46,9 +46,6 @@ export class PaymentMethodsService {
           customer: customer.customerId,
         });
 
-        const def = await this.repository.findOne({
-          where: { default: true, user: customer },
-        });
 
         const sameFinger = await this.repository.findOne({
           where: { fingerprint: pm.card.fingerprint, user: customer },
@@ -57,6 +54,10 @@ export class PaymentMethodsService {
         if (sameFinger) {
           await this.repository.remove(sameFinger);
         }
+        
+        const def = await this.repository.findOne({
+          where: { default: true, user: customer },
+        });
         if (def) {
           def.default = false;
           await this.repository.save(def);

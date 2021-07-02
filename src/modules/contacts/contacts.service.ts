@@ -369,13 +369,13 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE c."createdAt"::date = '${JSON.stringify(
+          ` WHERE ic."createdAt"::date = '${JSON.stringify(
             new Date(data.joinDate),
           ).slice(1, 11)}'::date`;
       } else {
         query =
           query +
-          ` and c."createdAt"::date = '${JSON.stringify(
+          ` and ic."createdAt"::date = '${JSON.stringify(
             new Date(data.joinDate),
           ).slice(1, 11)}'::date`;
       }
@@ -523,7 +523,7 @@ export class ContactsService {
 
       let infNum = await this.phoneService.findOne({
         where: { id: number },
-        relations:['user']
+        relations: ['user'],
       });
 
       await this.repository.save(contactDetails);

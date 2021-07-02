@@ -351,6 +351,8 @@ export class UsersService {
     const updateData = await this.repository.findOne({
       where: { id: id },
     });
+    console.log('updateData: ', updateData);
+    console.log('user: ',user);
     // let isAlreadyExist: any;
     try {
       /* if (user.email && this.isValidEmail(user.email)) {
@@ -425,7 +427,7 @@ export class UsersService {
 
       updateData.gender = user.gender;
 
-      updateData.dob = user.dob;
+      updateData.dob = user.dob?user.dob:null;
 
       updateData.statusMessage = user.statusMessage;
 

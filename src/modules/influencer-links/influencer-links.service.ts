@@ -32,6 +32,10 @@ export class InfluencerLinksService {
 
   async addLink(link: string, user: UserEntity, title?: string) {
     try {
+      const check = await this.repository.findOne({ where: { link: link, user: user } });
+      if (check) {
+        throw new BadRequestException('Link already exists.');
+      }
       const inf_links = new InfluencerLinksEntity();
       inf_links.link = link;
       inf_links.urlMapper = uniqueId(6);
@@ -70,6 +74,7 @@ export class InfluencerLinksService {
   async deleteLink(id: number, user: UserEntity) {
     try {
       const link = await this.repository.findOne({ id: id, user: user });
+      console.log(link);
       if (!link) {
         throw new BadRequestException('You cannot delete this link.');
       }

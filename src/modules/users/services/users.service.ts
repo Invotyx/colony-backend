@@ -385,14 +385,18 @@ export class UsersService {
       if (user.password && user.oldPassword) {
         if (user.oldPassword == user.password) {
           throw new HttpException(
-            error([
-              {
-                key: 'password',
-                reason: 'Mismatch',
-                description:
-                  'Your old password is same as new password you have provided.',
-              },
-            ]),
+            error(
+              [
+                {
+                  key: 'password',
+                  reason: 'Mismatch',
+                  description:
+                    'Your old password is same as new password you have provided.',
+                },
+              ],
+              HttpStatus.UNPROCESSABLE_ENTITY,
+              'Unprocessable entity',
+            ),
             HttpStatus.UNPROCESSABLE_ENTITY,
           );
         }
@@ -403,14 +407,18 @@ export class UsersService {
         );
         if (!oldPassword) {
           throw new HttpException(
-            error([
-              {
-                key: 'oldPassword',
-                reason: 'Mismatch',
-                description:
-                  'Your old password does not match with password you have provided.',
-              },
-            ]),
+            error(
+              [
+                {
+                  key: 'oldPassword',
+                  reason: 'Mismatch',
+                  description:
+                    'Your old password does not match with password you have provided.',
+                },
+              ],
+              HttpStatus.UNPROCESSABLE_ENTITY,
+              'Unprocessable entity',
+            ),
             HttpStatus.UNPROCESSABLE_ENTITY,
           );
         }

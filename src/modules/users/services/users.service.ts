@@ -21,6 +21,7 @@ import {
   PaginatorError,
   PaginatorErrorHandler,
 } from 'src/shared/paginator';
+import { Not } from 'typeorm';
 import { EmailTokenSender } from '../../../mails/users/emailtoken.mailer';
 import { RoleRepository } from '../../../repos/roles.repo';
 import { PasswordHashEngine } from '../../../shared/hash.service';
@@ -346,8 +347,8 @@ export class UsersService {
 
   async updateUser(id: string | number | any, user: UpdateProfileDto) {
     const updateData = await this.repository.findOne({
-      where: { id:id },
-    });;
+      where: { id: id },
+    });
     // let isAlreadyExist: any;
     try {
       /* if (user.email && this.isValidEmail(user.email)) {
@@ -368,10 +369,13 @@ export class UsersService {
       } */
 
       const phone = await this.repository.findOne({
-        where: { mobile: user.mobile },
+        where: { mobile: user.mobile, id: Not(id) },
       });
       if (phone) {
-        throw new BadRequestException('Phone number already exists.');
+        throw new HttpException(
+          'Phone number already exists.',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
       }
 
       if (user.password) {

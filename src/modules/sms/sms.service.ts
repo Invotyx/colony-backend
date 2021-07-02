@@ -1,11 +1,14 @@
 import {
   BadRequestException,
   forwardRef,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
 } from '@nestjs/common';
 import { env } from 'process';
 import Pusher from 'pusher';
+import { error } from 'src/shared/error.dto';
 import { CityCountryService } from '../../services/city-country/city-country.service';
 import { smsCount } from '../../shared/sms-segment-counter';
 import { tagReplace } from '../../shared/tag-replace';
@@ -326,6 +329,18 @@ export class SmsService {
       if (message && message.length < 1) {
         throw new BadRequestException('Cannot send empty message.');
       }
+
+      if (message.length < 1) {
+        throw new HttpException(
+          error(
+            'message',
+            'length',
+            'message must be greater then 1 characters',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+
       const _contact = await this.contactService.findOne({
         where: { phoneNumber: contact },
       });
@@ -580,10 +595,19 @@ export class SmsService {
   //#region  sms templates
   async createSmsTemplate(title: string, body: string, influencer: UserEntity) {
     try {
-      if (title.length < 2 || body.length < 5) {
-        throw new BadRequestException('Cannot save empty title or body.');
+      if (title.length < 2) {
+        throw new HttpException(
+          error('title', 'length', 'title must be greater then 2 characters'),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
       }
 
+      if (body.length < 2) {
+        throw new HttpException(
+          error('body', 'length', 'body must be greater then 2 characters'),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
       const template = await this.smsTemplateRepo.save({
         body: body,
         title: title,
@@ -603,8 +627,18 @@ export class SmsService {
     influencer: UserEntity,
   ) {
     try {
-      if (title.length < 2 || body.length < 5) {
-        throw new BadRequestException('Cannot send empty message.');
+      if (title.length < 2) {
+        throw new HttpException(
+          error('title', 'length', 'title must be greater then 2 characters'),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+
+      if (body.length < 2) {
+        throw new HttpException(
+          error('body', 'length', 'body must be greater then 2 characters'),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
       }
 
       const template = await this.smsTemplateRepo.findOne({
@@ -652,9 +686,20 @@ export class SmsService {
         where: { user: user, trigger: preset.trigger },
       });
       if (!existing) {
-        if (preset.body.length < 5 || preset.name.length < 2) {
-          throw new BadRequestException('Cannot save empty body or name');
+        if (preset.body.length < 2) {
+          throw new HttpException(
+            error('body', 'length', 'body must be greater then 2 characters'),
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
         }
+
+        if (preset.name.length < 2) {
+          throw new HttpException(
+            error('body', 'length', 'body must be greater then 2 characters'),
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+        
         const _preset: any = await this.presetRepo.save({
           name: preset.name,
           body: preset.body,

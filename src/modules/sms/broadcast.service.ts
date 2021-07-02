@@ -1,7 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { MessageBird } from 'messagebird/types';
 import { env } from 'process';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
+import { error } from 'src/shared/error.dto';
 import { ContactFilter } from '../contacts/contact.dto';
 import { ContactsService } from '../contacts/contacts.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
@@ -62,10 +63,11 @@ export class BroadcastService {
           'Broadcast must have more then 1 contacts.',
         );
       }
-      if (body.length < 1) {
-        
-        throw new BadRequestException(
-          'Cannot send empty message in broadcast.',
+      
+      if (body.length < 2) {
+        throw new HttpException(
+          error('body', 'length', 'body must be greater then 2 characters'),
+          HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
       return this.repository.save({

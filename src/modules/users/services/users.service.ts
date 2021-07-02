@@ -13,6 +13,7 @@ import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer
 import { ForgotPassword } from 'src/modules/users/entities/forgottenpassword.entity';
 import { CityRepository } from 'src/services/city-country/repos/city.repo';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
+import { error } from 'src/shared/error.dto';
 import {
   columnListToSelect,
   dataViewer,
@@ -162,9 +163,9 @@ export class UsersService {
 
   async createUser(user: CreateUserDto) {
     try {
-      if (this.isValidEmail(user.email)) {
+      if (this.isValidEmail(user.email.toLowerCase())) {
         let count = await this.repository.count({
-          where: { email: user.email },
+          where: { email: user.email.toLowerCase() },
         });
 
         if (count > 0) {
@@ -172,7 +173,7 @@ export class UsersService {
         }
 
         count = await this.repository.count({
-          where: { username: user.username },
+          where: { username: user.username.toLowerCase() },
         });
         if (count > 0) {
           throw new BadRequestException(UserNameAlreadyExistError);
@@ -184,6 +185,7 @@ export class UsersService {
 
         user.password = await PasswordHashEngine.make(user.password);
         user.urlId = nanoid(10);
+        user.username = user.username.toLowerCase();
         const newUser: UserEntity = await this.repository.save(user);
         await this.updateRoles(newUser.id, { userId: newUser.id, roleId: [2] });
         /* await this.createEmailToken(user.email);
@@ -256,7 +258,7 @@ export class UsersService {
 
   async createForgottenPasswordToken(email: string): Promise<ForgotPassword> {
     const user = await this.repository.findOne({
-      where: { email: email, isActive: true, isApproved: true },
+      where: { email: email },
     });
     if (user) {
       const forgottenPassword = await this.password.findOne({
@@ -384,6 +386,22 @@ export class UsersService {
             'Old password and password are not same.',
           );
         }
+
+        const oldPassword = await PasswordHashEngine.check(
+          user.oldPassword,
+          updateData.password,
+        );
+        if (!oldPassword) {
+          throw new HttpException(
+            error(
+              'oldPassword',
+              'Mismatch',
+              'Your old password does not match with password you have provided.',
+            ),
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+
         user.password = await PasswordHashEngine.make(user.password);
         updateData.password = user.password;
       }
@@ -465,11 +483,13 @@ export class UsersService {
     return { profileImage: user.image };
   }
 
-  async searchUserForAuth(username: any) {
+  async searchUserForAuth(username: string) {
     try {
       const user = await this.repository
         .createQueryBuilder('users')
-        .where('users.username = :val OR users.email = :val', { val: username })
+        .where('users.username = :val OR users.email = :val', {
+          val: username.toLowerCase(),
+        })
         .getOne();
       return user;
     } catch (error) {

@@ -69,7 +69,7 @@ export class BroadcastService {
         );
       }
 
-      if (body.length < 2) {
+      if (String(body).length < 2) {
         throw new HttpException(
           error(
             [

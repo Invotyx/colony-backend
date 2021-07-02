@@ -637,7 +637,7 @@ export class SmsService {
   //#region  sms templates
   async createSmsTemplate(title: string, body: string, influencer: UserEntity) {
     try {
-      if (title.length < 2) {
+      if (String(title).length < 2) {
         throw new HttpException(
           error(
             [
@@ -654,7 +654,7 @@ export class SmsService {
         );
       }
 
-      if (body.length < 2) {
+      if (String(body).length < 2) {
         throw new HttpException(
           error(
             [
@@ -689,7 +689,7 @@ export class SmsService {
     influencer: UserEntity,
   ) {
     try {
-      if (title.length < 2) {
+      if (String(title).length < 2) {
         throw new HttpException(
           error(
             [
@@ -706,7 +706,7 @@ export class SmsService {
         );
       }
 
-      if (body.length < 2) {
+      if (String(body).length < 2) {
         throw new HttpException(
           error(
             [
@@ -768,7 +768,7 @@ export class SmsService {
         where: { user: user, trigger: preset.trigger },
       });
       if (!existing) {
-        if (preset.body.length < 2) {
+        if (String(preset.body).length < 2) {
           throw new HttpException(
             error(
               [
@@ -785,7 +785,7 @@ export class SmsService {
           );
         }
 
-        if (preset.name.length < 2) {
+        if (String(preset.name).length < 2) {
           throw new HttpException(
             error(
               [

@@ -32,7 +32,9 @@ export class InfluencerLinksService {
 
   async addLink(link: string, user: UserEntity, title?: string) {
     try {
-      const check = await this.repository.findOne({ where: { link: link, user: user } });
+      const check = await this.repository.findOne({
+        where: { link: link, user: user },
+      });
       if (check) {
         throw new BadRequestException('Link already exists.');
       }
@@ -230,11 +232,9 @@ export class InfluencerLinksService {
       });
       if (linkSent) {
         linkSent.isOpened = true;
-      } else {
-        throw new BadRequestException('link is not sent to this contact yet.');
+        await this.trackingRepo.save(linkSent);
       }
-      const linkOpened = await this.trackingRepo.save(linkSent);
-      return linkOpened;
+      return linkUrl;
     } catch (e) {
       throw e;
     }

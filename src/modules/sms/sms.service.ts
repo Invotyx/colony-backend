@@ -14,6 +14,7 @@ import { smsCount } from '../../shared/sms-segment-counter';
 import { tagReplace } from '../../shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
 import { ContactsEntity } from '../contacts/entities/contacts.entity';
+import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhonesEntity } from '../phone/entities/phone.entity';
 import { PhoneService } from '../phone/phone.service';
@@ -43,6 +44,8 @@ export class SmsService {
     private readonly subService: SubscriptionsService,
     private readonly paymentHistory: PaymentHistoryService,
     private readonly countryService: CityCountryService,
+    @Inject(forwardRef(() => InfluencerLinksService))
+    private readonly infLinks: InfluencerLinksService,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -229,7 +232,24 @@ export class SmsService {
       type: 'contacts',
       user: influencerNumber.user,
     });
-    const text_body: string = tagReplace(preset_welcome.body, {
+    let welcomeBody = preset_welcome.body;
+    const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
+    if (links.length > 0) {
+      for (let link of links) {
+        let id = link.replace('${link:', '').replace('}', '');
+        const shareableUri = (
+          await this.infLinks.getUniqueLinkForContact(
+            parseInt(id),
+            contact.phoneNumber,
+          )
+        ).url;
+        welcomeBody = welcomeBody.replace(
+          link,
+          env.API_URL + '/api/s/o/' + shareableUri,
+        );
+      }
+    }
+    const text_body: string = tagReplace(welcomeBody, {
       name: contact.name ? contact.name : '',
       inf_name:
         influencerNumber.user.firstName + ' ' + influencerNumber.user.lastName,
@@ -367,13 +387,32 @@ export class SmsService {
           }
         }
 
+        let welcomeBody = message;
+        const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
+        if (links.length > 0) {
+          for (let link of links) {
+            let id = link.replace('${link:', '').replace('}', '');
+            const shareableUri = (
+              await this.infLinks.getUniqueLinkForContact(
+                parseInt(id),
+                _contact.phoneNumber,
+              )
+            ).url;
+            welcomeBody = welcomeBody.replace(
+              link,
+              env.API_URL + '/api/s/o/' + shareableUri,
+            );
+          }
+        }
+
         if (scheduled != null) {
           //handle schedule here
           scheduled = new Date(new Date().getTime() + 3 * 60000);
+
           this.saveSms(
             _contact,
             _inf_phone,
-            tagReplace(message, {
+            tagReplace(welcomeBody, {
               name: _contact?.name,
               inf_name:
                 _inf_phone.user?.firstName + ' ' + _inf_phone.user?.lastName,
@@ -389,7 +428,7 @@ export class SmsService {
         await this.sendSms(
           _contact,
           _inf_phone,
-          tagReplace(message, {
+          tagReplace(welcomeBody, {
             name: _contact?.name,
             inf_name:
               _inf_phone.user?.firstName + ' ' + _inf_phone.user?.lastName,

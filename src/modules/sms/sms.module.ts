@@ -4,6 +4,8 @@ import { CityCountryModule } from 'src/services/city-country/city-country.module
 import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { MainMysqlModule } from 'src/shared/main-mysql.module';
 import { ContactsModule } from '../contacts/contacts.module';
+import { InfluencerLinksModule } from '../influencer-links/influencer-links.module';
+import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
 import { PaymentHistoryModule } from '../payment-history/payment-history.module';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhoneModule } from '../phone/phone.module';
@@ -27,6 +29,7 @@ import { SmsService } from './sms.service';
     forwardRef(() => ProductsModule),
     forwardRef(() => PaymentHistoryModule),
     forwardRef(() => CityCountryModule),
+    forwardRef(() => InfluencerLinksModule),
   ],
   controllers: [SmsController],
   providers: [
@@ -36,6 +39,7 @@ import { SmsService } from './sms.service';
     CityCountryService,
     PhoneService,
     BroadcastService,
+    InfluencerLinksService,
   ],
   exports: [SmsService, BroadcastService],
 })

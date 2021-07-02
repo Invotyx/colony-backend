@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsDateString,
   IsEmail,
   IsIn,
   IsInt,
@@ -143,7 +144,7 @@ export class UpdateProfileDto {
   oldPassword: string;
 
   @ApiProperty({ enum: ['male', 'female'], enumName: 'gender' })
-  @IsIn(['male', 'female',''])
+  @IsIn(['male', 'female', ''])
   @IsOptional()
   gender: gender;
 
@@ -163,6 +164,7 @@ export class UpdateProfileDto {
 
   @ApiProperty()
   @IsOptional()
+  @IsDateString()
   dob: Date;
 
   @ApiProperty()

@@ -378,7 +378,12 @@ export class UsersService {
         );
       }
 
-      if (user.password) {
+      if (user.password && user.oldPassword) {
+        if (user.oldPassword != user.password) {
+          throw new BadRequestException(
+            'Old password and password are not same.',
+          );
+        }
         user.password = await PasswordHashEngine.make(user.password);
         updateData.password = user.password;
       }
@@ -389,29 +394,25 @@ export class UsersService {
         updateData.meta = user.meta;
       }
 
-      if (user.isActive) {
-        updateData.isActive = user.isActive;
-      }
+      updateData.gender = user.gender;
 
-      if (user.gender) {
-        updateData.gender = user.gender;
-      }
+      updateData.dob = user.dob;
 
-      if (user.language) {
-        updateData.language = user.language;
-      }
-      if (user.dob) {
-        updateData.dob = user.dob;
-      }
-      if (user.statusMessage) {
-        updateData.statusMessage = user.statusMessage;
-      }
-      if (user.city) {
+      updateData.statusMessage = user.statusMessage;
+
+      if (user.city == null) {
+        updateData.city = null;
+      } else {
         const _c = await this.city.findOne({ where: { id: user.city } });
         if (_c) updateData.city = _c;
       }
-      if (user.country) {
-        const _c = await this.country.findOne({ where: { id: user.country } });
+
+      if (user.country == null) {
+        updateData.country == null;
+      } else {
+        const _c = await this.country.findOne({
+          where: { id: user.country },
+        });
         if (_c) updateData.country = _c;
       }
 
@@ -422,15 +423,13 @@ export class UsersService {
       if (user.lastName) {
         updateData.lastName = user.lastName;
       }
-      if (user.timezone) {
-        updateData.timezone = user.timezone;
-      }
+      updateData.timezone = user.timezone;
 
       await this.repository.save(updateData);
       return { message: 'User details updated.' };
     } catch (error) {
       console.log(error);
-      throw error;
+      throw new BadRequestException(error.message);
     }
   }
 

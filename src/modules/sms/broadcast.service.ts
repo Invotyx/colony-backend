@@ -1,4 +1,9 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { MessageBird } from 'messagebird/types';
 import { env } from 'process';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
@@ -63,10 +68,16 @@ export class BroadcastService {
           'Broadcast must have more then 1 contacts.',
         );
       }
-      
+
       if (body.length < 2) {
         throw new HttpException(
-          error('body', 'length', 'body must be greater then 2 characters'),
+          error([
+            {
+              key: 'body',
+              reason: 'length',
+              description: 'body must be greater then 2 characters',
+            },
+          ]),
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }

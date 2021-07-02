@@ -393,11 +393,11 @@ export class UsersService {
         );
         if (!oldPassword) {
           throw new HttpException(
-            error(
-              'oldPassword',
-              'Mismatch',
-              'Your old password does not match with password you have provided.',
-            ),
+            error([{
+              key: 'oldPassword',
+              reason: 'Mismatch',
+              description: 'Your old password does not match with password you have provided.',
+            }]),
             HttpStatus.UNPROCESSABLE_ENTITY,
           );
         }

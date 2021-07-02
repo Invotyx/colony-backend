@@ -332,11 +332,13 @@ export class SmsService {
 
       if (message.length < 1) {
         throw new HttpException(
-          error(
-            'message',
-            'length',
-            'message must be greater then 1 characters',
-          ),
+          error([
+            {
+              key: 'message',
+              reason: 'length',
+              description: 'message must be greater then 2 characters',
+            },
+          ]),
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
@@ -597,14 +599,26 @@ export class SmsService {
     try {
       if (title.length < 2) {
         throw new HttpException(
-          error('title', 'length', 'title must be greater then 2 characters'),
+          error([
+            {
+              key: 'title',
+              reason: 'length',
+              description: 'title must be greater then 2 characters',
+            },
+          ]),
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
 
       if (body.length < 2) {
         throw new HttpException(
-          error('body', 'length', 'body must be greater then 2 characters'),
+          error([
+            {
+              key: 'body',
+              reason: 'length',
+              description: 'body must be greater then 2 characters',
+            },
+          ]),
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
@@ -629,14 +643,26 @@ export class SmsService {
     try {
       if (title.length < 2) {
         throw new HttpException(
-          error('title', 'length', 'title must be greater then 2 characters'),
+          error([
+            {
+              key: 'title',
+              reason: 'length',
+              description: 'title must be greater then 2 characters',
+            },
+          ]),
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
 
       if (body.length < 2) {
         throw new HttpException(
-          error('body', 'length', 'body must be greater then 2 characters'),
+          error([
+            {
+              key: 'body',
+              reason: 'length',
+              description: 'body must be greater then 2 characters',
+            },
+          ]),
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
@@ -688,18 +714,30 @@ export class SmsService {
       if (!existing) {
         if (preset.body.length < 2) {
           throw new HttpException(
-            error('body', 'length', 'body must be greater then 2 characters'),
+            error([
+              {
+                key: 'body',
+                reason: 'length',
+                description: 'body must be greater then 2 characters',
+              },
+            ]),
             HttpStatus.UNPROCESSABLE_ENTITY,
           );
         }
 
         if (preset.name.length < 2) {
           throw new HttpException(
-            error('body', 'length', 'body must be greater then 2 characters'),
+            error([
+              {
+                key: 'name',
+                reason: 'length',
+                description: 'name must be greater then 2 characters',
+              },
+            ]),
             HttpStatus.UNPROCESSABLE_ENTITY,
           );
         }
-        
+
         const _preset: any = await this.presetRepo.save({
           name: preset.name,
           body: preset.body,

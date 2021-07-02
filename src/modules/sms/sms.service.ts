@@ -326,11 +326,8 @@ export class SmsService {
     scheduled?: any,
   ) {
     try {
-      if (message && message.length < 1) {
-        throw new BadRequestException('Cannot send empty message.');
-      }
 
-      if (message.length < 1) {
+      if (message && message.length < 1) {
         throw new HttpException(
           error([
             {

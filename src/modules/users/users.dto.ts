@@ -164,7 +164,6 @@ export class UpdateProfileDto {
 
   @ApiProperty()
   @IsOptional()
-  @IsDateString()
   dob: Date;
 
   @ApiProperty()

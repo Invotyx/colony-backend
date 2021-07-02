@@ -4,6 +4,7 @@ import { PlansService } from '../../modules/products/plan/plans.service';
 import { nanoid } from '../../shared/random-keygen';
 import { Seeder } from '../../decorators/common.decorator';
 import { ISeed } from '../seeds.interface';
+import { env } from 'process';
 
 @Injectable()
 @Seeder()
@@ -15,14 +16,14 @@ export class PlanSeed implements ISeed {
     if (!check) {
       await this.service.createPlanInDb({
         active: true,
-        amount_decimal: 19.99,
+        amount_decimal: +env.PLAN_AMOUNT,
         currency: 'GBP',
         id: nanoid(),
         interval: interval.month,
-        nickname: 'Base Package',
+        nickname: env.PLAN_NAME,
         recurring: 'recurring',
-        subscriberCost: 0.05,
-        threshold: 50,
+        subscriberCost: +env.PLAN_SUB_COST,
+        threshold: +env.PLAN_THRESHOLD,
       });
     }
   }

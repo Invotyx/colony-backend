@@ -70,7 +70,10 @@ export class InfluencerLinksService {
   async deleteLink(id: number, user: UserEntity) {
     try {
       const link = await this.repository.findOne({ id: id, user: user });
-      return this.repository.remove(link);
+      if (!link) {
+        throw new BadRequestException('You cannot delete this link.');
+      }
+      return this.repository.delete(link.id);
     } catch (e) {
       throw e;
     }

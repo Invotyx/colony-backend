@@ -2,7 +2,7 @@ import {
   BadRequestException,
   forwardRef,
   Inject,
-  Injectable
+  Injectable,
 } from '@nestjs/common';
 import { env } from 'process';
 import Stripe from 'stripe';
@@ -130,6 +130,8 @@ export class SubscriptionsService {
             costType: 'base-plan-purchase',
             chargeId: charge.id,
           });
+          const newChargeDays = +env.SUB_RENEW_DAYS;
+
           if (purchasedNumber.number != null) {
             await this.repository.save({
               rId: nanoid(),
@@ -140,7 +142,7 @@ export class SubscriptionsService {
               paymentType: 'recurring',
               currentStartDate: new Date(),
               currentEndDate: new Date(
-                new Date().setDate(new Date().getDate() + 30),
+                new Date().setDate(new Date().getDate() + newChargeDays),
               ),
               phone: purchasedNumber.number,
             });

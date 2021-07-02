@@ -683,9 +683,6 @@ export class SmsService {
         where: { id: id, user: user },
       });
       if (existing) {
-        if (preset.body.length < 5 || preset.name.length < 2) {
-          throw new BadRequestException('Cannot save empty body or name');
-        }
         if (preset.body) {
           existing.body = preset.body;
         }

@@ -345,8 +345,9 @@ export class SmsService {
     message: string,
     scheduled?: any,
   ) {
+    console.log(message);
     try {
-      if (message && message.length < 1) {
+      if (message.length < 1) {
         throw new HttpException(
           error(
             [

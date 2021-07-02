@@ -352,7 +352,7 @@ export class UsersService {
       where: { id: id },
     });
     console.log('updateData: ', updateData);
-    console.log('user: ',user);
+    console.log('user: ', user);
     // let isAlreadyExist: any;
     try {
       /* if (user.email && this.isValidEmail(user.email)) {
@@ -427,7 +427,7 @@ export class UsersService {
 
       updateData.gender = user.gender;
 
-      updateData.dob = user.dob?user.dob:null;
+      updateData.dob = user.dob ? user.dob : null;
 
       updateData.statusMessage = user.statusMessage;
 
@@ -436,6 +436,7 @@ export class UsersService {
       } else {
         const _c = await this.city.findOne({ where: { id: user.city } });
         if (_c) updateData.city = _c;
+        updateData.city = null;
       }
 
       if (user.country == null) {
@@ -445,6 +446,7 @@ export class UsersService {
           where: { id: user.country },
         });
         if (_c) updateData.country = _c;
+        updateData.country = null;
       }
 
       if (user.firstName) {

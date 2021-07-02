@@ -376,7 +376,7 @@ export class SmsService {
             tagReplace(message, {
               name: _contact?.name,
               inf_name:
-                _inf_phone.user?.firstName + ' ' + _inf_phone.user?.firstName,
+                _inf_phone.user?.firstName + ' ' + _inf_phone.user?.lastName,
             }),
             null,
             'outBound',
@@ -392,7 +392,7 @@ export class SmsService {
           tagReplace(message, {
             name: _contact?.name,
             inf_name:
-              _inf_phone.user?.firstName + ' ' + _inf_phone.user?.firstName,
+              _inf_phone.user?.firstName + ' ' + _inf_phone.user?.lastName,
           }),
           'outBound',
         );

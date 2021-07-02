@@ -156,7 +156,7 @@ export class AuthController {
               reason: 'invalidData',
               description: 'Username contains space character',
             },
-          ]),
+          ],HttpStatus.UNPROCESSABLE_ENTITY,'Unprocessable entity'),
         );
       }
       user.mobile = user.mobile

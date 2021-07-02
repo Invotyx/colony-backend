@@ -9,12 +9,14 @@ import {
   Post,
   Query,
   Request,
+  UnprocessableEntityException,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { logger } from 'src/services/logs/log.storage';
+import { error } from 'src/shared/error.dto';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { AuthMailer } from '../../mails/users/auth.mailer';
@@ -144,6 +146,17 @@ export class AuthController {
       ) {
         throw new BadRequestException(
           'One of mandatory fields(firstName,lastName,username,email,password,mobile) missing.',
+        );
+      }
+      if (user.username.includes(' ')) {
+        throw new UnprocessableEntityException(
+          error([
+            {
+              key: 'username',
+              reason: 'invalidData',
+              description: 'Username contains space character',
+            },
+          ]),
         );
       }
       user.mobile = user.mobile

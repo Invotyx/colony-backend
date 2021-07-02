@@ -62,6 +62,12 @@ export class BroadcastService {
           'Broadcast must have more then 1 contacts.',
         );
       }
+      if (body.length < 1) {
+        
+        throw new BadRequestException(
+          'Cannot send empty message in broadcast.',
+        );
+      }
       return this.repository.save({
         body: body,
         user: user,
@@ -74,48 +80,6 @@ export class BroadcastService {
       console.log('createBroadcast', e);
       throw new BadRequestException(e.message);
     }
-  }
-
-  public calculateTime(schedule: Date) {
-    const date_future = new Date(schedule);
-    const date_now = new Date();
-    let delta = Math.abs(date_future.valueOf() - date_now.valueOf()) / 1000;
-
-    // calculate (and subtract) whole days
-    let days = Math.floor(delta / 86400);
-    delta -= days * 86400;
-
-    // calculate (and subtract) whole hours
-    let hours = Math.floor(delta / 3600) % 24;
-    delta -= hours * 3600;
-
-    // calculate (and subtract) whole minutes
-    let minutes = Math.floor(delta / 60) % 60;
-    delta -= minutes * 60;
-
-    // what's left is seconds
-    let seconds = delta % 60;
-
-    if (days > 0) {
-      hours = days > 5 ? 5 : days;
-    }
-
-    if (hours > 0) {
-      minutes = hours > 20 ? 20 : hours;
-    }
-
-    if (minutes > 0) {
-      seconds = minutes > 10 ? 10 : hours;
-    }
-
-    return new Date(
-      date_now.getFullYear(),
-      date_now.getMonth(),
-      date_now.getDate(),
-      hours,
-      minutes,
-      seconds,
-    );
   }
 
   public async reschedule(id: number, type: string) {

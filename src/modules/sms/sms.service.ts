@@ -323,7 +323,7 @@ export class SmsService {
     scheduled?: any,
   ) {
     try {
-      if (message && message == null) {
+      if (message && message.length < 1) {
         throw new BadRequestException('Cannot send empty message.');
       }
       const _contact = await this.contactService.findOne({
@@ -580,7 +580,7 @@ export class SmsService {
   //#region  sms templates
   async createSmsTemplate(title: string, body: string, influencer: UserEntity) {
     try {
-      if (title == null || body == null) {
+      if (title.length < 2 || body.length < 5) {
         throw new BadRequestException('Cannot save empty title or body.');
       }
 
@@ -603,7 +603,7 @@ export class SmsService {
     influencer: UserEntity,
   ) {
     try {
-      if (title == null || body == null) {
+      if (title.length < 2 || body.length < 5) {
         throw new BadRequestException('Cannot send empty message.');
       }
 
@@ -652,6 +652,9 @@ export class SmsService {
         where: { user: user, trigger: preset.trigger },
       });
       if (!existing) {
+        if (preset.body.length < 5 || preset.name.length < 2) {
+          throw new BadRequestException('Cannot save empty body or name');
+        }
         const _preset: any = await this.presetRepo.save({
           name: preset.name,
           body: preset.body,
@@ -680,7 +683,7 @@ export class SmsService {
         where: { id: id, user: user },
       });
       if (existing) {
-        if (preset.body == null || preset.name == null) {
+        if (preset.body.length < 5 || preset.name.length < 2) {
           throw new BadRequestException('Cannot save empty body or name');
         }
         if (preset.body) {

@@ -3,14 +3,16 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Injectable,
   Param,
   Post,
   Put,
   Query,
-  UnprocessableEntityException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { error } from 'src/shared/error.dto';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { UserEntity } from '../../modules/users/entities/user.entity';
@@ -31,8 +33,22 @@ export class InfluencerLinksController {
     @Body('title') title?: string,
   ) {
     try {
-      if (!this.service.validURL(link))
-        throw new UnprocessableEntityException('Invalid link');
+      if (!this.service.validURL(link)) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'link',
+                reason: 'invalidData',
+                description: 'Invalid link format',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
       return {
         data: await this.service.addLink(link, influencer, title),
         message: 'Link added successfully.',
@@ -63,8 +79,22 @@ export class InfluencerLinksController {
     @Body('link') link: string,
   ) {
     try {
-      if (!this.service.validURL(link))
-        throw new UnprocessableEntityException('Invalid link');
+      if (!this.service.validURL(link)) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'link',
+                reason: 'invalidData',
+                description: 'Invalid link format',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
       return {
         data: await this.service.updateLink(id, link, influencer),
         message: 'Link updated successfully.',

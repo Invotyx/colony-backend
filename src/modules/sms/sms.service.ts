@@ -347,14 +347,14 @@ export class SmsService {
   ) {
     console.log(message);
     try {
-      if (!message) {
+      if (String(message).length < 1) {
         throw new HttpException(
           error(
             [
               {
                 key: 'message',
                 reason: 'length',
-                description: 'message must be greater then 2 characters',
+                description: 'message must be greater then 1 character',
               },
             ],
             HttpStatus.UNPROCESSABLE_ENTITY,
@@ -390,7 +390,7 @@ export class SmsService {
 
         let welcomeBody = message;
         const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
-        if (links.length > 0) {
+        if (links && links.length > 0) {
           for (let link of links) {
             let id = link.replace('${link:', '').replace('}', '');
             const shareableUri = (

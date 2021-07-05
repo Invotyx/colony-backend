@@ -347,7 +347,7 @@ export class SmsService {
   ) {
     console.log(message);
     try {
-      if (String(message).length < 1) {
+      if (message.toString().length < 1) {
         throw new HttpException(
           error(
             [

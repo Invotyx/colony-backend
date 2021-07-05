@@ -438,8 +438,20 @@ export class SmsService {
         );
         return { message: 'Sms sent' };
       } else {
-        throw new BadRequestException(
-          'You cannot send message to contact who has not subscribed you yet.',
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'to',
+                reason: 'contact_has_not_subscribed',
+                description:
+                  'You cannot send message to contact who has not subscribed you yet.',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
     } catch (e) {

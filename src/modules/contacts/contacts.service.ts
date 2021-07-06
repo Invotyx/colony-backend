@@ -12,7 +12,9 @@ import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
 import { uniqueId } from 'src/shared/random-keygen';
 import { tagReplace } from 'src/shared/tag-replace';
+import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhoneService } from '../phone/phone.service';
+import { SubscriptionsService } from '../products/subscription/subscriptions.service';
 import { SmsService } from '../sms/sms.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/services/users.service';
@@ -40,6 +42,8 @@ export class ContactsService {
     private readonly phoneService: PhoneService,
     private readonly favoriteRepo: FavoriteContactRepository,
     private readonly blockedRepo: BlockedContactRepository,
+    private readonly paymentHistory: PaymentHistoryService,
+    private readonly subService: SubscriptionsService,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -705,9 +709,17 @@ export class ContactsService {
         });
 
         conversation.removedFromList = true;
+
+        const plan = await this.subService.planService.findOne();
+        const dues = await this.paymentHistory.getDues('contacts', _user);
         Promise.all([
           this.smsService.saveConversation(conversation),
           this.influencerContactRepo.remove(check),
+          this.paymentHistory.updateDues({
+            cost: +dues.cost - +plan.subscriberCost,
+            type: 'contacts',
+            user: _user,
+          }),
         ]);
         return { message: 'Contact removed from list.' };
       }

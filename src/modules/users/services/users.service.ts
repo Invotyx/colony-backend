@@ -431,7 +431,7 @@ export class UsersService {
       }
 
       if (user.country == null) {
-        updateData.country == null;
+        updateData.country = null;
       } else {
         const _c = await this.country.findOne({
           where: { id: user.country },
@@ -447,7 +447,7 @@ export class UsersService {
         updateData.lastName = user.lastName;
       }
       updateData.timezone = user.timezone;
-      await this.repository.update(updateData.id,updateData);
+      await this.repository.save(updateData);
       return { message: 'User details updated.' };
     } catch (error) {
       console.log(error);

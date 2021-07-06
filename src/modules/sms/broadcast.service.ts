@@ -8,6 +8,7 @@ import { MessageBird } from 'messagebird/types';
 import { env } from 'process';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { error } from 'src/shared/error.dto';
+import { tagReplace } from 'src/shared/tag-replace';
 import { ContactFilter } from '../contacts/contact.dto';
 import { ContactsService } from '../contacts/contacts.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
@@ -85,6 +86,23 @@ export class BroadcastService {
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
+
+      let check = body;
+      const links = check.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
+      if (links && links.length > 0) {
+        for (let link of links) {
+          
+          check = check.replace(
+            link,
+            env.API_URL + '/api/s/o/',
+          );
+        }
+      }
+      tagReplace(check, {
+        name: 'test',
+        inf_name: 'nnn',
+      });
+
       return this.repository.save({
         body: body,
         user: user,

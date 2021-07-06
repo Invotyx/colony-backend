@@ -14,23 +14,29 @@ import { error } from './error.dto';
  * @returns {String} Returns plan string after inserting dynamic names
  */
 export const tagReplace = function template(literal, params) {
-  if (String(literal).includes(':')) {
-    throw new HttpException(
-      error(
-        [
-          {
-            key: 'body',
-            reason: 'invalidMergeTag',
-            description: 'You have used invalid merge tag.',
-          },
-        ],
-        HttpStatus.UNPROCESSABLE_ENTITY,
-        'Unprocessable merge tag',
-      ),
+  const _error = new HttpException(
+    error(
+      [
+        {
+          key: 'body',
+          reason: 'invalidMergeTag',
+          description: 'You have used invalid merge tag.',
+        },
+      ],
       HttpStatus.UNPROCESSABLE_ENTITY,
-    );
-  }
-  return new Function(Object.keys(params) as any, 'return `' + literal + '`;')(
-    ...Object.values(params),
+      'You have used invalid merge tag.',
+    ),
+    HttpStatus.UNPROCESSABLE_ENTITY,
   );
+  try {
+    if (String(literal).includes(':')) {
+      throw _error;
+    }
+    return new Function(
+      Object.keys(params) as any,
+      'return `' + literal + '`;',
+    )(...Object.values(params));
+  } catch (e) {
+    throw _error;
+  }
 };

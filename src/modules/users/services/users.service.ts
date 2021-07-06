@@ -351,8 +351,6 @@ export class UsersService {
     const updateData = await this.repository.findOne({
       where: { id: id },
     });
-    console.log('updateData: ', updateData);
-    console.log('user: ', user);
     // let isAlreadyExist: any;
     try {
 
@@ -423,14 +421,14 @@ export class UsersService {
 
       updateData.statusMessage = user.statusMessage;
 
-      if (user.city == null) {
+      if (!user.city) {
         updateData.city = null;
       } else {
         const _c = await this.city.findOne({ where: { id: user.city } });
         if (_c) updateData.city = _c;
       }
 
-      if (user.country == null) {
+      if (!user.country) {
         updateData.country = null;
       } else {
         const _c = await this.country.findOne({
@@ -447,6 +445,9 @@ export class UsersService {
         updateData.lastName = user.lastName;
       }
       updateData.timezone = user.timezone;
+      console.log('updateData: ', updateData);
+      console.log('user: ', user);
+          
       await this.repository.save(updateData);
       return { message: 'User details updated.' };
     } catch (error) {

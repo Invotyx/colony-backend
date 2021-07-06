@@ -40,11 +40,19 @@ export const tagReplace = function template(literal, params) {
     console.log(literal);
     if (literal == 'link' || literal == '${link}' || literal == '{link}') {
       throw new HttpException(
-        {
-          statusCode: 422,
-          message:
-            '${link} merge tag can only be used in OnBoarding preset message.',
-        },
+        error(
+          [
+            {
+              key: 'body',
+              reason: 'InvalidMergeTag',
+              description:
+                literal +
+                ' merge tag can only be used in OnBoarding preset message.',
+            },
+          ],
+          422,
+          literal + ' merge tag can only be used in OnBoarding preset message.',
+        ),
         422,
       );
     }

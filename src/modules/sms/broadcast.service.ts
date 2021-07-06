@@ -4,7 +4,6 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { MessageBird } from 'messagebird/types';
 import { env } from 'process';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { error } from 'src/shared/error.dto';
@@ -16,22 +15,17 @@ import { PhoneService } from '../phone/phone.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { BroadcastContactsRepository } from './repo/broadcast-contact.repo';
 import { BroadcastsRepository } from './repo/broadcast.repo';
-import { SmsService } from './sms.service';
 
 @Injectable()
 export class BroadcastService {
-  private mb: MessageBird;
   constructor(
     private readonly repository: BroadcastsRepository,
     private readonly bcRepo: BroadcastContactsRepository,
-    private readonly smsService: SmsService,
     private readonly phoneService: PhoneService,
     private readonly contactService: ContactsService,
     private readonly countryService: CityCountryService,
     private readonly paymentHistory: PaymentHistoryService,
-  ) {
-    this.mb = require('messagebird')(env.MESSAGEBIRD_KEY);
-  }
+  ) {}
 
   async save(user: any) {
     return this.repository.save(user);
@@ -60,7 +54,7 @@ export class BroadcastService {
   ) {
     try {
       if (schedule && env.NODE_ENV == 'development') {
-        schedule = new Date(new Date().getTime() + 15 * 60000);
+        schedule = new Date(new Date().getTime() + 3 * 60 * 1000);
       }
       if (
         (await this.contactService.filterContacts(user.id, filters)).count < 2
@@ -91,11 +85,7 @@ export class BroadcastService {
       const links = check.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
       if (links && links.length > 0) {
         for (let link of links) {
-          
-          check = check.replace(
-            link,
-            env.API_URL + '/api/s/o/',
-          );
+          check = check.replace(link, env.API_URL + '/api/s/o/');
         }
       }
       tagReplace(check, {

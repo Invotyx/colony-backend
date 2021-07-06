@@ -134,12 +134,12 @@ export class SmsController {
     @Body('scheduled') scheduled?: any,
   ) {
     try {
-      console.log("SendSms start ****************** ");
-      console.log("to: ", contact);
+      console.log('SendSms start ****************** ');
+      console.log('to: ', contact);
       console.log('message: ', message);
       console.log('scheduled: ', scheduled);
       console.log('Initiate SendSms Start *********************');
-      
+
       return this.service.initiateSendSms(
         inf,
         contact,
@@ -375,4 +375,10 @@ export class SmsController {
   }
 
   //#endregion
+
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('activity')
+  async smsActivity(@LoginUser() influencer: UserEntity) {
+    return this.service.smsActivity(influencer);
+  }
 }

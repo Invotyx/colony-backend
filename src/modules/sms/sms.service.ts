@@ -406,7 +406,7 @@ export class SmsService {
           }
         }
 
-        console.log(welcomeBody,);
+        console.log(welcomeBody);
         if (scheduled != null) {
           //handle schedule here
           scheduled = new Date(new Date().getTime() + 3 * 60000);
@@ -473,7 +473,7 @@ export class SmsService {
         'sms',
         influencerNumber.user,
       );
-      
+
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },
       });
@@ -483,9 +483,8 @@ export class SmsService {
         );
       }
       const plan = await this.subService.planService.findOne();
-      
+
       const cost = checkThreshold ? +checkThreshold.cost + +country.smsCost : 0;
-      
 
       if (cost < plan.threshold) {
         if (status && status == 'scheduled') {
@@ -913,4 +912,22 @@ export class SmsService {
   }
 
   //#endregion
+
+  async smsActivity(user: UserEntity) {
+    try {
+      const sql = `SELECT
+        cm."createdAt"::date as date,
+        COUNT ( cm."id" ) 
+      FROM
+        conversation_messages cm
+        LEFT JOIN conversations C ON cm."conversationsId" = C."id"
+        WHERE cm."createdAt"::date > (CURRENT_DATE::date - INTERVAL '7 days') and  c."userId"=${user.id}
+        GROUP BY cm."createdAt"::date`;
+
+      const act = await this.conversationsMessagesRepo.query(sql);
+      return act ? act : [];
+    } catch (e) {
+      throw e;
+    }
+  }
 }

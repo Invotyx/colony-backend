@@ -11,6 +11,7 @@ import {
   Length,
   MaxLength,
 } from 'class-validator';
+import { Match } from 'src/shared/match.decorator';
 import { LanguageEntity } from '../../modules/language/entities/language.entity';
 import { CityEntity } from '../../services/city-country/entities/city.entity';
 import { CountryEntity } from '../../services/city-country/entities/country.entity';
@@ -142,6 +143,12 @@ export class UpdateProfileDto {
   @Length(8, 20)
   @IsOptional()
   oldPassword: string;
+
+  @ApiProperty()
+  @Length(8, 20)
+  @IsOptional()
+  @Match('password')
+  confirmPassword: string;
 
   @ApiProperty({ enum: ['male', 'female'], enumName: 'gender' })
   @IsIn(['male', 'female', ''])

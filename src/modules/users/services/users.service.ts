@@ -355,22 +355,6 @@ export class UsersService {
     console.log('user: ', user);
     // let isAlreadyExist: any;
     try {
-      /* if (user.email && this.isValidEmail(user.email)) {
-        
-        isAlreadyExist = await this.isEmailExists(user.email);
-        if (isAlreadyExist && isAlreadyExist.email !== user.email) {
-          throw EmailAlreadyExistError;
-        }
-        updateData.email = user.email;
-      }
-
-      if (user.username) {
-        isAlreadyExist = await this.isUserNameExists(user.username);
-        if (isAlreadyExist && isAlreadyExist.username !== user.username) {
-          throw UserNameAlreadyExistError;
-        }
-        updateData.username = user.username;
-      } */
 
       const phone = await this.repository.findOne({
         where: { mobile: user.mobile, id: Not(id) },
@@ -444,7 +428,6 @@ export class UsersService {
       } else {
         const _c = await this.city.findOne({ where: { id: user.city } });
         if (_c) updateData.city = _c;
-        updateData.city = null;
       }
 
       if (user.country == null) {
@@ -454,7 +437,6 @@ export class UsersService {
           where: { id: user.country },
         });
         if (_c) updateData.country = _c;
-        updateData.country = null;
       }
 
       if (user.firstName) {
@@ -465,7 +447,6 @@ export class UsersService {
         updateData.lastName = user.lastName;
       }
       updateData.timezone = user.timezone;
-
       await this.repository.save(updateData);
       return { message: 'User details updated.' };
     } catch (error) {

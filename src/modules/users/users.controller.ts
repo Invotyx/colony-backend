@@ -3,8 +3,10 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Param,
   Post,
+  UnprocessableEntityException,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -15,6 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
+import { error } from 'src/shared/error.dto';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { EmailTokenSender } from '../../mails/users/emailtoken.mailer';
@@ -159,15 +162,44 @@ export class UsersController {
     }
   }
 
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Post('update-password')
   @UsePipes(ValidationPipe)
-  async updatePwd(@Body() data: PasswordChange) {
+  async updatePwd(
+    @LoginUser() _user: UserEntity,
+    @Body() data: PasswordChange,
+  ) {
     try {
+      if (_user.email != data.email) {
+        throw new BadRequestException(
+          'Invalid request password change request.',
+        );
+      }
       const user = await this.userService.findOne({
         where: { email: data.email },
       });
       if (!user) {
         throw new BadRequestException(UserNotExistError);
+      }
+      const check = await PasswordHashEngine.check(
+        data.password,
+        _user.password,
+      );
+      if (check) {
+        throw new UnprocessableEntityException(
+          error(
+            [
+              {
+                key: 'password',
+                reason: 'AlreadyUsedPassword',
+                description:
+                  'Password you are trying to use set is same as current password.',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Password you are trying to use set is same as current password.',
+          ),
+        );
       }
       user.password = await PasswordHashEngine.make(data.password);
 

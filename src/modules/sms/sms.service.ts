@@ -472,7 +472,7 @@ export class SmsService {
         'sms',
         influencerNumber.user,
       );
-
+      console.log('checkThreshold', checkThreshold);
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },
       });
@@ -482,8 +482,11 @@ export class SmsService {
         );
       }
       const plan = await this.subService.planService.findOne();
+      console.log('plan', plan);
 
       const cost = checkThreshold ? checkThreshold.cost + country.smsCost : 0;
+      console.log('cost', cost);
+
       if (cost < plan.threshold) {
         if (status && status == 'scheduled') {
           const sms = await this.conversationsMessagesRepo.findOne({

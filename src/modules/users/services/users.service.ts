@@ -447,7 +447,7 @@ export class UsersService {
         updateData.lastName = user.lastName;
       }
       updateData.timezone = user.timezone;
-      await this.repository.save(updateData);
+      await this.repository.update(updateData.id,updateData);
       return { message: 'User details updated.' };
     } catch (error) {
       console.log(error);

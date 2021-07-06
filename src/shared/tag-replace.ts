@@ -37,6 +37,17 @@ export const tagReplace = function template(literal, params) {
       'return `' + literal + '`;',
     )(...Object.values(params));
   } catch (e) {
+    if (String(literal).includes('link')) {
+      throw new HttpException(
+        {
+          statusCode: 422,
+          message:
+            '${link} merge tag can only be used in OnBoarding preset message.',
+        },
+        422,
+      );
+    }
+
     throw _error;
   }
 };

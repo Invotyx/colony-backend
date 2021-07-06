@@ -37,7 +37,8 @@ export const tagReplace = function template(literal, params) {
       'return `' + literal + '`;',
     )(...Object.values(params));
   } catch (e) {
-    if (String(literal).includes('link')) {
+    console.log(literal);
+    if (literal == 'link' || literal == '${link}' || literal == '{link}') {
       throw new HttpException(
         {
           statusCode: 422,

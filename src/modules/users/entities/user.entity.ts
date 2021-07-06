@@ -195,11 +195,11 @@ export class UserEntity {
   })
   blocked: ContactsEntity[];
 
-  @OneToOne(() => CityEntity, { nullable: true, eager: true })
+  @ManyToOne(() => CityEntity, { nullable: true, eager: true })
   @JoinColumn()
   city: CityEntity;
 
-  @OneToOne(() => CountryEntity, { nullable: true, eager: true })
+  @ManyToOne(() => CountryEntity, { nullable: true, eager: true })
   @JoinColumn()
   country: CountryEntity;
 

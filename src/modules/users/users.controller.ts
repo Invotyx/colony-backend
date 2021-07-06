@@ -193,11 +193,11 @@ export class UsersController {
                 key: 'password',
                 reason: 'AlreadyUsedPassword',
                 description:
-                  'Password you are trying to use set is same as current password.',
+                  'Password you are trying to set is same as current password.',
               },
             ],
             HttpStatus.UNPROCESSABLE_ENTITY,
-            'Password you are trying to use set is same as current password.',
+            'Password you are trying to set is same as current password.',
           ),
         );
       }

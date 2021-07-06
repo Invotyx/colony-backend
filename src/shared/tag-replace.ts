@@ -29,9 +29,6 @@ export const tagReplace = function template(literal, params) {
     HttpStatus.UNPROCESSABLE_ENTITY,
   );
   try {
-    if (String(literal).includes(':')) {
-      throw _error;
-    }
     return new Function(
       Object.keys(params) as any,
       'return `' + literal + '`;',

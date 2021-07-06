@@ -406,6 +406,7 @@ export class SmsService {
           }
         }
 
+        console.log(welcomeBody,);
         if (scheduled != null) {
           //handle schedule here
           scheduled = new Date(new Date().getTime() + 3 * 60000);

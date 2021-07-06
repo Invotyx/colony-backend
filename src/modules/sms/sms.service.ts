@@ -234,7 +234,7 @@ export class SmsService {
     });
     let welcomeBody = preset_welcome.body;
     const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
-    if (links.length > 0) {
+    if (links && links.length > 0) {
       for (let link of links) {
         let id = link.replace('${link:', '').replace('}', '');
         const shareableUri = (

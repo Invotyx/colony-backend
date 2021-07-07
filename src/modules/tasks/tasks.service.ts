@@ -46,7 +46,7 @@ export class TasksService {
       },
     );
   }
-  @Cron('10 * * * * *')
+  @Cron('5 * * * * *')
   async checkForScheduledSms() {
     const scheduledSms = await this.smsService.findOneConversationsMessages({
       where: {
@@ -79,7 +79,7 @@ export class TasksService {
     });
     console.log(q_obj, 'Added to queue');
   }
-  @Cron('10 * * * * *')
+  @Cron('5 * * * * *')
   async checkForBroadcasts() {
     //get all broadcasts where broadcast schedule is less than 1
     // get contact list for each broadcast
@@ -91,7 +91,8 @@ export class TasksService {
       },
       relations: ['user'],
     });
-
+    this.logger.log('broadcasts');
+    this.logger.log(broadcasts);
     for (let broadcast of broadcasts) {
       let contacts;
       if (JSON.parse(broadcast.filters).successorId == null) {
@@ -114,6 +115,8 @@ export class TasksService {
           where: { country: contact.cCode, user: broadcast.user },
         });
         if (phone) {
+          this.logger.log('phone');
+          this.logger.log(phone);
           let messageBody = broadcast.body;
           const links = messageBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
           if (links.length > 0) {
@@ -147,6 +150,8 @@ export class TasksService {
             broadcast: broadcast,
           };
 
+          this.logger.log('message enqueued');
+          this.logger.log(q_obj);
           await this.queue.add('broadcast_message', q_obj, {
             removeOnComplete: true,
             removeOnFail: true,

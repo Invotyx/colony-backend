@@ -26,7 +26,7 @@ export class OutboundBroadcastSmsProcessor {
       body.message,
       'broadcastOutbound',
     );
-    console.log(sms);
+    console.log(sms, '/*/*/*/*/*/*');
     await this.broadcastService.addContactToBroadcastList(
       body.broadcast,
       body.contact,
@@ -34,12 +34,12 @@ export class OutboundBroadcastSmsProcessor {
       sms.status,
     );
 
-    console.log('++++++++++++');
+    console.log('+++++++*/*/*+++++');
     await this.infLinksService.updateLinkStatus(
       body.contact.id + ':' + body.broadcast.id,
       sms.status,
       sms.sid,
     );
-    console.log('***************************');
+    console.log('***********/*/************');
   }
 }

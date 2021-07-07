@@ -510,7 +510,7 @@ export class SmsService {
           to: contact.phoneNumber, //recipient(s)
           from: influencerNumber.number,
         });
-        return this.saveSms(
+        return await this.saveSms(
           contact,
           influencerNumber,
           body,

@@ -198,7 +198,7 @@ export class TasksService {
 
         const metaPayment = {
           subscription: +subscription.plan.amount_decimal,
-          fan: fans? +fans.cost: 0,
+          fan: fans ? +fans.cost : 0,
           phones: [],
         };
 
@@ -218,7 +218,9 @@ export class TasksService {
           // charge client here
           const charge = await this.stripe.paymentIntents.create({
             amount: Math.round(
-              (+subscription.plan.amount_decimal + +phonesCost + metaPayment.fan) *
+              (+subscription.plan.amount_decimal +
+                +phonesCost +
+                metaPayment.fan) *
                 100,
             ),
             currency: 'GBP',
@@ -290,7 +292,7 @@ export class TasksService {
         const default_pm = requests[0];
         const sms = requests[1];
 
-        if (default_pm && sms && +sms.cost < +plan.threshold) {
+        if (default_pm && sms && +sms.cost >= +plan.threshold - 1) {
           // charge client here
           const charge = await this.stripe.paymentIntents.create({
             amount: Math.round(+sms.cost * 100),

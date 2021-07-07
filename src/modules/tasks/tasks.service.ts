@@ -274,17 +274,11 @@ export class TasksService {
   async checkForSmsThreshold() {
     try {
       this.logger.log('checkForSmsThreshold started');
-      const subscriptions = await (await this.subscriptionService.qb('sub'))
-        .where(
-          `(CAST(sub.currentEndDate AS date) - CAST('${this.getCurrentDate()}' AS date))<=1`,
-        )
-        .getMany();
-      console.log('subscriptions',subscriptions);
-      for (let _subscription of subscriptions) {
-        let subscription = await this.subscriptionService.findOne({
-          where: { id: _subscription.id },
-          relations: ['user', 'plan'],
-        });
+      const subscriptions = await this.subscriptionService.find({
+        relations: ['user', 'plan'],
+      });
+      console.log('subscriptions', subscriptions);
+      for (let subscription of subscriptions) {
         console.log('subscription', subscription);
         const requests = await Promise.all([
           this.paymentService.findOne({

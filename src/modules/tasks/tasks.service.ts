@@ -186,7 +186,7 @@ export class TasksService {
           relations: ['user', 'plan'],
         });
         const requests = await Promise.all([
-          this.planService.findOne({ where: { id: subscription.plan } }),
+          this.planService.findOne({ where: { id: subscription.plan.id } }),
           this.paymentService.findOne({
             where: { default: true, user: subscription.user },
           }),

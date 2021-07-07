@@ -323,6 +323,8 @@ export class SmsService {
       });
     }
 
+    console.log('message saved', message);
+
     const country = await this.countryService.countryRepo.findOne({
       where: { code: conversation.phone.country },
     });

@@ -18,15 +18,15 @@ export class OutboundBroadcastSmsProcessor {
   @Process('broadcast_message')
   async handleBroadcastOutbound(job: Job) {
     const body = job.data;
+    console.log('***************************');
 
-    this.logger.log("processing broadcast queue:",body)
     const sms = await this.service.sendSms(
       body.contact,
       body.phone,
       body.message,
       'broadcastOutbound',
     );
-
+    console.log(sms);
     await this.broadcastService.addContactToBroadcastList(
       body.broadcast,
       body.contact,
@@ -34,10 +34,12 @@ export class OutboundBroadcastSmsProcessor {
       sms.status,
     );
 
+    console.log('++++++++++++');
     await this.infLinksService.updateLinkStatus(
       body.contact.id + ':' + body.broadcast.id,
       sms.status,
       sms.sid,
     );
+    console.log('***************************');
   }
 }

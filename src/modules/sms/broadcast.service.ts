@@ -54,7 +54,7 @@ export class BroadcastService {
   ) {
     try {
       if (schedule && env.NODE_ENV == 'development') {
-        schedule = new Date(new Date().getTime() + 3 * 60 * 1000);
+        schedule = new Date(new Date().getTime() + 1.5 * 60 * 1000);
       }
       if (
         (await this.contactService.filterContacts(user.id, filters)).count < 2

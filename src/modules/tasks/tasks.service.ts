@@ -155,6 +155,11 @@ export class TasksService {
           });
         } else {
           //operation if phone number for contact country cannot be found.
+          this.logger.log(
+            'Influencer does not have number to send sms to this contact',
+          );
+          this.logger.log(phone);
+          this.logger.log(contact);
         }
       }
     }

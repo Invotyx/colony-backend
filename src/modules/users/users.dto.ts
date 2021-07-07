@@ -10,6 +10,7 @@ import {
   IsString,
   Length,
   MaxLength,
+  ValidateIf,
 } from 'class-validator';
 import { Match } from 'src/shared/match.decorator';
 import { LanguageEntity } from '../../modules/language/entities/language.entity';
@@ -141,7 +142,7 @@ export class UpdateProfileDto {
 
   @ApiProperty()
   @Length(8, 20)
-  @IsOptional()
+  @IsNotEmpty()
   oldPassword: string;
 
   @ApiProperty()

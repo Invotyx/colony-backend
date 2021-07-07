@@ -12,6 +12,7 @@ export class ScheduledSmsProcessor {
   @Process('scheduled_message')
   async handleScheduledSms(job: Job) {
     const body = job.data;
+    this.logger.log('scheduled_sms queue process:', body);
     await this.service.sendSms(
       body.contact,
       body.inf_phone,

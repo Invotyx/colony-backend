@@ -395,6 +395,23 @@ export class UsersService {
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
+      
+      if (!user.confirmPassword && user.password) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'confirmPassword',
+                reason: 'MissingValue',
+                description: 'Confirm Password cannot be empty.',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
       if (user.password && user.oldPassword) {
         if (user.oldPassword == user.password) {
           throw new HttpException(

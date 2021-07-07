@@ -19,6 +19,7 @@ export class OutboundBroadcastSmsProcessor {
   async handleBroadcastOutbound(job: Job) {
     const body = job.data;
 
+    this.logger.log("processing broadcast queue:",body)
     const sms = await this.service.sendSms(
       body.contact,
       body.phone,

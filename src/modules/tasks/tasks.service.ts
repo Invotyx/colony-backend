@@ -283,6 +283,8 @@ export class TasksService {
         },
         relations: ['user'],
       });
+      console.log(due_payments);
+
       for (let payment of due_payments) {
         console.log('payment', payment);
         const default_pm =await this.paymentService.findOne({

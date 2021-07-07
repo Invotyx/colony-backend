@@ -108,7 +108,7 @@ export class TasksService {
         );
       }
       broadcast.status = 'inProgress';
-      
+
       await this.broadcastService.save(broadcast);
       for (let contact of contacts.contacts) {
         const phone = await this.phoneService.findOne({
@@ -186,21 +186,19 @@ export class TasksService {
           relations: ['user', 'plan'],
         });
         const requests = await Promise.all([
-          this.planService.findOne({ where: { id: subscription.plan.id } }),
           this.paymentService.findOne({
             where: { default: true, user: subscription.user },
           }),
           this.phoneService.getUserPurchasedActiveNumbers(subscription.user),
           this.paymentHistoryService.getDues('contacts', subscription.user),
         ]);
-        const plan = requests[0];
-        const default_pm = requests[1];
-        const phones = requests[2];
-        const fans = requests[3];
+        const default_pm = requests[0];
+        const phones = requests[1];
+        const fans = requests[2];
 
         const metaPayment = {
-          subscription: +plan.amount_decimal,
-          fan: +fans.cost,
+          subscription: +subscription.plan.amount_decimal,
+          fan: fans? +fans.cost: 0,
           phones: [],
         };
 
@@ -220,7 +218,8 @@ export class TasksService {
           // charge client here
           const charge = await this.stripe.paymentIntents.create({
             amount: Math.round(
-              (plan.amount_decimal + phonesCost + fans.cost) * 100,
+              (+subscription.plan.amount_decimal + +phonesCost + metaPayment.fan) *
+                100,
             ),
             currency: 'GBP',
             capture_method: 'automatic',
@@ -250,7 +249,7 @@ export class TasksService {
               user: subscription.user,
               description:
                 'Base Package Re-subscribed with phone numbers and fans due charges.',
-              cost: plan.amount_decimal,
+              cost: +subscription.plan.amount_decimal,
               costType: 'base-plan-purchase',
               chargeId: charge.id,
               meta: JSON.stringify(metaPayment),
@@ -282,17 +281,16 @@ export class TasksService {
           relations: ['user', 'plan'],
         });
         const requests = await Promise.all([
-          this.planService.findOne({ where: { id: subscription.plan } }),
           this.paymentService.findOne({
             where: { default: true, user: subscription.user },
           }),
           this.paymentHistoryService.getDues('sms', subscription.user),
         ]);
-        const plan = requests[0];
-        const default_pm = requests[1];
-        const sms = requests[2];
+        const plan = subscription.plan;
+        const default_pm = requests[0];
+        const sms = requests[1];
 
-        if (default_pm && +sms.cost < +plan.threshold) {
+        if (default_pm && sms && +sms.cost < +plan.threshold) {
           // charge client here
           const charge = await this.stripe.paymentIntents.create({
             amount: Math.round(+sms.cost * 100),

@@ -353,7 +353,6 @@ export class UsersService {
     });
     // let isAlreadyExist: any;
     try {
-
       const phone = await this.repository.findOne({
         where: { mobile: user.mobile, id: Not(id) },
       });
@@ -364,6 +363,38 @@ export class UsersService {
         );
       }
 
+      if (user.password && !user.oldPassword) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'oldPassword',
+                reason: 'MissingValue',
+                description: 'Your old password cannot be empty.',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+      if (!user.password && user.oldPassword) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'password',
+                reason: 'MissingValue',
+                description: 'Password cannot be empty.',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
       if (user.password && user.oldPassword) {
         if (user.oldPassword == user.password) {
           throw new HttpException(
@@ -447,7 +478,7 @@ export class UsersService {
       updateData.timezone = user.timezone;
       console.log('updateData: ', updateData);
       console.log('user: ', user);
-          
+
       await this.repository.save(updateData);
       return { message: 'User details updated.' };
     } catch (error) {

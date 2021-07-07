@@ -253,13 +253,13 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE and c."createdAt"::date between CURRENT_DATE::date- INTERVAL '7 days'
+          ` WHERE c."createdAt"::date between (CURRENT_DATE::date- INTERVAL '7 days')
             and CURRENT_DATE::date 
           `;
       } else {
         query =
           query +
-          ` and c."createdAt"::date between CURRENT_DATE::date- INTERVAL '7 days'
+          ` and c."createdAt"::date between (CURRENT_DATE::date- INTERVAL '7 days')
             and CURRENT_DATE::date 
             `;
       }

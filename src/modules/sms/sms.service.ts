@@ -329,7 +329,7 @@ export class SmsService {
 
     const smsSegments: number = smsCount(body).segments;
 
-    if (status != 'failed') {
+    if (status != 'failed' && type != 'inBound') {
       await this.paymentHistory.updateDues({
         cost: +country.smsCost * smsSegments,
         type: 'sms',

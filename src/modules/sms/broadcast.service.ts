@@ -99,7 +99,7 @@ export class BroadcastService {
         filters: JSON.stringify(filters),
         scheduled: schedule ? schedule : new Date(),
         name: name,
-        status: schedule ? 'scheduled' : 'inProgress',
+        status: 'scheduled',
       });
     } catch (e) {
       console.log('createBroadcast', e);

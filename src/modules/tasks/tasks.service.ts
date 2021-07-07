@@ -172,7 +172,7 @@ export class TasksService {
   }
 
   //cron to check for due payments.
-  @Cron('30 * * * * *')
+  @Cron('*/30 * * * * *')
   async checkForPackageExpiryAndResubscribe() {
     try {
       const subscriptions = await (await this.subscriptionService.qb('sub'))
@@ -269,7 +269,7 @@ export class TasksService {
   }
 
   //cron to check for due payments.
-  @Cron('10 * * * * *')
+  @Cron('*/10 * * * * *')
   async checkForSmsThreshold() {
     try {
       const subscriptions = await (await this.subscriptionService.qb('sub'))
@@ -291,6 +291,8 @@ export class TasksService {
         const plan = subscription.plan;
         const default_pm = requests[0];
         const sms = requests[1];
+        console.log('sms cost: ', sms);
+        console.log('condition : ', +sms.cost >= +plan.threshold - 1);
 
         if (default_pm && sms && +sms.cost >= +plan.threshold - 1) {
           // charge client here
@@ -304,6 +306,7 @@ export class TasksService {
             description: 'Sms Dues payed automatically on reaching threshold.',
             payment_method: default_pm.id,
           });
+          console.log('charge :', charge);
           if (charge.status == 'succeeded') {
             await this.paymentHistoryService.setDuesToZero({
               type: 'sms',

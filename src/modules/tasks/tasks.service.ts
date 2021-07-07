@@ -92,6 +92,8 @@ export class TasksService {
       relations: ['user'],
     });
 
+    console.log(broadcasts);
+
     for (let broadcast of broadcasts) {
       let contacts;
       console.log(JSON.parse(broadcast.filters));
@@ -120,7 +122,7 @@ export class TasksService {
           console.log(phone);
           let messageBody = broadcast.body;
           const links = messageBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
-          if (links.length > 0) {
+          if (links && links.length > 0) {
             for (let link of links) {
               let id = link.replace('${link:', '').replace('}', '');
               const shareableUri = (

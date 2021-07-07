@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDateString,
   IsEmail,
   IsIn,
   IsInt,
@@ -10,7 +9,6 @@ import {
   IsString,
   Length,
   MaxLength,
-  ValidateIf,
 } from 'class-validator';
 import { Match } from 'src/shared/match.decorator';
 import { LanguageEntity } from '../../modules/language/entities/language.entity';
@@ -103,6 +101,24 @@ export class CreateUserDto {
   urlId: string;
 }
 
+export class UpdateProfilePasswordDto {
+  @ApiProperty()
+  @Length(8, 20)
+  @IsOptional()
+  password: string;
+
+  @ApiProperty()
+  @Length(8, 20)
+  @IsNotEmpty()
+  oldPassword: string;
+
+  @ApiProperty()
+  @Length(8, 20)
+  @IsOptional()
+  @Match('password')
+  confirmPassword: string;
+}
+
 export class UpdateProfileDto {
   @ApiProperty()
   @IsOptional()
@@ -134,22 +150,6 @@ export class UpdateProfileDto {
   @Length(3, 20)
   @IsOptional()
   mobile: string;
-
-  @ApiProperty()
-  @Length(8, 20)
-  @IsOptional()
-  password: string;
-
-  @ApiProperty()
-  @Length(8, 20)
-  @IsNotEmpty()
-  oldPassword: string;
-
-  @ApiProperty()
-  @Length(8, 20)
-  @IsOptional()
-  @Match('password')
-  confirmPassword: string;
 
   @ApiProperty({ enum: ['male', 'female'], enumName: 'gender' })
   @IsIn(['male', 'female', ''])

@@ -11,7 +11,7 @@ import {
   Request,
   UnprocessableEntityException,
   UsePipes,
-  ValidationPipe,
+  ValidationPipe
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
@@ -21,10 +21,13 @@ import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { AuthMailer } from '../../mails/users/auth.mailer';
 import { AppLogger } from '../../services/logs/log.service';
-import { PasswordHashEngine } from '../../shared/hash.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/services/users.service';
-import { CreateUserDto, UpdateProfileDto } from '../users/users.dto';
+import {
+  CreateUserDto,
+  UpdateProfileDto,
+  UpdateProfilePasswordDto
+} from '../users/users.dto';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -109,19 +112,8 @@ export class AuthController {
     @LoginUser() _user: UserEntity,
   ) {
     try {
-      const allData = await this.userService.findOne({
-        where: { id: _user.id },
-      });
-      const oldPassword = await PasswordHashEngine.check(
-        user.oldPassword,
-        allData.password,
-      );
-      if (oldPassword) {
-        const updateUser = await this.userService.updateUser(_user.id, user);
-        return { data: updateUser };
-      } else {
-        throw new BadRequestException('please check the old password!!!');
-      }
+      const updateUser = await this.userService.updateUser(_user.id, user);
+      return { data: updateUser.message };
     } catch (error) {
       throw error;
     }
@@ -150,13 +142,17 @@ export class AuthController {
       }
       if (user.username.includes(' ')) {
         throw new UnprocessableEntityException(
-          error([
-            {
-              key: 'username',
-              reason: 'invalidData',
-              description: 'Username contains space character',
-            },
-          ],HttpStatus.UNPROCESSABLE_ENTITY,'Unprocessable entity'),
+          error(
+            [
+              {
+                key: 'username',
+                reason: 'invalidData',
+                description: 'Username contains space character',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
         );
       }
       user.mobile = user.mobile
@@ -184,6 +180,21 @@ export class AuthController {
     try {
       const updateUser = await this.userService.updateUser(_user.id, user);
       return { data: updateUser };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Post('updatePassword')
+  @UsePipes(ValidationPipe)
+  async updatePassword(
+    @Body() data: UpdateProfilePasswordDto,
+    @LoginUser() _user: UserEntity,
+  ) {
+    try {
+      const updateUser = await this.userService.updatePassword(_user.id, data);
+      return { data: updateUser.message };
     } catch (error) {
       throw error;
     }

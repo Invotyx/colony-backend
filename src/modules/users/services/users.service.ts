@@ -37,7 +37,7 @@ import {
 import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
 import { UserRepository } from '../repos/user.repo';
 import { EmailVerificationsRepository } from '../repos/verifyemail.repo';
-import { CreateUserDto, UpdateProfileDto, UpdateRole } from '../users.dto';
+import { CreateUserDto, UpdateProfileDto, UpdateProfilePasswordDto, UpdateRole } from '../users.dto';
 
 @Injectable()
 export class UsersService {
@@ -363,99 +363,6 @@ export class UsersService {
         );
       }
 
-      if (user.password && !user.oldPassword) {
-        throw new HttpException(
-          error(
-            [
-              {
-                key: 'oldPassword',
-                reason: 'MissingValue',
-                description: 'Your old password cannot be empty.',
-              },
-            ],
-            HttpStatus.UNPROCESSABLE_ENTITY,
-            'Unprocessable entity',
-          ),
-          HttpStatus.UNPROCESSABLE_ENTITY,
-        );
-      }
-      if (!user.password && user.oldPassword) {
-        throw new HttpException(
-          error(
-            [
-              {
-                key: 'password',
-                reason: 'MissingValue',
-                description: 'Password cannot be empty.',
-              },
-            ],
-            HttpStatus.UNPROCESSABLE_ENTITY,
-            'Unprocessable entity',
-          ),
-          HttpStatus.UNPROCESSABLE_ENTITY,
-        );
-      }
-      
-      if (!user.confirmPassword && user.password) {
-        throw new HttpException(
-          error(
-            [
-              {
-                key: 'confirmPassword',
-                reason: 'MissingValue',
-                description: 'Confirm Password cannot be empty.',
-              },
-            ],
-            HttpStatus.UNPROCESSABLE_ENTITY,
-            'Unprocessable entity',
-          ),
-          HttpStatus.UNPROCESSABLE_ENTITY,
-        );
-      }
-      if (user.password && user.oldPassword) {
-        if (user.oldPassword == user.password) {
-          throw new HttpException(
-            error(
-              [
-                {
-                  key: 'password',
-                  reason: 'Mismatch',
-                  description:
-                    'Your old password is same as new password you have provided.',
-                },
-              ],
-              HttpStatus.UNPROCESSABLE_ENTITY,
-              'Unprocessable entity',
-            ),
-            HttpStatus.UNPROCESSABLE_ENTITY,
-          );
-        }
-
-        const oldPassword = await PasswordHashEngine.check(
-          user.oldPassword,
-          updateData.password,
-        );
-        if (!oldPassword) {
-          throw new HttpException(
-            error(
-              [
-                {
-                  key: 'oldPassword',
-                  reason: 'Mismatch',
-                  description:
-                    'Your old password does not match with password you have provided.',
-                },
-              ],
-              HttpStatus.UNPROCESSABLE_ENTITY,
-              'Unprocessable entity',
-            ),
-            HttpStatus.UNPROCESSABLE_ENTITY,
-          );
-        }
-
-        user.password = await PasswordHashEngine.make(user.password);
-        updateData.password = user.password;
-      }
       if (user.mobile) {
         updateData.mobile = user.mobile;
       }
@@ -498,6 +405,112 @@ export class UsersService {
 
       await this.repository.save(updateData);
       return { message: 'User details updated.' };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updatePassword(id: string | number | any, data: UpdateProfilePasswordDto) {
+    const updateData = await this.repository.findOne({
+      where: { id: id },
+    });
+    
+    try {
+      if (data.password && !data.oldPassword) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'oldPassword',
+                reason: 'MissingValue',
+                description: 'Your old password cannot be empty.',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+      if (!data.password && data.oldPassword) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'password',
+                reason: 'MissingValue',
+                description: 'Password cannot be empty.',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+
+      if (!data.confirmPassword && data.password) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'confirmPassword',
+                reason: 'MissingValue',
+                description: 'Confirm Password cannot be empty.',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+      if (data.password && data.oldPassword) {
+        if (data.oldPassword == data.password) {
+          throw new HttpException(
+            error(
+              [
+                {
+                  key: 'password',
+                  reason: 'Mismatch',
+                  description:
+                    'Your old password is same as new password you have provided.',
+                },
+              ],
+              HttpStatus.UNPROCESSABLE_ENTITY,
+              'Unprocessable entity',
+            ),
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+
+        const oldPassword = await PasswordHashEngine.check(
+          data.oldPassword,
+          updateData.password,
+        );
+        if (!oldPassword) {
+          throw new HttpException(
+            error(
+              [
+                {
+                  key: 'oldPassword',
+                  reason: 'Mismatch',
+                  description:
+                    'Your old password does not match with password you have provided.',
+                },
+              ],
+              HttpStatus.UNPROCESSABLE_ENTITY,
+              'Unprocessable entity',
+            ),
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+
+        data.password = await PasswordHashEngine.make(data.password);
+        updateData.password = data.password;
+      }
+      await this.repository.save(updateData);
+      return { message: 'Password changed.' };
     } catch (error) {
       throw error;
     }

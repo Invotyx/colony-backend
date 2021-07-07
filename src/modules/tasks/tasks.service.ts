@@ -46,7 +46,7 @@ export class TasksService {
       },
     );
   }
-  @Cron('5 * * * * *')
+  @Cron('10 * * * * *')
   async checkForScheduledSms() {
     const scheduledSms = await this.smsService.findOneConversationsMessages({
       where: {
@@ -79,7 +79,7 @@ export class TasksService {
     });
     console.log(q_obj, 'Added to queue');
   }
-  @Cron('5 * * * * *')
+  @Cron('10 * * * * *')
   async checkForBroadcasts() {
     //get all broadcasts where broadcast schedule is less than 1
     // get contact list for each broadcast
@@ -113,6 +113,7 @@ export class TasksService {
       for (let contact of contacts.contacts) {
         const phone = await this.phoneService.findOne({
           where: { country: contact.cCode, user: broadcast.user },
+          relations: ['user'],
         });
         if (phone) {
           this.logger.log('phone');
@@ -172,7 +173,7 @@ export class TasksService {
   }
 
   //cron to check for due payments.
-  @Cron('*/30 * * * * *')
+  @Cron('10 * * * * *')
   async checkForPackageExpiryAndResubscribe() {
     try {
       const subscriptions = await (await this.subscriptionService.qb('sub'))
@@ -269,7 +270,7 @@ export class TasksService {
   }
 
   //cron to check for due payments.
-  @Cron('*/10 * * * * *')
+  @Cron('10 * * * * *')
   async checkForSmsThreshold() {
     try {
       const subscriptions = await (await this.subscriptionService.qb('sub'))

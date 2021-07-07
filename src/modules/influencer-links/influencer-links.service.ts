@@ -157,15 +157,18 @@ export class InfluencerLinksService {
     }
   }
 
-  async updateLinkStatus(id: string, status: string, sid: string) {
+  async updateLinkStatus(status: string, sid: string) {
     try {
       const linkUrl = await this.trackingRepo.findOne({
-        where: { smsSid: id },
+        where: { smsSid: sid },
       });
-      linkUrl.sent = status == 'sent' || status == 'delivered' ? true : false;
-      linkUrl.smsSid = sid;
 
-      return this.trackingRepo.save(linkUrl);
+      if (linkUrl) {
+        linkUrl.sent = status == 'sent' || status == 'delivered' ? true : false;
+        linkUrl.smsSid = sid;
+
+        return this.trackingRepo.save(linkUrl);
+      }
     } catch (e) {
       throw e;
     }

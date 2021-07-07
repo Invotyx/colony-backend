@@ -37,7 +37,6 @@ export class OutboundBroadcastSmsProcessor {
 
       console.log('+++++++*/*/*+++++');
       await this.infLinksService.updateLinkStatus(
-        body.contact.id + ':' + body.broadcast.id,
         sms.status,
         sms.sid,
       );

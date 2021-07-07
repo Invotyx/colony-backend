@@ -64,6 +64,20 @@ export class ContactsService {
     else return this.repository.find();
   }
 
+  async spending(user: UserEntity) {
+    try {
+      const cost = await this.paymentHistory.getDues('contacts', user);
+      const count = await this.influencerContactRepo.count({
+        where: {
+          user: user,
+        },
+      });
+      return { cost, count };
+    } catch (e) {
+      throw e;
+    }
+  }
+
   async addContact(
     phoneNumber: string,
     userId: number,
@@ -375,7 +389,6 @@ export class ContactsService {
           ).slice(1, 11)}'::date`;
       }
     }
-
 
     const contacts = await this.repository.query(query);
     return { contacts: contacts, count: contacts.length };
@@ -706,7 +719,7 @@ export class ContactsService {
           this.smsService.saveConversation(conversation),
           this.influencerContactRepo.remove(check),
           this.paymentHistory.updateDues({
-            cost: +dues.cost - +plan.subscriberCost,
+            cost: dues.cost - plan.subscriberCost,
             type: 'contacts',
             user: _user,
           }),

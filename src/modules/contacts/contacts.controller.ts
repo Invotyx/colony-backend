@@ -177,6 +177,16 @@ export class ContactsController {
     }
   }
 
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('spending')
+  async contactsSpending(@LoginUser() user: UserEntity) {
+    try {
+      return this.service.spending(user);
+    } catch (e) {
+      throw e;
+    }
+  }
+
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Delete('remove-from-list/:contactId')
   async removeFromList(

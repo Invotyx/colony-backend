@@ -91,10 +91,10 @@ export class TasksService {
       },
       relations: ['user'],
     });
-    this.logger.log('broadcasts');
-    this.logger.log(broadcasts);
+
     for (let broadcast of broadcasts) {
       let contacts;
+      this.logger.log(JSON.parse(broadcast.filters));
       if (JSON.parse(broadcast.filters).successorId == null) {
         contacts = await this.contactService.filterContacts(
           broadcast.user.id,
@@ -108,7 +108,7 @@ export class TasksService {
         );
       }
       broadcast.status = 'inProgress';
-
+      console.log(contacts);
       await this.broadcastService.save(broadcast);
       for (let contact of contacts.contacts) {
         const phone = await this.phoneService.findOne({
@@ -172,7 +172,7 @@ export class TasksService {
   }
 
   //cron to check for due payments.
-  @Cron('0 59 11 * * *')
+  @Cron('30 * * * * *')
   async checkForPackageExpiryAndResubscribe() {
     try {
       const subscriptions = await (await this.subscriptionService.qb('sub'))
@@ -265,7 +265,7 @@ export class TasksService {
   }
 
   //cron to check for due payments.
-  @Cron('0 59 11 * * *')
+  @Cron('10 * * * * *')
   async checkForSmsThreshold() {
     try {
       const subscriptions = await (await this.subscriptionService.qb('sub'))
@@ -325,7 +325,7 @@ export class TasksService {
   }
 
   // check if user has not completed profile yet.
-  @Cron('0 0 16 * * *')
+  @Cron('10 * * * * *')
   async checkIfContactHasCompletedProfile() {
     const contacts = await this.contactService.find({
       where: { isComplete: false },

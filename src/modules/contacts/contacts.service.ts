@@ -376,7 +376,6 @@ export class ContactsService {
       }
     }
 
-    console.log(query);
 
     const contacts = await this.repository.query(query);
     return { contacts: contacts, count: contacts.length };

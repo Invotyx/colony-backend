@@ -180,7 +180,11 @@ export class TasksService {
           `(CAST(sub.currentEndDate AS date) - CAST('${this.getCurrentDate()}' AS date))<=1`,
         )
         .getMany();
-      for (let subscription of subscriptions) {
+      for (let _subscription of subscriptions) {
+        let subscription = await this.subscriptionService.findOne({
+          where: { id: _subscription.id },
+          relations: ['user', 'plan'],
+        });
         const requests = await Promise.all([
           this.planService.findOne({ where: { id: subscription.plan } }),
           this.paymentService.findOne({
@@ -257,7 +261,6 @@ export class TasksService {
             console.log(charge);
           }
         }
-        console.log(subscriptions);
       }
     } catch (e) {
       console.log(e);
@@ -273,7 +276,11 @@ export class TasksService {
           `(CAST(sub.currentEndDate AS date) - CAST('${this.getCurrentDate()}' AS date))<=1`,
         )
         .getMany();
-      for (let subscription of subscriptions) {
+      for (let _subscription of subscriptions) {
+        let subscription = await this.subscriptionService.findOne({
+          where: { id: _subscription.id },
+          relations: ['user', 'plan'],
+        });
         const requests = await Promise.all([
           this.planService.findOne({ where: { id: subscription.plan } }),
           this.paymentService.findOne({
@@ -317,7 +324,6 @@ export class TasksService {
             console.log(charge);
           }
         }
-        console.log(subscriptions);
       }
     } catch (e) {
       console.log(e);

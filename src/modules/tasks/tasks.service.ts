@@ -5,7 +5,7 @@ import { Queue } from 'bull';
 import { env } from 'process';
 import { tagReplace } from 'src/shared/tag-replace';
 import Stripe from 'stripe';
-import { LessThanOrEqual } from 'typeorm';
+import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { ContactsService } from '../contacts/contacts.service';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
@@ -274,26 +274,25 @@ export class TasksService {
   async checkForSmsThreshold() {
     try {
       this.logger.log('checkForSmsThreshold started');
-      const subscriptions = await this.subscriptionService.find({
-        relations: ['user', 'plan'],
+      const plan = await this.planService.findOne();
+      console.log(plan);
+      const due_payments = await this.paymentHistoryService.find({
+        where: {
+          cost: MoreThanOrEqual(+plan.amount_decimal-1),
+          costType: 'sms',
+        },
+        relations: ['user'],
       });
-      console.log('subscriptions', subscriptions);
-      for (let subscription of subscriptions) {
-        console.log('subscription', subscription);
-        const requests = await Promise.all([
-          this.paymentService.findOne({
-            where: { default: true, user: subscription.user },
-          }),
-          this.paymentHistoryService.getDues('sms', subscription.user),
-        ]);
-        console.log('requests', requests);
-        const plan = subscription.plan;
-        const default_pm = requests[0];
-        const sms = requests[1];
+      for (let payment of due_payments) {
+        console.log('payment', payment);
+        const default_pm =await this.paymentService.findOne({
+          where: { default: true, user: payment.user },
+        });
+        const sms = payment;
         console.log('sms cost: ', sms);
         console.log('condition : ', +sms.cost >= +plan.threshold - 1);
 
-        if (default_pm && sms && +sms.cost >= +plan.threshold - 1) {
+        if (default_pm) {
           // charge client here
           const charge = await this.stripe.paymentIntents.create({
             amount: Math.round(+sms.cost * 100),
@@ -301,7 +300,7 @@ export class TasksService {
             capture_method: 'automatic',
             confirm: true,
             confirmation_method: 'automatic',
-            customer: subscription.user.customerId,
+            customer: payment.user.customerId,
             description: 'Sms Dues payed automatically on reaching threshold.',
             payment_method: default_pm.id,
           });
@@ -309,11 +308,11 @@ export class TasksService {
           if (charge.status == 'succeeded') {
             await this.paymentHistoryService.setDuesToZero({
               type: 'sms',
-              user: subscription.user,
+              user: payment.user,
             });
 
             await this.paymentHistoryService.addRecordToHistory({
-              user: subscription.user,
+              user: payment.user,
               description:
                 'Sms Dues payed automatically on reaching threshold.',
               cost: sms.cost,

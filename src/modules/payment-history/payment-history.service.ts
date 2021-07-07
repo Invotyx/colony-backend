@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { MoreThanOrEqual } from 'typeorm';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { PaymentDuesRepository } from './due-payment.repo';
+import { PaymentHistoryEntity } from './entities/purchaseHistory.entity';
 import { PaymentHistoryRepository } from './payment-history.repo';
 
 @Injectable()
@@ -10,6 +12,9 @@ export class PaymentHistoryService {
     private readonly duesRepo: PaymentDuesRepository,
   ) {}
 
+  public find(condition: any): Promise<PaymentHistoryEntity[]> {
+    return this.repository.find(condition);
+  }
   public async history(user: UserEntity) {
     try {
       return this.repository.find({
@@ -36,7 +41,7 @@ export class PaymentHistoryService {
       where: { costType: dues.type, user: dues.user },
     });
     if (due) {
-      due.cost =+(+due.cost + parseFloat(dues.cost)).toFixed(3);
+      due.cost = +(+due.cost + parseFloat(dues.cost)).toFixed(3);
       await this.duesRepo.save(due);
     } else {
       await this.duesRepo.save({

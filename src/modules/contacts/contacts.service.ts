@@ -119,7 +119,7 @@ export class ContactsService {
     influencerId: number,
     data: ContactFilter,
   ): Promise<{ contacts: ContactsEntity[]; count: number }> {
-    let query = `SELECT DISTINCT "c"."id",	"c"."name","c"."phoneNumber","c"."isComplete",
+    let query = `SELECT DISTINCT "c"."id","c"."cCode",	"c"."name","c"."phoneNumber","c"."isComplete",
     "c"."gender","c"."dob","c"."state", "c"."lat","c"."long","c"."facebook","c"."instagram","c"."linkedin", "c"."twitter"
 	  FROM ${TABLES.CONTACTS.name} c Inner JOIN ${TABLES.INFLUENCER_CONTACTS.name} ic on (c."id" = ic."contactId" and ic."userId" = ${influencerId})`;
 

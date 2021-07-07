@@ -95,7 +95,7 @@ export class TasksService {
     for (let broadcast of broadcasts) {
       let contacts;
       console.log(JSON.parse(broadcast.filters));
-      if (JSON.parse(broadcast.filters).successorId == null) {
+      if (!JSON.parse(broadcast.filters).successorId) {
         contacts = await this.contactService.filterContacts(
           broadcast.user.id,
           JSON.parse(broadcast.filters),
@@ -108,7 +108,7 @@ export class TasksService {
         );
       }
       broadcast.status = 'inProgress';
-      console.log(contacts);
+      
       await this.broadcastService.save(broadcast);
       for (let contact of contacts.contacts) {
         const phone = await this.phoneService.findOne({
@@ -199,8 +199,8 @@ export class TasksService {
         const fans = requests[3];
 
         const metaPayment = {
-          subscription: plan.amount_decimal,
-          fan: fans.cost,
+          subscription: +plan.amount_decimal,
+          fan: +fans.cost,
           phones: [],
         };
 
@@ -210,7 +210,7 @@ export class TasksService {
           const check = {
             number: phone.number,
             country: phone.country,
-            cost: phone.phonecost,
+            cost: +phone.phonecost,
           };
           metaPayment.phones.push(check);
           phonesCost += parseInt(phone.phonecost);
@@ -292,10 +292,10 @@ export class TasksService {
         const default_pm = requests[1];
         const sms = requests[2];
 
-        if (default_pm && sms.cost < plan.threshold) {
+        if (default_pm && +sms.cost < +plan.threshold) {
           // charge client here
           const charge = await this.stripe.paymentIntents.create({
-            amount: Math.round(sms.cost * 100),
+            amount: Math.round(+sms.cost * 100),
             currency: 'GBP',
             capture_method: 'automatic',
             confirm: true,

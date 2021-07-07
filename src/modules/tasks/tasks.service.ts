@@ -94,7 +94,7 @@ export class TasksService {
 
     for (let broadcast of broadcasts) {
       let contacts;
-      this.logger.log(JSON.parse(broadcast.filters));
+      console.log(JSON.parse(broadcast.filters));
       if (JSON.parse(broadcast.filters).successorId == null) {
         contacts = await this.contactService.filterContacts(
           broadcast.user.id,
@@ -116,7 +116,7 @@ export class TasksService {
         });
         if (phone) {
           this.logger.log('phone');
-          this.logger.log(phone);
+          console.log(phone);
           let messageBody = broadcast.body;
           const links = messageBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
           if (links.length > 0) {
@@ -151,7 +151,7 @@ export class TasksService {
           };
 
           this.logger.log('message enqueued');
-          this.logger.log(q_obj);
+          console.log(q_obj);
           await this.queue.add('broadcast_message', q_obj, {
             removeOnComplete: true,
             removeOnFail: true,
@@ -163,8 +163,8 @@ export class TasksService {
           this.logger.log(
             'Influencer does not have number to send sms to this contact',
           );
-          this.logger.log(phone);
-          this.logger.log(contact);
+          console.log(phone);
+          console.log(contact);
         }
       }
     }
@@ -253,14 +253,14 @@ export class TasksService {
             });
             //send email here
           } else {
-            this.logger.debug('payment charge failed with details:');
-            this.logger.debug(charge);
+            this.logger.log('payment charge failed with details:');
+            console.log(charge);
           }
         }
-        this.logger.debug(subscriptions);
+        console.log(subscriptions);
       }
     } catch (e) {
-      this.logger.debug(e);
+      console.log(e);
     }
   }
 
@@ -313,14 +313,14 @@ export class TasksService {
             });
             //send email here
           } else {
-            this.logger.debug('payment charge failed with details:');
-            this.logger.debug(charge);
+            this.logger.log('payment charge failed with details:');
+            console.log(charge);
           }
         }
-        this.logger.debug(subscriptions);
+        console.log(subscriptions);
       }
     } catch (e) {
-      this.logger.debug(e);
+      console.log(e);
     }
   }
 

@@ -270,25 +270,29 @@ export class TasksService {
   }
 
   //cron to check for due payments.
-  @Cron('10 * * * * *')
+  @Cron('*/10 * * * * *')
   async checkForSmsThreshold() {
     try {
+      this.logger.log('checkForSmsThreshold started');
       const subscriptions = await (await this.subscriptionService.qb('sub'))
         .where(
           `(CAST(sub.currentEndDate AS date) - CAST('${this.getCurrentDate()}' AS date))<=1`,
         )
         .getMany();
+      console.log('subscriptions',subscriptions);
       for (let _subscription of subscriptions) {
         let subscription = await this.subscriptionService.findOne({
           where: { id: _subscription.id },
           relations: ['user', 'plan'],
         });
+        console.log('subscription', subscription);
         const requests = await Promise.all([
           this.paymentService.findOne({
             where: { default: true, user: subscription.user },
           }),
           this.paymentHistoryService.getDues('sms', subscription.user),
         ]);
+        console.log('requests', requests);
         const plan = subscription.plan;
         const default_pm = requests[0];
         const sms = requests[1];

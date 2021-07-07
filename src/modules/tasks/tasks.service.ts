@@ -278,7 +278,7 @@ export class TasksService {
       console.log(plan);
       const due_payments = await this.paymentHistoryService.find({
         where: {
-          cost: MoreThanOrEqual(+plan.amount_decimal-1),
+          cost: MoreThanOrEqual(+plan.threshold-1),
           costType: 'sms',
         },
         relations: ['user'],

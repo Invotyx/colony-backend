@@ -482,8 +482,7 @@ export class UsersService {
       await this.repository.save(updateData);
       return { message: 'User details updated.' };
     } catch (error) {
-      console.log(error);
-      throw new BadRequestException(error.message);
+      throw error;
     }
   }
 

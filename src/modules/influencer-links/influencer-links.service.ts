@@ -144,6 +144,7 @@ export class InfluencerLinksService {
       });
 
       return {
+        clicks: statsOpened,
         opened: statsOpened,
         sent: statsSent,
         notOpened: statsSent - statsOpened,
@@ -189,7 +190,7 @@ export class InfluencerLinksService {
     }
   }
 
-  async sendLink(url: string, sid: string, broadcast: BroadcastsEntity) {
+  async sendLink(url: string, sid: string, broadcast?: BroadcastsEntity) {
     try {
       const parts = url.split(':');
       if (parts.length != 2) {
@@ -212,7 +213,7 @@ export class InfluencerLinksService {
         isOpened: false,
         sent: true,
         smsSid: sid,
-        broadcast: broadcast,
+        broadcast: broadcast ? broadcast : null,
       });
       linkSent.contact = linkSent.contact.id as any;
       linkSent.influencerLink = linkSent.influencerLink.id as any;
@@ -239,12 +240,15 @@ export class InfluencerLinksService {
       if (!contactUrl) {
         throw new BadRequestException('contact does not exist.');
       }
+      console.log(contactUrl);
       const linkUrl = await this.repository.findOne({
         where: { urlMapper: link },
       });
       if (!linkUrl) {
         throw new BadRequestException("link doesn't exist.");
       }
+      console.log(linkUrl);
+
       const linkSent = await this.trackingRepo.findOne({
         where: { influencerLink: linkUrl, contact: contactUrl },
       });
@@ -252,7 +256,7 @@ export class InfluencerLinksService {
       if (linkSent) {
         linkSent.isOpened = true;
         linkSent.clicks = linkSent.clicks ? linkSent.clicks + 1 : 1;
-        await this.trackingRepo.save(linkSent);
+        await this.trackingRepo.update(linkSent.id, linkSent);
       }
       return linkUrl;
     } catch (e) {

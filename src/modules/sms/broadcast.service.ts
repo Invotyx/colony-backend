@@ -198,7 +198,7 @@ export class BroadcastService {
         take: count,
         skip: page == 1 ? 0 : count * page - count,
         order: {
-          createdBy: 'DESC',
+          createdAt: 'DESC',
         },
       });
       for (let i of b) {

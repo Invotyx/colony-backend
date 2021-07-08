@@ -60,7 +60,9 @@ export class linksclickadded1625729388678 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "blocked_contacts" DROP CONSTRAINT "PK_076efedc225dc94397614eaaa4c"`);
         await queryRunner.query(`ALTER TABLE "blocked_contacts" ADD CONSTRAINT "PK_3bdef9df50d42c5ad544d1ce7e0" PRIMARY KEY ("userId", "contactId")`);
         await queryRunner.query(`ALTER TABLE "conversation_messages" DROP COLUMN "type"`);
-        await queryRunner.query(`ALTER TABLE "conversation_messages" ADD "type" character varying(20) NOT NULL`);
+        await queryRunner.query(
+          `ALTER TABLE "conversation_messages" ADD "type" character varying(20)  SET DEFAULT null`,
+        );
         await queryRunner.query(`COMMENT ON COLUMN "conversation_messages"."receivedAt" IS NULL`);
         await queryRunner.query(`ALTER TABLE "conversation_messages" ALTER COLUMN "receivedAt" SET DEFAULT null`);
         await queryRunner.query(`COMMENT ON COLUMN "phones"."sid" IS NULL`);

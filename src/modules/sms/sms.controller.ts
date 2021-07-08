@@ -34,6 +34,8 @@ export class SmsController {
     private readonly broadcastService: BroadcastService,
     private readonly contactService: ContactsService,
     @InjectQueue('receive_sms_and_send_welcome') private readonly queue: Queue,
+    @InjectQueue('outbound_status_callback')
+    private readonly obCallbackQ: Queue,
   ) {}
 
   @Post('receive-sms/webhook')
@@ -54,9 +56,8 @@ export class SmsController {
   @HttpCode(200)
   async receiveSmsStatusCallback(@Body() body: any, @Res() res: Response) {
     try {
-      console.log(body);
       //add checks here to write to Queue
-      await this.queue.add('outBoundSmsStatus', body, {
+      await this.obCallbackQ.add('outBoundSmsStatus', body, {
         removeOnComplete: true,
         removeOnFail: true,
         attempts: 2,

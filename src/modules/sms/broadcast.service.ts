@@ -197,6 +197,9 @@ export class BroadcastService {
         where: { user: user },
         take: count,
         skip: page == 1 ? 0 : count * page - count,
+        order: {
+          createdBy: 'DESC',
+        },
       });
       for (let i of b) {
         i.contacts = (await this.contactService.filterContacts(

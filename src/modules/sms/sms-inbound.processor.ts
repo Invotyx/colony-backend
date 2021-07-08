@@ -25,28 +25,4 @@ export class InboundSmsProcessor {
       body.FromCountry,
     );
   }
-
-  @Process('outBoundSmsStatus')
-  async handleOutboundSmsStatus(job: Job) {
-    const body = job.data;
-    if (
-      body.MessageStatus == 'delivered' ||
-      body.MessageStatus == 'undelivered' ||
-      body.MessageStatus == 'failed' ||
-      body.MessageStatus == 'sent'
-    ) {
-      //
-      await this.service.updateStatus(
-        body.MessageSid,
-        body.MessageStatus,
-        body.From,
-      );
-      await this.bcService.updateStatus(
-        body.MessageSid,
-        body.MessageStatus,
-        body.From,
-      );
-    }
-    this.logger.debug(job.data);
-  }
 }

@@ -13,15 +13,21 @@ import { PhoneService } from '../phone/phone.service';
 import { ProductsModule } from '../products/products.module';
 import { UsersModule } from '../users/users.module';
 import { BroadcastService } from './broadcast.service';
+import { OutboundCallbackSmsProcessor } from './outbound-callback.processor';
 import { InboundSmsProcessor } from './sms-inbound.processor';
 import { SmsController } from './sms.controller';
 import { SmsService } from './sms.service';
 
 @Module({
   imports: [
-    BullModule.registerQueue({
-      name: 'receive_sms_and_send_welcome',
-    }),
+    BullModule.registerQueue(
+      {
+        name: 'receive_sms_and_send_welcome',
+      },
+      {
+        name: 'outbound_status_callback',
+      },
+    ),
     MainMysqlModule,
     forwardRef(() => UsersModule),
     forwardRef(() => ContactsModule),
@@ -35,6 +41,7 @@ import { SmsService } from './sms.service';
   providers: [
     SmsService,
     InboundSmsProcessor,
+    OutboundCallbackSmsProcessor,
     PaymentHistoryService,
     CityCountryService,
     PhoneService,

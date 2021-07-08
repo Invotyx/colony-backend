@@ -536,6 +536,7 @@ export class SmsService {
 
   public async updateStatus(sid: string, status: string, from: string) {
     try {
+      console.log(sid, status, from);
       const bc = await this.conversationsMessagesRepo.findOne({
         where: { smsSid: sid },
       });

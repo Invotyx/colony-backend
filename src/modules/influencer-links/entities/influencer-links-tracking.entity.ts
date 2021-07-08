@@ -45,6 +45,9 @@ export class InfluencerLinksTrackingEntity {
   @Column({ default: false, nullable: false })
   public isOpened: boolean;
 
+  @Column({ default: 0, nullable: true })
+  public clicks: number;
+
   @CreateDateColumn()
   public createdAt: Date;
 

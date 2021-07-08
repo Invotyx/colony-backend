@@ -251,6 +251,7 @@ export class BroadcastService {
         link_clicks: randomInt(200),
         sent: randomInt(200),
         not_sent: randomInt(200),
+        reopened: randomInt(200),
         total: 200,
       };
       const broadcast = await this.findOne({
@@ -274,6 +275,7 @@ export class BroadcastService {
         replied: randomInt(200),
         link_clicks: randomInt(200),
         sent: randomInt(200),
+        reopened: randomInt(200),
         not_sent: randomInt(200),
         total: 200,
       };

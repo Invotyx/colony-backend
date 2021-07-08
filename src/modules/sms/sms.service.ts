@@ -539,14 +539,17 @@ export class SmsService {
       const bc = await this.conversationsMessagesRepo.findOne({
         where: { smsSid: sid },
       });
-
+      console.log('message:', bc);
       const influencerNumber = await this.phoneService.findOne({
         where: { number: from },
         relations: ['user'],
       });
+      console.log('influencerNumber:', influencerNumber);
+
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },
       });
+      console.log('country:', country);
 
       if (status == 'failed') {
         await this.paymentHistory.updateDues({
@@ -556,6 +559,7 @@ export class SmsService {
         });
       }
       bc.status = status;
+      console.log('sms: ', bc);
       return this.conversationsMessagesRepo.save(bc);
     } catch (e) {
       throw e;

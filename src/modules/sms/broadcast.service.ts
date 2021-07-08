@@ -216,6 +216,7 @@ export class BroadcastService {
       const bc = await this.bcRepo.findOne({ where: { smsSid: sid } });
 
       if (!bc) {
+        console.log('single sms');
         return;
       }
       const influencerNumber = await this.phoneService.findOne({
@@ -247,7 +248,7 @@ export class BroadcastService {
         link_clicks: randomInt(200),
         sent: randomInt(200),
         not_sent: randomInt(200),
-        total: randomInt(200),
+        total: 200,
       };
       const broadcast = await this.findOne({
         where: {
@@ -271,7 +272,7 @@ export class BroadcastService {
         link_clicks: randomInt(200),
         sent: randomInt(200),
         not_sent: randomInt(200),
-        total: randomInt(200),
+        total: 200,
       };
       const broadcast = await this.findOne({
         where: { id: id, user: user },

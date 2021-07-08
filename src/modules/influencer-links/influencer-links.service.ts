@@ -1,10 +1,12 @@
 import {
   BadRequestException,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { error } from 'src/shared/error.dto';
 import {
   dataViewer,
   mapColumns,
@@ -82,7 +84,20 @@ export class InfluencerLinksService {
       }
       return this.repository.delete(link.id);
     } catch (e) {
-      throw e;
+      throw new ForbiddenException(
+        error(
+          [
+            {
+              key: 'link',
+              reason: 'ActionForbidden',
+              description:
+                "You cannot delete a link if it's already sent in messages or campaigns.",
+            },
+          ],
+          HttpStatus.FORBIDDEN,
+          "You cannot delete a link if it's already sent in messages or campaigns.",
+        ),
+      );
     }
   }
 

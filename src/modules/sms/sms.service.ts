@@ -244,6 +244,8 @@ export class SmsService {
             contact.phoneNumber,
           )
         ).url;
+
+        await this.infLinks.sendLink(shareableUri, contact.id + ':');
         welcomeBody = welcomeBody.replace(
           link,
           env.API_URL + '/api/s/o/' + shareableUri,
@@ -402,6 +404,8 @@ export class SmsService {
                 _contact.phoneNumber,
               )
             ).url;
+            await this.infLinks.sendLink(shareableUri, _contact.id + ':');
+
             welcomeBody = welcomeBody.replace(
               link,
               env.API_URL + '/api/s/o/' + shareableUri,

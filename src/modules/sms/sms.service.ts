@@ -538,7 +538,7 @@ export class SmsService {
     try {
       console.log(sid, status, from);
       const bc = await this.conversationsMessagesRepo.findOne({
-        where: { smsSid: sid },
+        where: { sid: sid },
       });
       console.log('message:', bc);
       const influencerNumber = await this.phoneService.findOne({

@@ -498,6 +498,8 @@ export class SmsService {
             body: sms.sms,
             to: contact.phoneNumber, //recipient(s)
             from: influencerNumber.number,
+            statusCallback:
+              env.API_URL + '/api/sms/receive-sms-status-callback/webhook',
           });
           sms.sid = msg.sid;
           sms.status = msg.status;

@@ -401,4 +401,9 @@ export class SmsController {
   async smsActivity(@LoginUser() influencer: UserEntity) {
     return this.service.smsActivity(influencer);
   }
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('popularity')
+  async popularity(@LoginUser() influencer: UserEntity) {
+    return this.service.popularity(influencer);
+  }
 }

@@ -233,6 +233,7 @@ export class InfluencerLinksService {
       const linkSent = await this.trackingRepo.findOne({
         where: { influencerLink: linkUrl, contact: contactUrl },
       });
+      console.log('linkSent', linkSent);
       if (linkSent) {
         linkSent.isOpened = true;
         linkSent.clicks = linkSent.clicks ? linkSent.clicks + 1 : 1;

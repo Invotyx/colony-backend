@@ -6,6 +6,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import { env } from 'process';
 import Pusher from 'pusher';
 import { error } from 'src/shared/error.dto';
@@ -936,6 +937,22 @@ export class SmsService {
 
       const act = await this.conversationsMessagesRepo.query(sql);
       return act ? act : [];
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async popularity(user: UserEntity) {
+    try {
+      const numbers = await this.phoneService.find({
+        where: { user: user, status: 'in-use' },
+      });
+      let data = {};
+
+      numbers.forEach((number) => {
+        data[number.country] = randomInt(100);
+      });
+      return data;
     } catch (e) {
       throw e;
     }

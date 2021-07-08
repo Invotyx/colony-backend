@@ -6,7 +6,6 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { randomInt } from 'crypto';
 import { env } from 'process';
 import Pusher from 'pusher';
 import { error } from 'src/shared/error.dto';
@@ -501,7 +500,6 @@ export class SmsService {
             from: influencerNumber.number,
             statusCallback:
               env.API_URL + '/api/sms/receive-sms-status-callback/webhook',
-            statusCallbackMethod: 'POST',
           });
           sms.sid = msg.sid;
           sms.status = msg.status;
@@ -513,6 +511,8 @@ export class SmsService {
           body: body,
           to: contact.phoneNumber, //recipient(s)
           from: influencerNumber.number,
+          statusCallback:
+            env.API_URL + '/api/sms/receive-sms-status-callback/webhook',
         });
         return await this.saveSms(
           contact,

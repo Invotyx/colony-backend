@@ -46,7 +46,6 @@ export class SmsController {
         attempts: 2,
       });
 
-      res.status(200).send();
     } catch (e) {
       throw e;
     }
@@ -56,6 +55,7 @@ export class SmsController {
   @HttpCode(200)
   async receiveSmsStatusCallback(@Body() body: any, @Res() res: Response) {
     try {
+      console.log(body);
       //add checks here to write to Queue
       await this.queue.add('outBoundSmsStatus', body, {
         removeOnComplete: true,
@@ -63,7 +63,6 @@ export class SmsController {
         attempts: 2,
       });
 
-      res.status(200).send('OK');
     } catch (e) {
       throw e;
     }

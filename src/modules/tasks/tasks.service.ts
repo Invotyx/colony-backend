@@ -275,7 +275,6 @@ export class TasksService {
   @Cron('*/10 * * * * *')
   async checkForSmsThreshold() {
     try {
-      this.logger.log('checkForSmsThreshold started');
       const plan = await this.planService.findOne();
       console.log(plan);
       const due_payments = await this.paymentHistoryService.find({
@@ -285,7 +284,6 @@ export class TasksService {
         },
         relations: ['user'],
       });
-      console.log(due_payments);
 
       for (let payment of due_payments) {
         console.log('payment', payment);
@@ -293,8 +291,6 @@ export class TasksService {
           where: { default: true, user: payment.user },
         });
         const sms = payment;
-        console.log('sms cost: ', sms);
-        console.log('condition : ', +sms.cost >= +plan.threshold - 1);
 
         if (default_pm) {
           // charge client here

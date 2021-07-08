@@ -77,7 +77,7 @@ export class TasksService {
       removeOnFail: true,
       attempts: 2,
     });
-    console.log(q_obj, 'Added to queue');
+    //console.log(q_obj, 'Added to queue');
   }
   @Cron('10 * * * * *')
   async checkForBroadcasts() {
@@ -92,11 +92,11 @@ export class TasksService {
       relations: ['user'],
     });
 
-    console.log(broadcasts);
+    //console.log(broadcasts);
 
     for (let broadcast of broadcasts) {
       let contacts;
-      console.log(JSON.parse(broadcast.filters));
+      //console.log(JSON.parse(broadcast.filters));
       if (!JSON.parse(broadcast.filters).successorId) {
         contacts = await this.contactService.filterContacts(
           broadcast.user.id,
@@ -119,7 +119,7 @@ export class TasksService {
         });
         if (phone) {
           this.logger.log('phone');
-          console.log(phone);
+          //console.log(phone);
           let messageBody = broadcast.body;
           const links = messageBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
           if (links && links.length > 0) {
@@ -154,7 +154,7 @@ export class TasksService {
           };
 
           this.logger.log('message enqueued');
-          console.log(q_obj);
+          //console.log(q_obj);
           await this.queue.add('broadcast_message', q_obj, {
             removeOnComplete: true,
             removeOnFail: true,
@@ -166,8 +166,8 @@ export class TasksService {
           this.logger.log(
             'Influencer does not have number to send sms to this contact',
           );
-          console.log(phone);
-          console.log(contact);
+          //console.log(phone);
+          //console.log(contact);
         }
       }
     }
@@ -262,12 +262,12 @@ export class TasksService {
             //send email here
           } else {
             this.logger.log('payment charge failed with details:');
-            console.log(charge);
+            //console.log(charge);
           }
         }
       }
     } catch (e) {
-      console.log(e);
+      //console.log(e);
     }
   }
 
@@ -276,18 +276,18 @@ export class TasksService {
   async checkForSmsThreshold() {
     try {
       const plan = await this.planService.findOne();
-      console.log(plan);
+      //console.log(plan);
       const due_payments = await this.paymentHistoryService.find({
         where: {
-          cost: MoreThanOrEqual(+plan.threshold-1),
+          cost: MoreThanOrEqual(+plan.threshold - 1),
           costType: 'sms',
         },
         relations: ['user'],
       });
 
       for (let payment of due_payments) {
-        console.log('payment', payment);
-        const default_pm =await this.paymentService.findOne({
+        //console.log('payment', payment);
+        const default_pm = await this.paymentService.findOne({
           where: { default: true, user: payment.user },
         });
         const sms = payment;
@@ -304,7 +304,7 @@ export class TasksService {
             description: 'Sms Dues payed automatically on reaching threshold.',
             payment_method: default_pm.id,
           });
-          console.log('charge :', charge);
+          //console.log('charge :', charge);
           if (charge.status == 'succeeded') {
             await this.paymentHistoryService.setDuesToZero({
               type: 'sms',
@@ -322,12 +322,12 @@ export class TasksService {
             //send email here
           } else {
             this.logger.log('payment charge failed with details:');
-            console.log(charge);
+            //console.log(charge);
           }
         }
       }
     } catch (e) {
-      console.log(e);
+      //console.log(e);
     }
   }
 

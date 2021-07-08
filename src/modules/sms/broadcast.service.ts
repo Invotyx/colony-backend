@@ -215,6 +215,9 @@ export class BroadcastService {
     try {
       const bc = await this.bcRepo.findOne({ where: { smsSid: sid } });
 
+      if (!bc) {
+        return;
+      }
       const influencerNumber = await this.phoneService.findOne({
         where: { number: from },
       });
@@ -222,9 +225,9 @@ export class BroadcastService {
         where: { code: influencerNumber.country },
       });
 
-      if (bc.status != 'sent' && status == 'sent') {
+      if (status == 'failed') {
         await this.paymentHistory.updateDues({
-          cost: country.smsCost,
+          cost: -Math.abs(country.smsCost),
           type: 'sms',
           user: influencerNumber.user,
         });

@@ -719,7 +719,7 @@ export class ContactsService {
           this.smsService.saveConversation(conversation),
           this.influencerContactRepo.remove(check),
           this.paymentHistory.updateDues({
-            cost: dues.cost - plan.subscriberCost,
+            cost: -Math.abs(plan.subscriberCost),
             type: 'contacts',
             user: _user,
           }),

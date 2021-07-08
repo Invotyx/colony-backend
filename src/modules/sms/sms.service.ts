@@ -548,9 +548,9 @@ export class SmsService {
         where: { code: influencerNumber.country },
       });
 
-      if (bc.status != 'sent' && status == 'sent') {
+      if (status == 'failed') {
         await this.paymentHistory.updateDues({
-          cost: country.smsCost,
+          cost: -Math.abs(country.smsCost),
           type: 'sms',
           user: influencerNumber.user,
         });

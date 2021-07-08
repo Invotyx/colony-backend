@@ -45,7 +45,6 @@ export class SmsController {
         removeOnFail: true,
         attempts: 2,
       });
-
     } catch (e) {
       throw e;
     }
@@ -62,7 +61,6 @@ export class SmsController {
         removeOnFail: true,
         attempts: 2,
       });
-
     } catch (e) {
       throw e;
     }
@@ -152,6 +150,28 @@ export class SmsController {
   //#endregion
 
   //#region broadcast
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('broadcast/latest')
+  async getBroadcastLatestStatistics(@LoginUser() user: UserEntity) {
+    try {
+      return this.broadcastService.getBroadcastLatestStatistics(user);
+    } catch (e) {
+      throw e;
+    }
+  }
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('broadcast/:id')
+  async getBroadcastStatistics(
+    @LoginUser() user: UserEntity,
+    @Param('id') id: number,
+  ) {
+    try {
+      return this.broadcastService.getBroadcastStatistics(id, user);
+    } catch (e) {
+      throw e;
+    }
+  }
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Post('broadcast/:id/reschedule/:filter')

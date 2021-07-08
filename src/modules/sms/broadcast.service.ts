@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import { env } from 'process';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { error } from 'src/shared/error.dto';
@@ -230,6 +231,49 @@ export class BroadcastService {
       }
       bc.status = status;
       return this.bcRepo.save(bc);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async getBroadcastLatestStatistics(user: UserEntity) {
+    try {
+      const stats = {
+        opened: randomInt(200),
+        replied: randomInt(200),
+        link_clicks: randomInt(200),
+        sent: randomInt(200),
+        not_sent: randomInt(200),
+        total: randomInt(200),
+      };
+      const broadcast = await this.findOne({
+        where: {
+          user: user,
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+      return { broadcast, stats };
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async getBroadcastStatistics(id: number, user: UserEntity) {
+    try {
+      const stats = {
+        opened: randomInt(200),
+        replied: randomInt(200),
+        link_clicks: randomInt(200),
+        sent: randomInt(200),
+        not_sent: randomInt(200),
+        total: randomInt(200),
+      };
+      const broadcast = await this.findOne({
+        where: { id: id, user: user },
+      });
+      return { broadcast, stats };
     } catch (e) {
       throw e;
     }

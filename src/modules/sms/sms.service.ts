@@ -6,6 +6,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import { env } from 'process';
 import Pusher from 'pusher';
 import { error } from 'src/shared/error.dto';
@@ -500,6 +501,7 @@ export class SmsService {
             from: influencerNumber.number,
             statusCallback:
               env.API_URL + '/api/sms/receive-sms-status-callback/webhook',
+            statusCallbackMethod: 'POST',
           });
           sms.sid = msg.sid;
           sms.status = msg.status;
@@ -914,7 +916,6 @@ export class SmsService {
       throw e;
     }
   }
-
   //#endregion
 
   async smsActivity(user: UserEntity) {

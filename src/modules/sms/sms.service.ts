@@ -931,7 +931,7 @@ export class SmsService {
       FROM
         conversation_messages cm
         LEFT JOIN conversations C ON cm."conversationsId" = C."id"
-        WHERE cm."createdAt"::date > (CURRENT_DATE::date - INTERVAL '7 days') and  c."userId"=${user.id}
+        WHERE cm."createdAt"::date > (CURRENT_DATE::date - INTERVAL '30 days') and  c."userId"=${user.id}
         GROUP BY cm."createdAt"::date`;
 
       const act = await this.conversationsMessagesRepo.query(sql);

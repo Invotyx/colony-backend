@@ -1,7 +1,7 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class linksclickadded1625734588556 implements MigrationInterface {
-    name = 'linksclickadded1625734588556'
+export class linksclickadded1625736855249 implements MigrationInterface {
+    name = 'linksclickadded1625736855249'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "influencer_contacts" DROP CONSTRAINT "FK_eb6c00d59daf65d0bef9df3f823"`);
@@ -33,6 +33,7 @@ export class linksclickadded1625734588556 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "blocked_contacts" DROP COLUMN "createdAt"`);
         await queryRunner.query(`ALTER TABLE "blocked_contacts" DROP COLUMN "updatedAt"`);
         await queryRunner.query(`ALTER TABLE "blocked_contacts" DROP COLUMN "deletedAt"`);
+        await queryRunner.query(`ALTER TABLE "influencer_links_tracking" ADD "clicks" integer DEFAULT '0'`);
         await queryRunner.query(`ALTER TABLE "favorite_contacts" ADD "id" SERIAL NOT NULL`);
         await queryRunner.query(`ALTER TABLE "favorite_contacts" DROP CONSTRAINT "PK_05a33299d7fc459c795cf6936f5"`);
         await queryRunner.query(`ALTER TABLE "favorite_contacts" ADD CONSTRAINT "PK_10b686fa25f68cbdcb4f2509a0e" PRIMARY KEY ("userId", "contactId", "id")`);
@@ -126,6 +127,7 @@ export class linksclickadded1625734588556 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "favorite_contacts" DROP CONSTRAINT "PK_10b686fa25f68cbdcb4f2509a0e"`);
         await queryRunner.query(`ALTER TABLE "favorite_contacts" ADD CONSTRAINT "PK_05a33299d7fc459c795cf6936f5" PRIMARY KEY ("userId", "contactId")`);
         await queryRunner.query(`ALTER TABLE "favorite_contacts" DROP COLUMN "id"`);
+        await queryRunner.query(`ALTER TABLE "influencer_links_tracking" DROP COLUMN "clicks"`);
         await queryRunner.query(`ALTER TABLE "blocked_contacts" ADD "deletedAt" TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE "blocked_contacts" ADD "updatedAt" TIMESTAMP NOT NULL DEFAULT now()`);
         await queryRunner.query(`ALTER TABLE "blocked_contacts" ADD "createdAt" TIMESTAMP NOT NULL DEFAULT now()`);

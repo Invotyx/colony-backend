@@ -995,7 +995,7 @@ export class SmsService {
             where cm."type"='broadcastInbound' and b."userId"=${user.id} and p."userId"=${user.id} group by p.country
       `);
 
-      const total = +await this.conversationsMessagesRepo.query(`
+      const total = await this.conversationsMessagesRepo.query(`
             select COUNT(cm.id) from conversation_messages cm 
             left join conversations c on c.id=cm."conversationsId"
             left join broadcasts b on b.id = cm."broadcastId"
@@ -1006,7 +1006,7 @@ export class SmsService {
       let data:any;
 
       popularity.forEach((number) => {
-        data[number.country] = +(+number.count / total) * 100;
+        data[number.country] = (parseInt(number.count) / parseInt(total.count)) * 100;
       });
       return data;
     } catch (e) {

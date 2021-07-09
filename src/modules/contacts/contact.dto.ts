@@ -23,7 +23,12 @@ export class ContactDto {
   @ApiPropertyOptional()
   @IsNotEmpty()
   @Length(3, 60)
-  public name: string;
+  public firstName: string;
+
+  @ApiPropertyOptional()
+  @IsNotEmpty()
+  @Length(3, 60)
+  public lastName: string;
 
   @ApiPropertyOptional({ enum: gender })
   @IsNotEmpty()

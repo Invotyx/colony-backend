@@ -445,10 +445,15 @@ export class ContactsService {
     const number = consolidatedIds[2];
     let contactDetails = await this.repository.findOne({
       where: { urlMapper: contactUniqueMapper },
+      relations: ['country', 'city'],
     });
     let flag = 0;
-    if (data.name) {
-      contactDetails.name = data.name;
+    if (data.firstName) {
+      contactDetails.firstName = data.firstName;
+      flag++;
+    }
+    if (data.lastName) {
+      contactDetails.lastName = data.lastName;
       flag++;
     }
     if (data.gender) {
@@ -538,8 +543,12 @@ export class ContactsService {
         contactDetails,
         infNum,
         tagReplace(preset_onboard.body, {
-          name: contactDetails.name ? contactDetails.name : '',
-          inf_name: user.firstName + ' ' + user.lastName,
+          first_name: contactDetails.firstName ? contactDetails.firstName : '',
+          last_name: contactDetails.lastName ? contactDetails.lastName : '',
+          inf_first_name: user.firstName,
+          inf_last_name: user.lastName,
+          country: contactDetails.country ? contactDetails.country.name : '',
+          city: contactDetails.city ? contactDetails.city.name : '',
         }),
         'outBound',
       );

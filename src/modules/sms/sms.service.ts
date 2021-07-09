@@ -6,7 +6,6 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { randomInt } from 'crypto';
 import { env } from 'process';
 import Pusher from 'pusher';
 import { error } from 'src/shared/error.dto';
@@ -184,7 +183,9 @@ export class SmsService {
                 : null,
             );
             message.conversations = conversation.id as any;
-            message.conversations_contact = conversation.contact.name as any;
+            message.conversations_contact = (conversation.contact.firstName +
+              ' ' +
+              conversation.contact.lastName) as any;
             await this.pusher.trigger(
               'colony-dev',
               'sms-received-' + influencerNumber.user.id,
@@ -275,9 +276,12 @@ export class SmsService {
       }
     }
     const text_body: string = tagReplace(welcomeBody, {
-      name: contact.name ? contact.name : '',
-      inf_name:
-        influencerNumber.user.firstName + ' ' + influencerNumber.user.lastName,
+      first_name: contact.firstName ? contact.firstName : '',
+      last_name: contact.lastName ? contact.lastName : '',
+      inf_first_name: influencerNumber.user.firstName,
+      inf_last_name: influencerNumber.user.lastName,
+      country: contact.country ? contact.country.name : '',
+      city: contact.city ? contact.city.name : '',
       link:
         env.PUBLIC_APP_URL +
         '/contacts/enroll/' +
@@ -396,6 +400,7 @@ export class SmsService {
 
       const _contact = await this.contactService.findOne({
         where: { phoneNumber: contact },
+        relations: ['country', 'city'],
       });
       if (_contact) {
         const conversation = await this.conversationsRepo.findOne({
@@ -447,9 +452,12 @@ export class SmsService {
             _contact,
             _inf_phone,
             tagReplace(welcomeBody, {
-              name: _contact?.name,
-              inf_name:
-                _inf_phone.user?.firstName + ' ' + _inf_phone.user?.lastName,
+              first_name: _contact.firstName ? _contact.firstName : '',
+              last_name: _contact.lastName ? _contact.lastName : '',
+              inf_first_name: _inf_phone.user.firstName,
+              inf_last_name: _inf_phone.user.lastName,
+              country: _contact.country ? _contact.country.name : '',
+              city: _contact.city ? _contact.city.name : '',
             }),
             null,
             'outBound',
@@ -463,9 +471,12 @@ export class SmsService {
           _contact,
           _inf_phone,
           tagReplace(welcomeBody, {
-            name: _contact?.name,
-            inf_name:
-              _inf_phone.user?.firstName + ' ' + _inf_phone.user?.lastName,
+            first_name: _contact.firstName ? _contact.firstName : '',
+            last_name: _contact.lastName ? _contact.lastName : '',
+            inf_first_name: _inf_phone.user.firstName,
+            inf_last_name: _inf_phone.user.lastName,
+            country: _contact.country ? _contact.country.name : '',
+            city: _contact.city ? _contact.city.name : '',
           }),
           'outBound',
         );
@@ -976,13 +987,16 @@ export class SmsService {
 
   async popularity(user: UserEntity) {
     try {
-      const numbers = await this.phoneService.find({
-        where: { user: user, status: 'in-use' },
-      });
-      let data = {};
-
-      numbers.forEach((number) => {
-        data[number.country] = randomInt(100);
+      const popularity = await this.conversationsMessagesRepo.query(`
+            select p.country, COUNT(cm.id) from conversation_messages cm 
+            left join conversations c on c.id=cm."conversationsId"
+            left join broadcasts b on b.id = cm."broadcastId"
+            left join phones p on p.id = c."phoneId"
+            where cm."type"='broadcastInbound' and b."userId"=${user.id} and p."userId"=${user.id} group by p.country
+      `);
+      let data;
+      popularity.forEach((number) => {
+        data[number.country] = number.count;
       });
       return data;
     } catch (e) {

@@ -144,9 +144,12 @@ export class TasksService {
           }
           const q_obj = {
             message: tagReplace(messageBody, {
-              name: contact.name ? contact.name : '',
-              inf_name:
-                broadcast.user.firstName + ' ' + broadcast.user.lastName,
+              first_name: contact.firstName ? contact.firstName : '',
+              last_name: contact.lastName ? contact.lastName : '',
+              inf_first_name: broadcast.user.firstName,
+              inf_last_name: broadcast.user.lastName,
+              country: contact.country ? contact.country.name : '',
+              city: contact.city ? contact.city.name : '',
             }),
             contact: contact,
             phone: phone,

@@ -90,8 +90,12 @@ export class BroadcastService {
         }
       }
       tagReplace(check, {
-        name: 'test',
-        inf_name: 'nnn',
+        first_name: 'test',
+        last_name: 'test',
+        inf_first_name: 'test',
+        inf_last_name: 'test',
+        country: 'test',
+        city: 'test',
       });
 
       return this.repository.save({

@@ -26,6 +26,8 @@ export class OutboundBroadcastSmsProcessor {
         body.phone,
         body.message,
         'broadcastOutbound',
+        null,
+        body.broadcast,
       );
       console.log(sms, '/*/*/*/*/*/*');
       await this.broadcastService.addContactToBroadcastList(

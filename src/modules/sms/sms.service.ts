@@ -22,6 +22,7 @@ import { PhoneService } from '../phone/phone.service';
 import { SubscriptionsService } from '../products/subscription/subscriptions.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { PresetsDto, PresetsUpdateDto } from './dtos/preset.dto';
+import { BroadcastsEntity } from './entities/broadcast.entity';
 import { ConversationMessagesEntity } from './entities/conversation-messages.entity';
 import { ConversationsEntity } from './entities/conversations.entity';
 import { presetTrigger } from './entities/preset-message.entity';
@@ -150,6 +151,22 @@ export class SmsService {
             relations: ['contact', 'phone'],
           });
 
+          const lastConversationMessage = await this.conversationsMessagesRepo.findOne(
+            {
+              where: {
+                conversations: conversation,
+              },
+              order: {
+                createdAt: 'DESC',
+              },
+            },
+          );
+
+          const msgType =
+            lastConversationMessage.type == 'broadcastOutbound'
+              ? 'broadcastInbound'
+              : 'inBound';
+
           if (rel && conversation) {
             console.log('conversation found');
             const message = await this.saveSms(
@@ -157,7 +174,7 @@ export class SmsService {
               influencerNumber,
               body,
               receivedAt,
-              'inBound',
+              msgType,
               sid,
               'received',
             );
@@ -170,7 +187,7 @@ export class SmsService {
             );
 
             console.log(
-              'saved as regular inbound sms from:',
+              'saved as regular ' + msgType + ' sms from:',
               contact.phoneNumber,
               ' to ',
               influencerNumber.number,
@@ -285,6 +302,7 @@ export class SmsService {
     sid: string,
     status?: string,
     scheduled?: Date,
+    broadcast?: BroadcastsEntity,
   ) {
     //create conversation if not created yet.
     //add sms to conversation
@@ -302,6 +320,7 @@ export class SmsService {
         type: type,
         receivedAt: receivedAt,
         sid: sid,
+        broadcast: broadcast ? broadcast : null,
       });
 
       conversation.removedFromList = false;
@@ -323,6 +342,7 @@ export class SmsService {
         type: type,
         receivedAt: receivedAt,
         sid: sid,
+        broadcast: broadcast ? broadcast : null,
       });
     }
 
@@ -474,6 +494,7 @@ export class SmsService {
     body: string,
     type: string,
     status?: string,
+    broadcast?: BroadcastsEntity,
   ) {
     try {
       const checkThreshold = await this.paymentHistory.getDues(
@@ -527,6 +548,8 @@ export class SmsService {
           type,
           message.sid,
           message.status,
+          null,
+          broadcast ? broadcast : null,
         );
       } else {
         throw new BadRequestException(

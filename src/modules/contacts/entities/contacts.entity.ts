@@ -1,4 +1,5 @@
 import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -35,7 +36,7 @@ export class ContactsEntity {
 
   @Column({ length: 100, nullable: true })
   public firstName: string;
-  
+
   @Column({ length: 100, nullable: true })
   public lastName: string;
 
@@ -135,4 +136,11 @@ export class ContactsEntity {
 
   @DeleteDateColumn()
   public deletedAt: Date;
+
+  public name: string;
+
+  @AfterLoad()
+  async calcName() {
+    this.name = this.firstName + ' ' + this.lastName;
+  }
 }

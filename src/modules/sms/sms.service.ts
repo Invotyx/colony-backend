@@ -159,6 +159,7 @@ export class SmsService {
               order: {
                 createdAt: 'DESC',
               },
+              relations: ['broadcast'],
             },
           );
 
@@ -177,6 +178,10 @@ export class SmsService {
               msgType,
               sid,
               'received',
+              null,
+              lastConversationMessage.broadcast
+                ? lastConversationMessage.broadcast
+                : null,
             );
             message.conversations = conversation.id as any;
             message.conversations_contact = conversation.contact.name as any;

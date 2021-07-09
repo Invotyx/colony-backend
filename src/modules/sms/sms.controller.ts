@@ -48,7 +48,8 @@ export class SmsController {
         attempts: 2,
       });
     } catch (e) {
-      throw e;
+      console.log('receiveSms/webhook', e);
+      return;
     }
   }
 
@@ -63,7 +64,8 @@ export class SmsController {
         attempts: 2,
       });
     } catch (e) {
-      throw e;
+      console.log('-callback/webhook', e);
+      return;
     }
   }
 

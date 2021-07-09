@@ -47,6 +47,7 @@ export class SmsController {
         removeOnFail: true,
         attempts: 2,
       });
+      return;
     } catch (e) {
       console.log('receiveSms/webhook', e);
       return;
@@ -63,6 +64,7 @@ export class SmsController {
         removeOnFail: true,
         attempts: 2,
       });
+      return;
     } catch (e) {
       console.log('-callback/webhook', e);
       return;

@@ -923,14 +923,14 @@ export class SmsService {
       if (!_preset || _preset.length == 0) {
         await this.presetRepo.save({
           body:
-            'Hi, You have subscribed to ${inf_name}. Please complete your profile using this link ${link}',
+            'Hi, You have subscribed to ${inf_first_name}. Please complete your profile using this link ${link}',
           name: 'Welcome',
           trigger: presetTrigger.welcome,
           user: user,
         });
         await this.presetRepo.save({
           body:
-            'Welcome ${name}! Glad to have you onboard.  Regards ${inf_name}. ',
+            'Welcome ${first_name}! Glad to have you onboard.  Regards ${inf_first_name}. ',
           name: 'OnBoard',
           trigger: presetTrigger.onBoard,
           user: user,
@@ -938,7 +938,7 @@ export class SmsService {
 
         await this.presetRepo.save({
           body:
-            'Hi! This is ${inf_name}. You recently sent an sms to my number. Please complete your profile using this link ${link} so that I can get to know my fans better!',
+            'Hi! This is ${inf_first_name}. You recently sent an sms to my number. Please complete your profile using this link ${link} so that I can get to know my fans better!',
           name: 'NoResponse',
           trigger: presetTrigger.noResponse,
           user: user,

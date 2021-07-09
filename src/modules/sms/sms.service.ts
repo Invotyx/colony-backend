@@ -994,11 +994,10 @@ export class SmsService {
             left join phones p on p.id = c."phoneId"
             where cm."type"='broadcastInbound' and b."userId"=${user.id} and p."userId"=${user.id} group by p.country
       `);
-      let data;
-      popularity.forEach((number) => {
-        data[number.country] = number.count;
-      });
-      return data;
+
+      console.log('popularity', popularity);
+
+      return popularity;
     } catch (e) {
       throw e;
     }

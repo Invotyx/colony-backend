@@ -5,6 +5,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   HttpCode,
   Param,
   Post,
@@ -40,6 +41,7 @@ export class SmsController {
 
   @Post('receive-sms/webhook')
   @HttpCode(200)
+  @Header('Content-Type', 'text/xml')
   async receiveSms(@Body() body: any, @Res() res: Response) {
     try {
       await this.queue.add('inboundSms', body, {
@@ -47,27 +49,28 @@ export class SmsController {
         removeOnFail: true,
         attempts: 2,
       });
-      return;
+      return '<Response></Response>';
     } catch (e) {
       console.log('receiveSms/webhook', e);
-      return;
+      return '<Response></Response>';
     }
   }
 
   @Post('receive-sms-status-callback/webhook')
   @HttpCode(200)
+  @Header('Content-Type', 'text/xml')
   async receiveSmsStatusCallback(@Body() body: any, @Res() res: Response) {
     try {
       //add checks here to write to Queue
       await this.obCallbackQ.add('outBoundSmsStatus', body, {
         removeOnComplete: true,
-        removeOnFail: true,
+        removeOnFail: false,
         attempts: 2,
       });
-      return;
+      return '<Response></Response>';
     } catch (e) {
       console.log('-callback/webhook', e);
-      return;
+      return '<Response></Response>';
     }
   }
 

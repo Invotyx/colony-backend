@@ -995,9 +995,19 @@ export class SmsService {
             where cm."type"='broadcastInbound' and b."userId"=${user.id} and p."userId"=${user.id} group by p.country
       `);
 
-      console.log('popularity', popularity);
+      const total = await this.conversationsMessagesRepo.query(`
+            select COUNT(cm.id) from conversation_messages cm 
+            left join conversations c on c.id=cm."conversationsId"
+            left join broadcasts b on b.id = cm."broadcastId"
+            left join phones p on p.id = c."phoneId"
+            where cm."type"='broadcastInbound' and b."userId"=${user.id} and p."userId"=${user.id}
+      `);
+      let data;
 
-      return popularity;
+      popularity.forEach((number) => {
+        data[number.country] = (number.count / total) * 100;
+      });
+      return data;
     } catch (e) {
       throw e;
     }

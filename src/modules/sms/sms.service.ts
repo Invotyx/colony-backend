@@ -1002,9 +1002,11 @@ export class SmsService {
             left join phones p on p.id = c."phoneId"
             where cm."type"='broadcastInbound' and b."userId"=${user.id} and p."userId"=${user.id}
       `);
-      let data;
+      console.log('popularity', popularity);
+      let data = {};
 
       popularity.forEach((number) => {
+        console.log(number);
         data[number.country] = (number.count / total) * 100;
       });
       return data;

@@ -150,24 +150,25 @@ export class SmsService {
             relations: ['contact', 'phone'],
           });
 
-          const lastConversationMessage = await this.conversationsMessagesRepo.findOne(
-            {
-              where: {
-                conversations: conversation,
-              },
-              order: {
-                createdAt: 'DESC',
-              },
-              relations: ['broadcast'],
-            },
-          );
-
-          const msgType =
-            lastConversationMessage.type == 'broadcastOutbound'
-              ? 'broadcastInbound'
-              : 'inBound';
-
           if (rel && conversation) {
+            const lastConversationMessage = await this.conversationsMessagesRepo.findOne(
+              {
+                where: {
+                  conversations: conversation,
+                },
+                order: {
+                  createdAt: 'DESC',
+                },
+                relations: ['broadcast'],
+              },
+            );
+
+            const msgType =
+              lastConversationMessage &&
+              lastConversationMessage.type == 'broadcastOutbound'
+                ? 'broadcastInbound'
+                : 'inBound';
+
             console.log('conversation found');
             const message = await this.saveSms(
               contact,
@@ -178,7 +179,7 @@ export class SmsService {
               sid,
               'received',
               null,
-              msgType == 'broadcastInbound' && lastConversationMessage.broadcast
+              msgType == 'broadcastInbound'
                 ? lastConversationMessage.broadcast
                 : null,
             );
@@ -1003,10 +1004,11 @@ export class SmsService {
             where cm."type"='broadcastInbound' and b."userId"=${user.id} and p."userId"=${user.id}
       `);
       console.log('popularity', popularity);
-      let data:any;
+      let data: any;
 
       popularity.forEach((number) => {
-        data[number.country] = (parseInt(number.count) / parseInt(total.count)) * 100;
+        data[number.country] =
+          (parseInt(number.count) / parseInt(total.count)) * 100;
       });
       return data;
     } catch (e) {

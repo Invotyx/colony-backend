@@ -179,7 +179,7 @@ export class SmsService {
               sid,
               'received',
               null,
-              lastConversationMessage.broadcast
+              msgType == 'broadcastInbound' && lastConversationMessage.broadcast
                 ? lastConversationMessage.broadcast
                 : null,
             );

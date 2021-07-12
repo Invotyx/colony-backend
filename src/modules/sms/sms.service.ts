@@ -1004,6 +1004,7 @@ export class SmsService {
             where cm."type"='broadcastInbound' and b."userId"=${user.id} and p."userId"=${user.id}
       `);
       console.log('popularity', popularity);
+      console.log('total', total);
       let data: any;
 
       popularity.forEach((number) => {

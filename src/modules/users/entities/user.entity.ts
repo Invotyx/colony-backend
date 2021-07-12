@@ -4,6 +4,7 @@ import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
 import { FavoriteContactsEntity } from 'src/modules/contacts/entities/favorite-contacts.entity';
 import { InfluencerContactsEntity } from 'src/modules/contacts/entities/influencer-contacts.entity';
 import { InfluencerLinksEntity } from 'src/modules/influencer-links/entities/influencer-links.entity';
+import { KeywordsEntity } from 'src/modules/keywords/keywords.entity';
 import { LanguageEntity } from 'src/modules/language/entities/language.entity';
 import { PaymentHistoryEntity } from 'src/modules/payment-history/entities/purchaseHistory.entity';
 import { PhonesEntity } from 'src/modules/phone/entities/phone.entity';
@@ -160,6 +161,12 @@ export class UserEntity {
     cascade: true,
   })
   public presetMessages!: PresetMessagesEntity;
+
+  @OneToMany(() => KeywordsEntity, (tmp) => tmp.user, {
+    eager: false,
+    cascade: true,
+  })
+  public keywords!: KeywordsEntity;
 
   @OneToMany(() => BroadcastsEntity, (tmp) => tmp.user, {
     eager: false,

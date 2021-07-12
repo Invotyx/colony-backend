@@ -44,6 +44,7 @@ const TablesList: any = {
   DUE_PAYMENTS: new TableData(),
   FAVORITE_CONTACTS: new TableData(),
   BLOCKED_CONTACTS: new TableData(),
+  KEYWORDS: new TableData(),
 };
 
 const numHash = (t: string) =>

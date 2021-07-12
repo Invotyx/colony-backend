@@ -107,6 +107,12 @@ export class SmsController {
     }
   }
 
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('/conversation/search')
+  async search(@Query('query') query: string, @LoginUser() user: UserEntity) {
+    return this.service.getConversations(user);
+  }
+
   @Auth({})
   @Delete('/conversation/:contact')
   async deleteConversation(

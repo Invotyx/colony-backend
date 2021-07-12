@@ -993,7 +993,7 @@ export class SmsService {
             left join conversations c on c.id=cm."conversationsId"
             left join broadcasts b on b.id = cm."broadcastId"
             left join phones p on p.id = c."phoneId"
-            where cm."type"='broadcastInbound' and b."userId"=${user.id} and p."userId"=${user.id} group by p.country
+            where cm."type"='broadcastInbound' and p."userId"=${user.id} group by p.country
       `);
 
       const total = await this.conversationsMessagesRepo.query(`
@@ -1001,15 +1001,14 @@ export class SmsService {
             left join conversations c on c.id=cm."conversationsId"
             left join broadcasts b on b.id = cm."broadcastId"
             left join phones p on p.id = c."phoneId"
-            where cm."type"='broadcastInbound' and b."userId"=${user.id} and p."userId"=${user.id}
+            where cm."type"='broadcastInbound' and p."userId"=${user.id}
       `);
       console.log('popularity', popularity);
-      console.log('total', total);
-      let data: any;
+      let data={};
 
       popularity.forEach((number) => {
         data[number.country] =
-          (parseInt(number.count) / parseInt(total.count)) * 100;
+          (parseInt(number.count) / parseInt(total[0].count)) * 100;
       });
       return data;
     } catch (e) {

@@ -103,6 +103,11 @@ export class SmsService {
     else return this.conversationsMessagesRepo.find();
   }
 
+  public async findCountInConversationsMessages(condition?: any) {
+    if (condition) return this.conversationsMessagesRepo.count(condition);
+    else return this.conversationsMessagesRepo.count();
+  }
+
   //#region sms
   async receiveSms(
     sender: string,
@@ -1004,7 +1009,7 @@ export class SmsService {
             where cm."type"='broadcastInbound' and p."userId"=${user.id}
       `);
       console.log('popularity', popularity);
-      let data={};
+      let data = {};
 
       popularity.forEach((number) => {
         data[number.country] =

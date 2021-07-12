@@ -32,6 +32,21 @@ export class InfluencerLinksService {
     private readonly contactService: ContactsService,
   ) {}
 
+  public async findCountInLinks(condition?: any) {
+    if (condition) return this.trackingRepo.count(condition);
+    else return this.trackingRepo.count();
+  }
+
+  public async sumTotalLinksSent(
+    user: UserEntity,
+    bid: number,
+  ): Promise<number> {
+    const data = await this.trackingRepo.query(
+      `select SUM("clicks") from influencer_links_tracking where "broadcastId"=${bid}`,
+    );
+    return data[0].sum;
+  }
+
   async addLink(link: string, user: UserEntity, title?: string) {
     try {
       const check = await this.repository.findOne({

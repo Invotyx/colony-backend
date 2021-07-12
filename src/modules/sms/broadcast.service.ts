@@ -1,21 +1,25 @@
 import {
   BadRequestException,
+  forwardRef,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
 } from '@nestjs/common';
-import { randomInt } from 'crypto';
 import { env } from 'process';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { error } from 'src/shared/error.dto';
 import { tagReplace } from 'src/shared/tag-replace';
+import { MoreThan, Not } from 'typeorm';
 import { ContactFilter } from '../contacts/contact.dto';
 import { ContactsService } from '../contacts/contacts.service';
+import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhoneService } from '../phone/phone.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { BroadcastContactsRepository } from './repo/broadcast-contact.repo';
 import { BroadcastsRepository } from './repo/broadcast.repo';
+import { SmsService } from './sms.service';
 
 @Injectable()
 export class BroadcastService {
@@ -26,6 +30,9 @@ export class BroadcastService {
     private readonly contactService: ContactsService,
     private readonly countryService: CityCountryService,
     private readonly paymentHistory: PaymentHistoryService,
+    private readonly smsService: SmsService,
+    @Inject(forwardRef(() => InfluencerLinksService))
+    private readonly infLinks: InfluencerLinksService,
   ) {}
 
   async save(user: any) {
@@ -249,15 +256,6 @@ export class BroadcastService {
 
   async getBroadcastLatestStatistics(user: UserEntity) {
     try {
-      const stats = {
-        opened: randomInt(200),
-        replied: randomInt(200),
-        link_clicks: randomInt(200),
-        sent: randomInt(200),
-        not_sent: randomInt(200),
-        reopened: randomInt(200),
-        total: 200,
-      };
       const broadcast = await this.findOne({
         where: {
           user: user,
@@ -266,6 +264,66 @@ export class BroadcastService {
           createdAt: 'DESC',
         },
       });
+
+      const replied = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastInbound',
+        },
+      });
+
+      const opened = await this.infLinks.findCountInLinks({
+        where: {
+          broadcast: broadcast,
+          isOpened: true,
+        },
+      });
+
+      const reopened = await this.infLinks.findCountInLinks({
+        where: {
+          broadcast: broadcast,
+          isOpened: true,
+          clicks: MoreThan(0),
+        },
+      });
+
+      const link_clicks = await this.infLinks.sumTotalLinksSent(
+        user,
+        broadcast.id,
+      );
+
+      const sent = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastOutbound',
+          status: Not('failed'),
+        },
+      });
+
+      const not_sent = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastOutbound',
+          status: 'failed',
+        },
+      });
+
+      const total = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastOutbound',
+        },
+      });
+
+      const stats = {
+        opened: opened,
+        replied: replied,
+        link_clicks: link_clicks,
+        sent: sent,
+        not_sent: not_sent,
+        reopened: reopened,
+        total: total,
+      };
       return { broadcast, stats };
     } catch (e) {
       throw e;
@@ -274,18 +332,69 @@ export class BroadcastService {
 
   async getBroadcastStatistics(id: number, user: UserEntity) {
     try {
-      const stats = {
-        opened: randomInt(200),
-        replied: randomInt(200),
-        link_clicks: randomInt(200),
-        sent: randomInt(200),
-        reopened: randomInt(200),
-        not_sent: randomInt(200),
-        total: 200,
-      };
       const broadcast = await this.findOne({
         where: { id: id, user: user },
       });
+
+      const replied = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastInbound',
+        },
+      });
+
+      const opened = await this.infLinks.findCountInLinks({
+        where: {
+          broadcast: broadcast,
+          isOpened: true,
+        },
+      });
+
+      const reopened = await this.infLinks.findCountInLinks({
+        where: {
+          broadcast: broadcast,
+          isOpened: true,
+          clicks: MoreThan(0),
+        },
+      });
+
+      const link_clicks = await this.infLinks.sumTotalLinksSent(
+        user,
+        broadcast.id,
+      );
+
+      const sent = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastOutbound',
+          status: Not('failed'),
+        },
+      });
+
+      const not_sent = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastOutbound',
+          status: 'failed',
+        },
+      });
+
+      const total = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastOutbound',
+        },
+      });
+
+      const stats = {
+        opened: opened,
+        replied: replied,
+        link_clicks: link_clicks,
+        sent: sent,
+        not_sent: not_sent,
+        reopened: reopened,
+        total: total,
+      };
       return { broadcast, stats };
     } catch (e) {
       throw e;

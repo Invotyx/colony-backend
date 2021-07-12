@@ -1,11 +1,7 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, Length } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, Length } from 'class-validator';
 
 export class KeywordsDto {
-  @ApiPropertyOptional()
-  @IsOptional()
-  public id: string;
-
   @ApiProperty()
   @IsNotEmpty()
   @Length(3, 20)

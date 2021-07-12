@@ -1029,7 +1029,7 @@ export class SmsService {
         .where('c.userId = :uid', { uid: user.id })
         .andWhere(
           'co.firstName like :q OR co.lastName like :q OR co.phoneNumber like :q',
-          { q: `${query}` },
+          { q: `%${query}%` },
         )
         .getMany();
 

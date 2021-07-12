@@ -1023,12 +1023,13 @@ export class SmsService {
 
   public async search(user: UserEntity, query: string) {
     try {
-      const conversations: ConversationsEntity[] = await this.conversationsRepo
+      query = query.replace('+', '');
+      const conversations = await this.conversationsRepo
         .createQueryBuilder('c')
         .leftJoinAndSelect('c.contact', 'co')
         .where('c.userId = :uid', { uid: user.id })
         .andWhere(
-          'co.firstName like :q OR co.lastName like :q OR co.phoneNumber like :q',
+          '(co.firstName like :q OR co.lastName like :q OR co.phoneNumber like :q)',
           { q: `%${query}%` },
         )
         .getMany();

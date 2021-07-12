@@ -31,7 +31,8 @@ export class KeywordsController {
   @Post()
   async newKeyword(@LoginUser() user: UserEntity, @Body() data: KeywordsDto) {
     try {
-      return this.service.newKeyword(user, data);
+      const keyword = await this.service.newKeyword(user, data);
+      return { keyword, message: 'Keyword saved.' };
     } catch (e) {
       throw e;
     }
@@ -44,7 +45,8 @@ export class KeywordsController {
     @Param('id') id: number,
   ) {
     try {
-      return this.service.updateKeyword(user, data,id);
+      const keyword = await this.service.updateKeyword(user, data, id);
+      return { keyword, message: 'Keyword updated' };
     } catch (e) {
       throw e;
     }

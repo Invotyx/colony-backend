@@ -108,9 +108,10 @@ export class SmsController {
   }
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
-  @Get('/conversation/search')
-  async search(@Query('query') query: string, @LoginUser() user: UserEntity) {
-    return this.service.search(user,query);
+  @Get('/conversations/search')
+  async search(@LoginUser() user: UserEntity, @Query('query') query: string) {
+    console.log(user, query);
+    return this.service.search(user, query);
   }
 
   @Auth({})

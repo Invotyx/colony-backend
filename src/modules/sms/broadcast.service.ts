@@ -153,6 +153,12 @@ export class BroadcastService {
       const broadcast = await this.repository.findOne({
         where: { id: id, user: user },
       });
+      if (!broadcast) {
+        throw new HttpException(
+          'Broadcast does not exists for this user.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       if (
         filter == 'sent' ||
@@ -265,6 +271,13 @@ export class BroadcastService {
         },
       });
 
+      if (!broadcast) {
+        throw new HttpException(
+          'Broadcast does not exists for this user.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       const replied = await this.smsService.findCountInConversationsMessages({
         where: {
           broadcast: broadcast,
@@ -335,6 +348,13 @@ export class BroadcastService {
       const broadcast = await this.findOne({
         where: { id: id, user: user },
       });
+
+      if (!broadcast) {
+        throw new HttpException(
+          'Broadcast does not exists for this user.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       const replied = await this.smsService.findCountInConversationsMessages({
         where: {

@@ -275,7 +275,7 @@ export class TasksService {
   }
 
   //cron to check for due payments.
-  @Cron('*/10 * * * * *')
+  @Cron('10 * * * * *')
   async checkForSmsThreshold() {
     try {
       const plan = await this.planService.findOne();

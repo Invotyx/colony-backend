@@ -33,7 +33,7 @@ export class KeywordsService {
           error(
             [
               {
-                key: data.keyword,
+                key: 'keyword',
                 description: 'Keyword already exists',
                 reason: 'DuplicateCheck',
               },
@@ -65,7 +65,7 @@ export class KeywordsService {
           error(
             [
               {
-                key: data.keyword,
+                key: 'keyword',
                 description: 'Keyword not found.',
                 reason: 'NotFound',
               },

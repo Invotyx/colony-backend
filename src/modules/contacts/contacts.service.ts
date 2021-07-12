@@ -12,6 +12,7 @@ import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
 import { uniqueId } from 'src/shared/random-keygen';
 import { tagReplace } from 'src/shared/tag-replace';
+import { Like } from 'typeorm';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhoneService } from '../phone/phone.service';
 import { SubscriptionsService } from '../products/subscription/subscriptions.service';
@@ -62,6 +63,10 @@ export class ContactsService {
   public async find(condition?: any) {
     if (condition) return this.repository.find(condition);
     else return this.repository.find();
+  }
+
+  public async findInfContacts(condition: any) {
+    return this.influencerContactRepo.find(condition);
   }
 
   async spending(user: UserEntity) {

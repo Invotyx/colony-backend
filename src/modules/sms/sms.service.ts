@@ -9,6 +9,7 @@ import {
 import { env } from 'process';
 import Pusher from 'pusher';
 import { error } from 'src/shared/error.dto';
+import { Like } from 'typeorm';
 import { CityCountryService } from '../../services/city-country/city-country.service';
 import { smsCount } from '../../shared/sms-segment-counter';
 import { tagReplace } from '../../shared/tag-replace';
@@ -1023,7 +1024,25 @@ export class SmsService {
 
   public async search(user: UserEntity, query: string) {
     try {
-      return this.getConversations(user);
+      const conversations = await this.conversationsRepo.find({
+        where: {
+          user: user,
+          contact: [
+            {
+              firstName: Like(query),
+            },
+            {
+              lastName: Like(query),
+            },
+            {
+              phoneNumber: Like(query),
+            },
+          ],
+        },
+        relations: ['contact'],
+      });
+
+      return conversations;
     } catch (e) {
       throw e;
     }

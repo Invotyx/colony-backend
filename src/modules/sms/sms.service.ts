@@ -1029,7 +1029,7 @@ export class SmsService {
         .leftJoinAndSelect('c.contact', 'co')
         .where('c.userId = :uid', { uid: user.id })
         .andWhere(
-          '(co.firstName like :q OR co.lastName like :q OR co.phoneNumber like :q)',
+          '(LOWER(co.firstName) like LOWER(:q) OR LOWER(co.lastName) like LOWER(:q) OR LOWER(co.phoneNumber) like LOWER(:q))',
           { q: `%${query}%` },
         )
         .getMany();

@@ -37,13 +37,14 @@ export class KeywordsController {
     }
   }
 
-  @Put()
+  @Put('/:id')
   async updateKeyword(
     @LoginUser() user: UserEntity,
     @Body() data: KeywordsDto,
+    @Param('id') id: number,
   ) {
     try {
-      return this.service.updateKeyword(user, data);
+      return this.service.updateKeyword(user, data,id);
     } catch (e) {
       throw e;
     }

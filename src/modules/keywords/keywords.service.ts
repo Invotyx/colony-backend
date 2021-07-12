@@ -55,10 +55,10 @@ export class KeywordsService {
     }
   }
 
-  public async updateKeyword(user: UserEntity, data: KeywordsDto) {
+  public async updateKeyword(user: UserEntity, data: KeywordsDto, id: number) {
     try {
       const check = await this.findOne({
-        where: { user: user, keyword: data.keyword },
+        where: { user: user, id: id, keyword: data.keyword },
       });
       if (!check) {
         throw new HttpException(

@@ -1020,4 +1020,12 @@ export class SmsService {
       throw e;
     }
   }
+
+  public async search(user: UserEntity, query: string) {
+    try {
+      return this.getConversations(user);
+    } catch (e) {
+      throw e;
+    }
+  }
 }

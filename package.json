@@ -51,6 +51,7 @@
     "change-case": "^4.1.1",
     "class-transformer": "^0.2.3",
     "class-validator": "^0.12.2",
+    "cloudinary": "^1.26.2",
     "common-tags": "^1.8.0",
     "core-js": "^3.6.5",
     "date-fns": "^2.16.1",

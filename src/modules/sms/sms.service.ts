@@ -26,6 +26,7 @@ import { BroadcastsEntity } from './entities/broadcast.entity';
 import { ConversationMessagesEntity } from './entities/conversation-messages.entity';
 import { ConversationsEntity } from './entities/conversations.entity';
 import { presetTrigger } from './entities/preset-message.entity';
+import { BroadcastsRepository } from './repo/broadcast.repo';
 import { ConversationsRepository } from './repo/conversation-messages.repo';
 import { ConversationMessagesRepository } from './repo/conversation.repo';
 import { PresetMessagesRepository } from './repo/sms-presets.repo';
@@ -49,6 +50,7 @@ export class SmsService {
     @Inject(forwardRef(() => InfluencerLinksService))
     private readonly infLinks: InfluencerLinksService,
     private readonly keywordsService: KeywordsService,
+    private readonly broadcastRepo: BroadcastsRepository,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -118,6 +120,7 @@ export class SmsService {
     receivedAt: Date,
     sid: string,
     fromCountry: string,
+    emotions?: any,
   ) {
     try {
       const influencerNumber = await this.phoneService.findOne({
@@ -176,6 +179,16 @@ export class SmsService {
               lastConversationMessage.type == 'broadcastOutbound'
                 ? 'broadcastInbound'
                 : 'inBound';
+
+            if (msgType == 'broadcastInbound') {
+              const b = lastConversationMessage.broadcast;
+              if (emotions.anger) b.anger = b.anger + 1;
+              if (emotions.disgust) b.disgust = b.disgust + 1;
+              if (emotions.fear) b.fear = b.fear + 1;
+              if (emotions.joy) b.joy = b.joy + 1;
+              if (emotions.sadness) b.sadness = b.sadness + 1;
+              await this.broadcastRepo.save(b);
+            }
 
             //console.log('conversation found');
             const message = await this.saveSms(

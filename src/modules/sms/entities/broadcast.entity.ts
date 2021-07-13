@@ -54,6 +54,21 @@ export class BroadcastsEntity {
   })
   public contacts!: BroadcastsContactsEntity[];
 
+  @Column({ type: 'int4', default: 0 })
+  public anger: number;
+
+  @Column({ type: 'int4', default: 0 })
+  public disgust: number;
+
+  @Column({ type: 'int4', default: 0 })
+  public fear: number;
+
+  @Column({ type: 'int4', default: 0 })
+  public joy: number;
+
+  @Column({ type: 'int4', default: 0 })
+  public sadness: number;
+
   @CreateDateColumn()
   public createdAt: Date;
 

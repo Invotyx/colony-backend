@@ -39,6 +39,7 @@ export class InboundSmsProcessor {
       new Date(),
       body.MessageSid,
       body.FromCountry,
+      _emotion,
     );
   }
 }

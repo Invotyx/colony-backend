@@ -2,6 +2,7 @@ import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { BroadcastService } from './broadcast.service';
+import { Tone } from './sms-tone.class';
 import { SmsService } from './sms.service';
 
 @Processor('receive_sms_and_send_welcome')
@@ -17,7 +18,18 @@ export class InboundSmsProcessor {
   async handleInboundSms(job: Job) {
     const body = job.data;
 
-    console.log(JSON.parse(body.AddOns));
+    const tones = JSON.parse(body.AddOns);
+
+    let emotions = tones.results.result.document_tone.tone_categories;
+    let _emotion:Tone[];
+    emotions.forEach((emotion) => {
+      if (emotion.category_id == 'emotion_tone') {
+        _emotion = emotion.tones;
+      }
+    });
+
+    console.log(_emotion);
+
     await this.service.receiveSms(
       body.From,
       body.To,

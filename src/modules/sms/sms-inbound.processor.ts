@@ -19,7 +19,8 @@ export class InboundSmsProcessor {
 
     const tones = JSON.parse(body.AddOns);
     console.log('tones', tones);
-    let emotions = tones.results.result.document_tone.tone_categories;
+    let emotions =
+      tones.results.message_tone.result.document_tone.tone_categories;
 
     let _emotion;
 

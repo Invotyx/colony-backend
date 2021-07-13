@@ -19,16 +19,16 @@ export class InboundSmsProcessor {
     const body = job.data;
 
     const tones = JSON.parse(body.AddOns);
-
+    console.log('tones', tones);
     let emotions = tones.results.result.document_tone.tone_categories;
-    let _emotion:Tone[];
+    let _emotion: Tone[];
     emotions.forEach((emotion) => {
       if (emotion.category_id == 'emotion_tone') {
         _emotion = emotion.tones;
       }
     });
 
-    console.log(_emotion);
+    console.log('_emotion', _emotion);
 
     await this.service.receiveSms(
       body.From,

@@ -938,9 +938,8 @@ export class SmsService {
         if (preset.name) {
           existing.name = preset.name;
         }
-        if (preset.enabled) {
-          existing.enabled = preset.enabled;
-        }
+
+        existing.enabled = preset.enabled ? true : false;
 
         const _preset: any = await this.presetRepo.save(existing);
         _preset.user = user.id as any;

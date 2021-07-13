@@ -2,7 +2,6 @@ import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { BroadcastService } from './broadcast.service';
-import { Tone } from './sms-tone.class';
 import { SmsService } from './sms.service';
 
 @Processor('receive_sms_and_send_welcome')
@@ -21,7 +20,9 @@ export class InboundSmsProcessor {
     const tones = JSON.parse(body.AddOns);
     console.log('tones', tones);
     let emotions = tones.results.result.document_tone.tone_categories;
-    let _emotion: Tone[];
+
+    let _emotion;
+
     emotions.forEach((emotion) => {
       if (emotion.category_id == 'emotion_tone') {
         _emotion = emotion.tones;

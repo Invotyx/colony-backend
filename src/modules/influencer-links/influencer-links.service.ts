@@ -93,7 +93,7 @@ export class InfluencerLinksService {
   async deleteLink(id: number, user: UserEntity) {
     try {
       const link = await this.repository.findOne({ id: id, user: user });
-      console.log(link);
+      //console.log(link);
       if (!link) {
         throw new BadRequestException('You cannot delete this link.');
       }
@@ -143,14 +143,14 @@ export class InfluencerLinksService {
       }
       return link;
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       throw new BadRequestException(e.message);
     }
   }
 
   async getLinkStats(id: number, user: UserEntity) {
     try {
-      console.log('Logged In User: ', user);
+      //console.log('Logged In User: ', user);
       const statsOpened = await this.trackingRepo.count({
         where: { influencerLink: id, isOpened: true },
       });
@@ -255,19 +255,19 @@ export class InfluencerLinksService {
       if (!contactUrl) {
         throw new BadRequestException('contact does not exist.');
       }
-      console.log(contactUrl);
+      //console.log(contactUrl);
       const linkUrl = await this.repository.findOne({
         where: { urlMapper: link },
       });
       if (!linkUrl) {
         throw new BadRequestException("link doesn't exist.");
       }
-      console.log(linkUrl);
+      //console.log(linkUrl);
 
       const linkSent = await this.trackingRepo.findOne({
         where: { influencerLink: linkUrl, contact: contactUrl },
       });
-      console.log('linkSent', linkSent);
+      //console.log('linkSent', linkSent);
       if (linkSent) {
         linkSent.isOpened = true;
         linkSent.clicks = linkSent.clicks ? linkSent.clicks + 1 : 1;

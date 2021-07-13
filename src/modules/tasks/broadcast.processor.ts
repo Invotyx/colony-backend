@@ -19,7 +19,7 @@ export class OutboundBroadcastSmsProcessor {
   async handleBroadcastOutbound(job: Job) {
     try {
       const body = job.data;
-      console.log('***************************');
+      //console.log('***************************');
 
       const sms = await this.service.sendSms(
         body.contact,
@@ -29,7 +29,7 @@ export class OutboundBroadcastSmsProcessor {
         null,
         body.broadcast,
       );
-      console.log(sms, '/*/*/*/*/*/*');
+      //console.log(sms, '/*/*/*/*/*/*');
       await this.broadcastService.addContactToBroadcastList(
         body.broadcast,
         body.contact,
@@ -37,13 +37,13 @@ export class OutboundBroadcastSmsProcessor {
         sms.status,
       );
 
-      console.log('+++++++*/*/*+++++');
+      //console.log('+++++++*/*/*+++++');
       await this.infLinksService.updateLinkStatus(
         sms.status,
         sms.sid,
         body.contact.id + ':' + body.broadcast.id,
       );
-      console.log('***********/*/************');
+      //console.log('***********/*/************');
     } catch (e) {
       this.logger.error(e);
       throw e;

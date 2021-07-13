@@ -16,7 +16,7 @@ export class OutboundCallbackSmsProcessor {
   @Process('outBoundSmsStatus')
   async handleOutboundSmsStatus(job: Job) {
     const body = job.data;
-    console.log(body);
+    //console.log(body);
     if (
       body.MessageStatus == 'delivered' ||
       body.MessageStatus == 'undelivered' ||

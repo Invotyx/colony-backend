@@ -15,7 +15,7 @@ export class ForgotPasswordTokenSender {
 
   async sendEmail(model: ForgotPassword): Promise<boolean> {
     try {
-      console.log('model: ', model);
+      //console.log('model: ', model);
       if (model && model.newPasswordToken) {
         const appConfig = await AppConfig();
 
@@ -124,7 +124,7 @@ export class ForgotPasswordTokenSender {
         return mail;
       }
     } catch (ex) {
-      console.log(ex);
+      //console.log(ex);
       throw new HttpException(
         'Mail server down, unable to send reset password email!',
         HttpStatus.SERVICE_UNAVAILABLE,

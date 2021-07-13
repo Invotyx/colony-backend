@@ -179,7 +179,7 @@ export class SubscriptionsService {
         throw new BadRequestException('Please add payment method first.');
       }
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       throw e;
     }
   }
@@ -189,13 +189,13 @@ export class SubscriptionsService {
       const ch = await this.repository
         .query(`SELECT sub.*,  phones."number","plans"."amount_decimal" as "price", "plans"."subscriberCost", "plans"."threshold" ,"plans"."nickname" as "planName", "country"."name" as "countryName"  FROM "subscriptions" "sub" LEFT JOIN "plans" "plans" ON "plans"."id"="sub"."planId" 
       LEFT JOIN "country" "country" ON "country"."id"="sub"."countryId"  LEFT JOIN "phones" "phones" ON "phones"."id"="sub"."phoneId" WHERE ( "sub"."userId" =${customer.id}  ) AND ( "sub"."deletedAt" IS NULL )`);
-      //console.log(ch);
+      ////console.log(ch);
 
       if (ch) {
         return ch;
       }
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       throw e;
     }
   }
@@ -210,7 +210,7 @@ export class SubscriptionsService {
       const sub = await this.repository.findOne({
         where: { rId: subId, cancelled: true },
       });
-      console.log(sub, '=== sub ===');
+      //console.log(sub, '=== sub ===');
       if (!sub) {
         const checkSub = await this.repository.findOne({
           where: { rId: subId, cancelled: false },

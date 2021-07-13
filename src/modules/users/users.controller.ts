@@ -225,7 +225,7 @@ export class UsersController {
     }),
   )
   async uploadFile(@UploadedFile() image: any, @LoginUser() _user: UserEntity) {
-    // console.log(pic);
+    // //console.log(pic);
     const user = await this.userService.findOne(_user.id);
 
     //upload pic

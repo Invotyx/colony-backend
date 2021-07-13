@@ -4,7 +4,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
-  Injectable
+  Injectable,
 } from '@nestjs/common';
 import { env } from 'process';
 import Pusher from 'pusher';
@@ -177,7 +177,7 @@ export class SmsService {
                 ? 'broadcastInbound'
                 : 'inBound';
 
-            console.log('conversation found');
+            //console.log('conversation found');
             const message = await this.saveSms(
               contact,
               influencerNumber,
@@ -224,14 +224,14 @@ export class SmsService {
                 'outBound',
               );
             }
-            console.log(
-              'saved as regular ' + msgType + ' sms from:',
-              contact.phoneNumber,
-              ' to ',
-              influencerNumber.number,
-              ' body: ',
-              body,
-            );
+            //console.log(
+            //   'saved as regular ' + msgType + ' sms from:',
+            //   contact.phoneNumber,
+            //   ' to ',
+            //   influencerNumber.number,
+            //   ' body: ',
+            //   body,
+            // );
             //this is just a normal sms
             return 200;
           }
@@ -247,13 +247,13 @@ export class SmsService {
         );
         return 200;
       } else {
-        console.log(
-          'Influencer not found. Error generated. Returned 200 to twillio hook.',
-        );
+        //console.log(
+        //   'Influencer not found. Error generated. Returned 200 to twillio hook.',
+        // );
         return 200;
       }
     } catch (e) {
-      console.log('Receive SMS', e);
+      //console.log('Receive SMS', e);
       throw e;
     }
   }
@@ -324,14 +324,14 @@ export class SmsService {
         influencerNumber.id,
     });
     await this.sendSms(contact, influencerNumber, text_body, 'outBound');
-    console.log(
-      'outbound sms sent to:',
-      contact.phoneNumber,
-      ' from ',
-      influencerNumber.number,
-      ' body ',
-      text_body,
-    );
+    //console.log(
+    //   'outbound sms sent to:',
+    //   contact.phoneNumber,
+    //   ' from ',
+    //   influencerNumber.number,
+    //   ' body ',
+    //   text_body,
+    // );
   }
 
   async saveSms(
@@ -387,7 +387,7 @@ export class SmsService {
       });
     }
 
-    console.log('message saved', message);
+    //console.log('message saved', message);
 
     const country = await this.countryService.countryRepo.findOne({
       where: { code: conversation.phone.country },
@@ -411,7 +411,7 @@ export class SmsService {
     message: string,
     scheduled?: any,
   ) {
-    console.log(message);
+    //console.log(message);
     try {
       if (String(message).length < 1) {
         throw new HttpException(
@@ -475,7 +475,7 @@ export class SmsService {
           }
         }
 
-        console.log(welcomeBody);
+        //console.log(welcomeBody);
         if (scheduled != null) {
           //handle schedule here
           scheduled = new Date(new Date().getTime() + 3 * 60000);
@@ -612,21 +612,21 @@ export class SmsService {
 
   public async updateStatus(sid: string, status: string, from: string) {
     try {
-      console.log(sid, status, from);
+      //console.log(sid, status, from);
       const bc = await this.conversationsMessagesRepo.findOne({
         where: { sid: sid },
       });
-      console.log('message:', bc);
+      //console.log('message:', bc);
       const influencerNumber = await this.phoneService.findOne({
         where: { number: from },
         relations: ['user'],
       });
-      console.log('influencerNumber:', influencerNumber);
+      //console.log('influencerNumber:', influencerNumber);
 
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },
       });
-      console.log('country:', country);
+      //console.log('country:', country);
 
       if (status == 'failed') {
         await this.paymentHistory.updateDues({
@@ -636,7 +636,7 @@ export class SmsService {
         });
       }
       bc.status = status;
-      console.log('sms: ', bc);
+      //console.log('sms: ', bc);
       return this.conversationsMessagesRepo.save(bc);
     } catch (e) {
       throw e;
@@ -680,9 +680,9 @@ export class SmsService {
       const conversation = await this.conversationsRepo.findOne({
         where: { user: inf, id: conversationId },
       });
-      console.log('count', count);
-      console.log('page', page);
-      console.log('skip', count * page - count);
+      //console.log('count', count);
+      //console.log('page', page);
+      //console.log('skip', count * page - count);
 
       const conversationMessage = await this.conversationsMessagesRepo.find({
         where: {
@@ -978,7 +978,7 @@ export class SmsService {
           name: 'NoResponse',
           trigger: presetTrigger.noResponse,
           user: user,
-          enabled:true
+          enabled: true,
         });
         _preset = await this.presetRepo.find({
           where: { user: user },
@@ -1039,7 +1039,7 @@ export class SmsService {
             left join phones p on p.id = c."phoneId"
             where cm."type"='broadcastInbound' and p."userId"=${user.id}
       `);
-      console.log('popularity', popularity);
+      //console.log('popularity', popularity);
       let data = {};
 
       popularity.forEach((number) => {

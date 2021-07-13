@@ -16,6 +16,8 @@ export class InboundSmsProcessor {
   @Process('inboundSms')
   async handleInboundSms(job: Job) {
     const body = job.data;
+
+    console.log(JSON.parse(body.AddOns));
     await this.service.receiveSms(
       body.From,
       body.To,

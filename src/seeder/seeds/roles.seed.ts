@@ -1,6 +1,6 @@
-import { ROLES } from '../../services/access-control/consts/roles.const';
 import { Seeder } from '../../decorators/common.decorator';
 import { RolesService } from '../../modules/users/services/roles.service';
+import { ROLES } from '../../services/access-control/consts/roles.const';
 import { ISeed } from '../seeds.interface';
 
 @Seeder()
@@ -17,7 +17,7 @@ export class RolesSeed implements ISeed {
           await this.rolesService.createRole(role);
         }
       } catch (e) {
-        console.log(e, '===here====');
+        //console.log(e, '===here====');
       }
     });
   }

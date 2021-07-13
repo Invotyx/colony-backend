@@ -114,7 +114,7 @@ export class BroadcastService {
         status: 'scheduled',
       });
     } catch (e) {
-      console.log('createBroadcast', e);
+      //console.log('createBroadcast', e);
       throw new BadRequestException(e.message);
     }
   }
@@ -226,7 +226,7 @@ export class BroadcastService {
       }
       return b;
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       throw new BadRequestException(e.message);
     }
   }
@@ -236,7 +236,7 @@ export class BroadcastService {
       const bc = await this.bcRepo.findOne({ where: { smsSid: sid } });
 
       if (!bc) {
-        console.log('single sms');
+        //console.log('single sms');
         return;
       }
       const influencerNumber = await this.phoneService.findOne({

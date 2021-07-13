@@ -10,10 +10,10 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { env } from 'process';
+import Stripe from 'stripe';
 import { Auth } from '../../../decorators/auth.decorator';
 import { LoginUser } from '../../../decorators/user.decorator';
 import { UserEntity } from '../../users/entities/user.entity';
-import Stripe from 'stripe';
 import { UsersService } from '../../users/services/users.service';
 import { PaymentMethodDto } from './payment-methods.dto';
 import { PaymentMethodsService } from './payment-methods.service';
@@ -55,7 +55,7 @@ export class PaymentsController {
         throw new BadRequestException('Incomplete data provided.');
       }
     } catch (e) {
-      console.log(e, 'exp === 1');
+      //console.log(e, 'exp === 1');
       throw new BadRequestException(e, 'An Exception Occurred');
     }
   }

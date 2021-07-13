@@ -13,7 +13,7 @@ export class ShareableLinkHandlerService {
 
       return r.link;
     } catch (e) {
-      console.log('ShareableLinkHandlerService.linkOpened', e);
+      //console.log('ShareableLinkHandlerService.linkOpened', e);
       throw e;
     }
   }

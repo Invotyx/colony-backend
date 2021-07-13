@@ -335,11 +335,11 @@ export class TasksService {
   }
 
   // check if user has not completed profile yet.
-  @Cron('10 * * * * *')
+  @Cron('30 * * * * *')
   async checkIfContactHasCompletedProfile() {
     const contacts = await this.contactService.find({
       where: { isComplete: false },
-      relations: ['user'],
+      relations: ['user', 'city', 'country'],
     });
 
     let influencer;
@@ -347,23 +347,34 @@ export class TasksService {
     for (let contact of contacts) {
       influencer = contact.user;
 
-      const noResponseMessage = this.search(
-        'noResponse',
-        await this.smsService.getPresetMessage(influencer),
-      );
+      const noResponseMessage = await this.smsService.findOneInPreSets({
+        trigger: 'noResponse',
+        user: influencer,
+      });
 
-      const threshold = 1;
-      const remindersFlag = true;
-
-      if (remindersFlag) {
-        if (this.dateDifference(new Date(), contact.createdAt) <= threshold) {
-          await this.smsService.sendSms(
-            contact,
-            influencer,
-            noResponseMessage.body,
-            'outBound',
-          );
-        }
+      if (noResponseMessage && noResponseMessage.enabled) {
+        const text_body: string = tagReplace(noResponseMessage.body, {
+          first_name: contact.firstName ? contact.firstName : '',
+          last_name: contact.lastName ? contact.lastName : '',
+          inf_first_name: influencer.firstName,
+          inf_last_name: influencer.lastName,
+          country: contact.country ? contact.country.name : '',
+          city: contact.city ? contact.city.name : '',
+          link:
+            env.PUBLIC_APP_URL +
+            '/contacts/enroll/' +
+            influencer.id +
+            ':' +
+            contact.urlMapper +
+            ':' +
+            influencer.id,
+        });
+        await this.smsService.sendSms(
+          contact,
+          influencer,
+          text_body,
+          'outBound',
+        );
       }
     }
   }

@@ -33,6 +33,9 @@ export class PresetMessagesEntity {
   @Column({ type: 'text' })
   public body: string;
 
+  @Column({ type: 'boolean', default: false, nullable: true })
+  public enabled: boolean;
+
   @Column({ type: 'enum', enum: presetTrigger })
   public trigger: presetTrigger;
 

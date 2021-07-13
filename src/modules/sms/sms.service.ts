@@ -4,7 +4,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
-  Injectable,
+  Injectable
 } from '@nestjs/common';
 import { env } from 'process';
 import Pusher from 'pusher';
@@ -908,6 +908,7 @@ export class SmsService {
           body: preset.body,
           trigger: preset.trigger,
           user: user,
+          enabled: preset.enabled,
         });
         _preset.user = _preset.user.id as any;
         return { preset: _preset };
@@ -936,6 +937,9 @@ export class SmsService {
         }
         if (preset.name) {
           existing.name = preset.name;
+        }
+        if (preset.enabled) {
+          existing.enabled = preset.enabled;
         }
 
         const _preset: any = await this.presetRepo.save(existing);
@@ -974,6 +978,7 @@ export class SmsService {
           name: 'NoResponse',
           trigger: presetTrigger.noResponse,
           user: user,
+          enabled:true
         });
         _preset = await this.presetRepo.find({
           where: { user: user },

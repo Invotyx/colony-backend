@@ -32,6 +32,10 @@ export class PresetsDto {
   @IsNotEmpty()
   @MinLength(1)
   public body: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public enabled: boolean;
 }
 
 export class PresetsUpdateDto {
@@ -44,4 +48,8 @@ export class PresetsUpdateDto {
   @IsOptional()
   @MinLength(1)
   public body: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public enabled: boolean;
 }

@@ -6,6 +6,7 @@ import { MainMysqlModule } from 'src/shared/main-mysql.module';
 import { ContactsModule } from '../contacts/contacts.module';
 import { InfluencerLinksModule } from '../influencer-links/influencer-links.module';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
+import { KeywordsModule } from '../keywords/keywords.module';
 import { PaymentHistoryModule } from '../payment-history/payment-history.module';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhoneModule } from '../phone/phone.module';
@@ -36,6 +37,7 @@ import { SmsService } from './sms.service';
     forwardRef(() => PaymentHistoryModule),
     forwardRef(() => CityCountryModule),
     forwardRef(() => InfluencerLinksModule),
+    forwardRef(() => KeywordsModule),
   ],
   controllers: [SmsController],
   providers: [

@@ -15,6 +15,7 @@ import { tagReplace } from '../../shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
 import { ContactsEntity } from '../contacts/entities/contacts.entity';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
+import { KeywordsService } from '../keywords/keywords.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhonesEntity } from '../phone/entities/phone.entity';
 import { PhoneService } from '../phone/phone.service';
@@ -47,6 +48,7 @@ export class SmsService {
     private readonly countryService: CityCountryService,
     @Inject(forwardRef(() => InfluencerLinksService))
     private readonly infLinks: InfluencerLinksService,
+    private readonly keywordsService: KeywordsService,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -137,6 +139,7 @@ export class SmsService {
             body: 'Welcome from ${inf_name}.',
           };
         }
+
         if (contact) {
           const check = await this.contactService.checkBlockList(
             influencerNumber.user,
@@ -198,6 +201,29 @@ export class SmsService {
               message,
             );
 
+            //remove from list here
+            if (body.toLowerCase() == 'stop') {
+              await this.contactService.removeFromList(
+                influencerNumber.user,
+                contact.id,
+              );
+            }
+
+            const checkKeyword = await this.keywordsService.findOne({
+              where: {
+                keyword: body,
+                user: influencerNumber.user,
+              },
+            });
+
+            if (checkKeyword) {
+              await this.sendSms(
+                contact,
+                influencerNumber,
+                checkKeyword.message,
+                'outBound',
+              );
+            }
             console.log(
               'saved as regular ' + msgType + ' sms from:',
               contact.phoneNumber,

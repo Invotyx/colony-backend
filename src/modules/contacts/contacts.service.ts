@@ -12,7 +12,6 @@ import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
 import { uniqueId } from 'src/shared/random-keygen';
 import { tagReplace } from 'src/shared/tag-replace';
-import { Like } from 'typeorm';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhoneService } from '../phone/phone.service';
 import { SubscriptionsService } from '../products/subscription/subscriptions.service';
@@ -444,7 +443,7 @@ export class ContactsService {
   }
 
   async updateContact(urlId: string, data: ContactDto, image?: any) {
-    const consolidatedIds = urlId.split(':::');
+    const consolidatedIds = urlId.split(':');
     const userId = consolidatedIds[0];
     const contactUniqueMapper = consolidatedIds[1];
     const number = consolidatedIds[2];
@@ -595,7 +594,7 @@ export class ContactsService {
 
   async checkContact(urlId: string) {
     try {
-      const consolidatedIds = urlId.split(':::');
+      const consolidatedIds = urlId.split(':');
       const userId = consolidatedIds[0];
       const contactUniqueMapper = consolidatedIds[1];
       const contact = await this.repository.findOne({

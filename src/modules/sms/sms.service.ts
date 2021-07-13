@@ -318,9 +318,9 @@ export class SmsService {
         env.PUBLIC_APP_URL +
         '/contacts/enroll/' +
         influencerNumber.user.id +
-        ':::' +
+        ':' +
         contact.urlMapper +
-        ':::' +
+        ':' +
         influencerNumber.id,
     });
     await this.sendSms(contact, influencerNumber, text_body, 'outBound');

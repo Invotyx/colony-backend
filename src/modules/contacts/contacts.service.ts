@@ -601,8 +601,14 @@ export class ContactsService {
       const contact = await this.repository.findOne({
         where: { urlMapper: contactUniqueMapper },
       });
+
       if (contact) {
-        return contact;
+        const user = await this.users.findOne({ where: { id: userId } });
+        return {
+          influencerName: user.firstName + ' ' + user.firstName,
+          influencerImage: user.image,
+          contact,
+        };
       } else {
         throw new BadRequestException('Contact does not exist in our system.');
       }

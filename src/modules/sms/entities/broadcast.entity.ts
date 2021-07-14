@@ -87,6 +87,7 @@ export class BroadcastsEntity {
   @ManyToOne(() => BroadcastsEntity, (b) => b.id, { nullable: true })
   public successor?: BroadcastsEntity;
 
+  public broadcastIncomingMessages: ConversationMessagesEntity[];
   @AfterLoad()
   async getLastConversationMessage() {
     const innerSelect = getRepository(ConversationMessagesEntity)
@@ -96,7 +97,18 @@ export class BroadcastsEntity {
       .andWhere('"type"=:type', { type: 'broadcastOutbound' })
       .orderBy('"createdAt"', 'DESC')
       .limit(1);
-
+    
+    const inboundMessages = getRepository(ConversationMessagesEntity)
+      .createQueryBuilder()
+      .select('*')
+      .where('"broadcastId" = :id', { id: this.id })
+      .andWhere('"type"=:type', { type: 'broadcastInbound' })
+      .orderBy('"createdAt"', 'DESC');
+    
+    const messages = await inboundMessages.getMany();
+    if (messages) {
+      this.broadcastIncomingMessages = messages;
+    }
     const val = await innerSelect.getOne();
     if (val) {
       this.lastMessage = val.sms;

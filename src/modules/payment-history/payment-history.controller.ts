@@ -30,6 +30,12 @@ export class PaymentHistoryController {
   }
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('charge-sms-threshold')
+  async chargeOnThreshold(@LoginUser() user: UserEntity) {
+    return this.service.chargeOnThreshold(user);
+  }
+
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Get('')
   async purchaseHistory(@LoginUser() user: UserEntity) {
     try {

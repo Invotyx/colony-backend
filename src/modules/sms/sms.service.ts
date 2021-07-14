@@ -576,47 +576,47 @@ export class SmsService {
       const cost = checkThreshold ? +checkThreshold.cost + +country.smsCost : 0;
 
       if (cost < plan.threshold) {
-        if (status && status == 'scheduled') {
-          const sms = await this.conversationsMessagesRepo.findOne({
-            where: { id: parseInt(body) },
-          });
-
-          const msg = await this.client.messages.create({
-            body: sms.sms,
-            to: contact.phoneNumber, //recipient(s)
-            from: influencerNumber.number,
-            statusCallback:
-              env.API_URL + '/api/sms/receive-sms-status-callback/webhook',
-          });
-          sms.sid = msg.sid;
-          sms.status = msg.status;
-          sms.receivedAt = msg.dateUpdated;
-          return this.conversationsMessagesRepo.save(sms);
+        const check = await this.paymentHistory.chargeOnThreshold(influencerNumber.user);
+        if (!check) {
+          throw new HttpException('Threshold reached. Payment charge failed.', HttpStatus.BAD_REQUEST);
         }
+      }
+      if (status && status == 'scheduled') {
+        const sms = await this.conversationsMessagesRepo.findOne({
+          where: { id: parseInt(body) },
+        });
 
-        const message = await this.client.messages.create({
-          body: body,
+        const msg = await this.client.messages.create({
+          body: sms.sms,
           to: contact.phoneNumber, //recipient(s)
           from: influencerNumber.number,
           statusCallback:
             env.API_URL + '/api/sms/receive-sms-status-callback/webhook',
         });
-        return await this.saveSms(
-          contact,
-          influencerNumber,
-          body,
-          new Date(),
-          type,
-          message.sid,
-          message.status,
-          null,
-          broadcast ? broadcast : null,
-        );
-      } else {
-        throw new BadRequestException(
-          'Threshold value reached. Expedite your due payments.',
-        );
+        sms.sid = msg.sid;
+        sms.status = msg.status;
+        sms.receivedAt = msg.dateUpdated;
+        return this.conversationsMessagesRepo.save(sms);
       }
+
+      const message = await this.client.messages.create({
+        body: body,
+        to: contact.phoneNumber, //recipient(s)
+        from: influencerNumber.number,
+        statusCallback:
+          env.API_URL + '/api/sms/receive-sms-status-callback/webhook',
+      });
+      return await this.saveSms(
+        contact,
+        influencerNumber,
+        body,
+        new Date(),
+        type,
+        message.sid,
+        message.status,
+        null,
+        broadcast ? broadcast : null,
+      );
     } catch (e) {
       console.error('sendSms', e);
       throw e;

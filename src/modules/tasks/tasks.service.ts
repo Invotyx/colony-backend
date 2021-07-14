@@ -117,6 +117,10 @@ export class TasksService {
           where: { country: contact.cCode, user: broadcast.user },
           relations: ['user'],
         });
+        const _contact = await this.contactService.findOne({
+          where: { id: contact.id },
+          relations: ['city', 'country'],
+        });
         if (phone) {
           this.logger.log('phone');
           ////console.log(phone);
@@ -148,8 +152,8 @@ export class TasksService {
               last_name: contact.lastName ? contact.lastName : '',
               inf_first_name: broadcast.user.firstName,
               inf_last_name: broadcast.user.lastName,
-              country: contact.country ? contact.country.name : '',
-              city: contact.city ? contact.city.name : '',
+              country: _contact.country ? _contact.country.name : '',
+              city: _contact.city ? _contact.city.name : '',
             }),
             contact: contact,
             phone: phone,
@@ -160,7 +164,7 @@ export class TasksService {
           ////console.log(q_obj);
           await this.queue.add('broadcast_message', q_obj, {
             removeOnComplete: true,
-            removeOnFail: true,
+            removeOnFail: false,
             attempts: 2,
             delay: 1000,
           });
@@ -270,7 +274,7 @@ export class TasksService {
         }
       }
     } catch (e) {
-      ////console.log(e);
+      console.log(e);
     }
   }
 
@@ -290,44 +294,7 @@ export class TasksService {
 
       for (let payment of due_payments) {
         ////console.log('payment', payment);
-        const default_pm = await this.paymentService.findOne({
-          where: { default: true, user: payment.user },
-        });
-        const sms = payment;
-
-        if (default_pm) {
-          // charge client here
-          const charge = await this.stripe.paymentIntents.create({
-            amount: Math.round(+sms.cost * 100),
-            currency: 'GBP',
-            capture_method: 'automatic',
-            confirm: true,
-            confirmation_method: 'automatic',
-            customer: payment.user.customerId,
-            description: 'Sms Dues payed automatically on reaching threshold.',
-            payment_method: default_pm.id,
-          });
-          ////console.log('charge :', charge);
-          if (charge.status == 'succeeded') {
-            await this.paymentHistoryService.setDuesToZero({
-              type: 'sms',
-              user: payment.user,
-            });
-
-            await this.paymentHistoryService.addRecordToHistory({
-              user: payment.user,
-              description:
-                'Sms Dues payed automatically on reaching threshold.',
-              cost: sms.cost,
-              costType: 'sms-dues',
-              chargeId: charge.id,
-            });
-            //send email here
-          } else {
-            this.logger.log('payment charge failed with details:');
-            ////console.log(charge);
-          }
-        }
+        await this.paymentHistoryService.chargeOnThreshold(payment.user);
       }
     } catch (e) {
       ////console.log(e);

@@ -46,7 +46,7 @@ export class SmsController {
     try {
       await this.queue.add('inboundSms', body, {
         removeOnComplete: true,
-        removeOnFail: true,
+        removeOnFail: false,
         attempts: 2,
       });
       return '<Response></Response>';

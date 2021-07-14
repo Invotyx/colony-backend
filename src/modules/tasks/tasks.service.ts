@@ -74,7 +74,7 @@ export class TasksService {
 
     await this.sms_q.add('scheduled_message', q_obj, {
       removeOnComplete: true,
-      removeOnFail: true,
+      removeOnFail: false,
       attempts: 2,
     });
     ////console.log(q_obj, 'Added to queue');

@@ -83,19 +83,18 @@ export class PaymentHistoryService {
 
   public async chargeOnThreshold(user: UserEntity) {
     const plan = await this.planService.findOne();
-    ////console.log(plan);
+    console.log(plan);
     const payment = await this.repository.findOne({
       where: {
         cost: MoreThanOrEqual(+plan.threshold - 1),
         costType: 'sms',
         user: user,
-      },
-      relations: ['user'],
+      }
     });
 
-    ////console.log('payment', payment);
+    console.log('payment', payment);
     const default_pm = await this.paymentService.findOne({
-      where: { default: true, user: payment.user },
+      where: { default: true, user: user },
     });
     const sms = payment;
 
@@ -111,15 +110,15 @@ export class PaymentHistoryService {
         description: 'Sms Dues payed automatically on reaching threshold.',
         payment_method: default_pm.id,
       });
-      ////console.log('charge :', charge);
+      console.log('charge :', charge);
       if (charge.status == 'succeeded') {
         await this.setDuesToZero({
           type: 'sms',
-          user: payment.user,
+          user: user,
         });
 
         await this.addRecordToHistory({
-          user: payment.user,
+          user: user,
           description: 'Sms Dues payed automatically on reaching threshold.',
           cost: sms.cost,
           costType: 'sms-dues',

@@ -584,7 +584,9 @@ export class SmsService {
 
       if (cost >= plan.threshold - 1) {
         console.log('check if user is valid:', influencerNumber.user);
-        const check = await this.paymentHistory.chargeOnThreshold(infNum.user);
+        const check = await this.paymentHistory.chargeOnThreshold(
+          influencerNumber.user,
+        );
         if (!check) {
           throw new HttpException(
             'Threshold reached. Payment charge failed.',

@@ -454,6 +454,7 @@ export class SmsService {
         });
         conversation.phone.user = conversation.user as any;
         let _inf_phone = conversation.phone;
+        _inf_phone.user = conversation.user;
         if (_inf_phone && _inf_phone.status != 'in-use') {
           const __inf_phone = await this.phoneService.findOne({
             where: { user: inf, country: _contact.cCode, status: 'in-use' },

@@ -543,6 +543,7 @@ export class ContactsService {
       });
 
       await this.repository.save(contactDetails);
+      console.log('infNum', infNum);
       await this.smsService.sendSms(
         contactDetails,
         infNum,

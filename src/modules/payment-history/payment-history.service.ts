@@ -107,7 +107,7 @@ export class PaymentHistoryService {
         capture_method: 'automatic',
         confirm: true,
         confirmation_method: 'automatic',
-        customer: payment.user.customerId,
+        customer: user.customerId,
         description: 'Sms Dues payed automatically on reaching threshold.',
         payment_method: default_pm.id,
       });

@@ -310,21 +310,21 @@ export class TasksService {
     });
 
     for (let contact of contacts) {
-
       for (let influencer of contact.user) {
-        
         const conversation = await this.smsService.findOneConversations({
           where: {
             contact: contact,
-            user: influencer
+            user: influencer,
           },
-          relations: ['user', 'phone', 'contact']
+          relations: ['user', 'phone', 'contact'],
         });
 
         if (!conversation) {
           continue;
         }
-      
+
+        conversation.phone.user = conversation.user;
+
         const noResponseMessage = await this.smsService.findOneInPreSets({
           trigger: 'noResponse',
           user: influencer,

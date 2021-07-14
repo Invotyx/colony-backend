@@ -559,9 +559,15 @@ export class SmsService {
     broadcast?: BroadcastsEntity,
   ) {
     try {
+      const infNum = await this.phoneService.findOne({
+        where: {
+          number: influencerNumber.number,
+        },
+        relations: ['user'],
+      });
       const checkThreshold = await this.paymentHistory.getDues(
         'sms',
-        influencerNumber.user,
+        infNum.user,
       );
 
       const country = await this.countryService.countryRepo.findOne({
@@ -578,9 +584,7 @@ export class SmsService {
 
       if (cost >= plan.threshold - 1) {
         console.log('check if user is valid:', influencerNumber.user);
-        const check = await this.paymentHistory.chargeOnThreshold(
-          influencerNumber.user,
-        );
+        const check = await this.paymentHistory.chargeOnThreshold(infNum.user);
         if (!check) {
           throw new HttpException(
             'Threshold reached. Payment charge failed.',
@@ -615,7 +619,7 @@ export class SmsService {
       });
       return await this.saveSms(
         contact,
-        influencerNumber,
+        infNum,
         body,
         new Date(),
         type,

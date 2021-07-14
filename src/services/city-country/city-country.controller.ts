@@ -67,8 +67,11 @@ export class CityCountryController {
   ) {
     try {
       const country = await this.countryRepo.findOne({ where: { id: id } });
+      const where = city
+        ? { country, name: Like('%' + city + '%') }
+        : { country };
       const cities = await this.cityRepo.find({
-        where: { country: country, name: Like('%' + city + '%') },
+        where,
         order: { name: 'ASC' },
         take: limit,
         skip: limit * page - limit,

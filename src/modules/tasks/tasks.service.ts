@@ -309,39 +309,51 @@ export class TasksService {
       relations: ['user', 'city', 'country'],
     });
 
-    let influencer;
-
     for (let contact of contacts) {
-      influencer = contact.user;
 
-      const noResponseMessage = await this.smsService.findOneInPreSets({
-        trigger: 'noResponse',
-        user: influencer,
-      });
-
-      if (noResponseMessage && noResponseMessage.enabled) {
-        const text_body: string = tagReplace(noResponseMessage.body, {
-          first_name: contact.firstName ? contact.firstName : '',
-          last_name: contact.lastName ? contact.lastName : '',
-          inf_first_name: influencer.firstName,
-          inf_last_name: influencer.lastName,
-          country: contact.country ? contact.country.name : '',
-          city: contact.city ? contact.city.name : '',
-          link:
-            env.PUBLIC_APP_URL +
-            '/contacts/enroll/' +
-            influencer.id +
-            ':' +
-            contact.urlMapper +
-            ':' +
-            influencer.id,
+      for (let influencer of contact.user) {
+        
+        const conversation = await this.smsService.findOneConversations({
+          where: {
+            contact: contact,
+            user: influencer
+          },
+          relations: ['user', 'phone', 'contact']
         });
-        await this.smsService.sendSms(
-          contact,
-          influencer,
-          text_body,
-          'outBound',
-        );
+
+        if (!conversation) {
+          continue;
+        }
+      
+        const noResponseMessage = await this.smsService.findOneInPreSets({
+          trigger: 'noResponse',
+          user: influencer,
+        });
+
+        if (noResponseMessage && noResponseMessage.enabled) {
+          const text_body: string = tagReplace(noResponseMessage.body, {
+            first_name: contact.firstName ? contact.firstName : '',
+            last_name: contact.lastName ? contact.lastName : '',
+            inf_first_name: influencer.firstName,
+            inf_last_name: influencer.lastName,
+            country: contact.country ? contact.country.name : '',
+            city: contact.city ? contact.city.name : '',
+            link:
+              env.PUBLIC_APP_URL +
+              '/contacts/enroll/' +
+              influencer.id +
+              ':' +
+              contact.urlMapper +
+              ':' +
+              influencer.id,
+          });
+          await this.smsService.sendSms(
+            contact,
+            conversation.phone,
+            text_body,
+            'outBound',
+          );
+        }
       }
     }
   }

@@ -179,15 +179,15 @@ export class SmsService {
               lastConversationMessage.type == 'broadcastOutbound'
                 ? 'broadcastInbound'
                 : 'inBound';
+ 
 
             if (msgType == 'broadcastInbound') {
               const b = lastConversationMessage.broadcast;
-              if (emotions.anger) b.anger = b.anger + 1;
-              if (emotions.disgust) b.disgust = b.disgust + 1;
-              if (emotions.fear) b.fear = b.fear + 1;
-              if (emotions.joy) b.joy = b.joy + 1;
-              if (emotions.sadness) b.sadness = b.sadness + 1;
-              await this.broadcastRepo.save(b);
+              const emotion = emotions.reduce((em1, em2) => (em1 = em1.score > em2.score ? em1 : em2), 0);
+              if (+emotion.score > 0) {
+                b[emotion.tone_id] = b[emotion.tone_id] + 1;
+                await this.broadcastRepo.save(b);
+              }
             }
 
             //console.log('conversation found');

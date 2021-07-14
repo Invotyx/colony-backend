@@ -83,8 +83,7 @@ export class PaymentHistoryService {
 
   public async chargeOnThreshold(user: UserEntity) {
     const plan = await this.planService.findOne();
-    console.log(user);
-    const payment = await this.repository.findOne({
+    const payment = await this.duesRepo.findOne({
       where: {
         cost: MoreThanOrEqual(+plan.threshold - 1),
         costType: 'sms',

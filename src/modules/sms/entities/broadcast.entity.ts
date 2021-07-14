@@ -97,14 +97,15 @@ export class BroadcastsEntity {
       .andWhere('"type"=:type', { type: 'broadcastOutbound' })
       .orderBy('"createdAt"', 'DESC')
       .limit(1);
-    
+
     const inboundMessages = getRepository(ConversationMessagesEntity)
       .createQueryBuilder()
       .select('*')
       .where('"broadcastId" = :id', { id: this.id })
       .andWhere('"type"=:type', { type: 'broadcastInbound' })
       .orderBy('"createdAt"', 'DESC');
-    
+
+    console.log(await inboundMessages.getSql());
     const messages = await inboundMessages.getMany();
     console.log(messages);
     if (messages) {

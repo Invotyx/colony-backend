@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { env } from 'process';
 import { UserEntity } from 'src/modules/users/entities/user.entity';
 import { AppConfig } from '../../configs/app.config';
 import { MailClient } from '../../services/mail/mail.service';
@@ -17,9 +18,10 @@ export class SupportEmailSender {
 
         const mail = await this.mailClient.send({
           to: {
-            name: model.firstName + ' ' + model.lastName,
-            address: model.email,
+            name: 'Colony Systems',
+            address: env.SUPPORT_EMAIL,
           },
+          from: model.email,
           subject: subject,
           html: html,
           text: html,

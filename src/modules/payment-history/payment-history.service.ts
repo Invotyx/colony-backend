@@ -89,10 +89,12 @@ export class PaymentHistoryService {
         cost: MoreThanOrEqual(+plan.threshold - 1),
         costType: 'sms',
         user: user,
-      }
+      },
     });
 
-    console.log('payment', payment);
+    if (!payment) {
+      return;
+    }
     const default_pm = await this.paymentService.findOne({
       where: { default: true, user: user },
     });

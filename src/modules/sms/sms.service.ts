@@ -576,10 +576,15 @@ export class SmsService {
 
       const cost = checkThreshold ? +checkThreshold.cost + +country.smsCost : 0;
 
-      if (cost < plan.threshold) {
-        const check = await this.paymentHistory.chargeOnThreshold(influencerNumber.user);
+      if (cost >= plan.threshold - 1) {
+        const check = await this.paymentHistory.chargeOnThreshold(
+          influencerNumber.user,
+        );
         if (!check) {
-          throw new HttpException('Threshold reached. Payment charge failed.', HttpStatus.BAD_REQUEST);
+          throw new HttpException(
+            'Threshold reached. Payment charge failed.',
+            HttpStatus.BAD_REQUEST,
+          );
         }
       }
       if (status && status == 'scheduled') {

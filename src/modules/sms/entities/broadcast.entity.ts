@@ -105,8 +105,7 @@ export class BroadcastsEntity {
       .andWhere('"type"=:type', { type: 'broadcastInbound' })
       .orderBy('"createdAt"', 'DESC');
 
-    console.log(await inboundMessages.getSql());
-    const messages = await inboundMessages.getMany();
+    const messages = await inboundMessages.getRawMany();
     console.log(messages);
     if (messages) {
       this.broadcastIncomingMessages = messages;

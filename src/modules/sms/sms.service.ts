@@ -577,6 +577,7 @@ export class SmsService {
       const cost = checkThreshold ? +checkThreshold.cost + +country.smsCost : 0;
 
       if (cost >= plan.threshold - 1) {
+        console.log('check if user is valid:', influencerNumber.user);
         const check = await this.paymentHistory.chargeOnThreshold(
           influencerNumber.user,
         );

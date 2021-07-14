@@ -302,7 +302,7 @@ export class TasksService {
   }
 
   // check if user has not completed profile yet.
-  @Cron('30 * * * * *')
+  @Cron('0 0 12 * * *')
   async checkIfContactHasCompletedProfile() {
     const contacts = await this.contactService.find({
       where: { isComplete: false },

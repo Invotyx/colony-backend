@@ -16,6 +16,7 @@ import {
   PaginatorError,
   PaginatorErrorHandler,
 } from 'src/shared/paginator';
+import { Like } from 'typeorm';
 import { CountryCost } from './country-cost.dto';
 import { CityRepository } from './repos/city.repo';
 import { CountryRepository } from './repos/country.repo';
@@ -67,7 +68,7 @@ export class CityCountryController {
     try {
       const country = await this.countryRepo.findOne({ where: { id: id } });
       const cities = await this.cityRepo.find({
-        where: { country: country },
+        where: { country: country, name: Like('%' + city + '%') },
         order: { name: 'ASC' },
         take: limit,
         skip: limit * page - limit,

@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsBoolean,
+  IsEmail,
   IsIn,
   IsNotEmpty,
   IsNumber,
@@ -21,28 +21,33 @@ export enum gender {
 
 export class ContactDto {
   @ApiPropertyOptional()
-  @IsOptional()
+  @IsNotEmpty()
   @Length(3, 60)
-  public name: string;
+  public firstName: string;
+
+  @ApiPropertyOptional()
+  @IsNotEmpty()
+  @Length(3, 60)
+  public lastName: string;
 
   @ApiPropertyOptional({ enum: gender })
-  @IsOptional()
+  @IsNotEmpty()
   public gender: gender;
 
   @ApiPropertyOptional()
-  @IsOptional()
+  @IsNotEmpty()
   public dob: Date;
 
   @ApiPropertyOptional()
-  @IsOptional()
+  @IsNotEmpty()
   public country: CountryEntity;
 
   @ApiPropertyOptional()
-  @IsOptional()
+  @IsNotEmpty()
   public city: CityEntity;
 
   @ApiPropertyOptional()
-  @IsOptional()
+  @IsNotEmpty()
   @Length(3, 100)
   public state: string;
 
@@ -53,16 +58,24 @@ export class ContactDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  public socialLinks: SocialLinks[];
-}
+  public facebook: string;
 
-export class SocialLinks {
-  @IsNotEmpty()
-  public link: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  public instagram: string;
 
-  @IsNotEmpty()
-  @Length(2, 30)
-  public title: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  public twitter: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public linkedin: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsEmail()
+  public email: string;
 }
 
 export class PaginationDto {
@@ -78,6 +91,25 @@ export class PaginationDto {
   page?: number;
 }
 
+export enum dob {
+  today = 'today',
+  week = 'week',
+  month = 'month',
+}
+
+export enum contacted {
+  week = 'week',
+  month = 'month',
+  year = 'year',
+  never = 'never',
+}
+
+export enum newContacts {
+  recent = 'recent',
+  week = 'week',
+  month = 'month',
+}
+
 export class ContactFilter {
   @ApiPropertyOptional()
   @IsOptional()
@@ -89,43 +121,18 @@ export class ContactFilter {
 
   @ApiPropertyOptional()
   @IsOptional()
-  public dob_today?: Boolean;
+  @IsIn(['today', 'week', 'month', ''])
+  public dob?: dob;
 
   @ApiPropertyOptional()
   @IsOptional()
-  public dob_week?: Boolean;
+  @IsIn(['week', 'month', 'year', 'never', ''])
+  public contacted?: contacted;
 
   @ApiPropertyOptional()
   @IsOptional()
-  public dob_month?: Boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public contacted_week?: Boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public contacted_month?: Boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public contacted_year?: Boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public never_contacted?: Boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public newContacts?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public newContacts_week?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  public newContacts_month?: boolean;
+  @IsIn(['recent', 'week', 'month', ''])
+  public newContacts?: newContacts;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -143,10 +150,10 @@ export class ContactFilter {
   @IsOptional()
   public hasLi?: boolean;
 
-  @ApiPropertyOptional({ enum: ['male', 'female', 'non_binary'] })
+  @ApiPropertyOptional({ enum: ['male', 'female', 'non_binary', ''] })
   @IsOptional()
-  @IsIn(['male', 'female', 'non_binary'])
-  public gender?: string;
+  @IsIn(['male', 'female', 'non_binary', ''])
+  public gender?: gender;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -156,12 +163,6 @@ export class ContactFilter {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
-  @Length(2, 30)
-  public timezone?: string;
-
-  @ApiPropertyOptional()
-  @IsNotEmpty()
   @Length(2, 10)
   public country?: string;
 
@@ -174,4 +175,13 @@ export class ContactFilter {
 
   @IsOptional()
   public filter?: string;
+
+  @IsOptional()
+  public lat?: number;
+
+  @IsOptional()
+  public long?: number;
+
+  @IsOptional()
+  public radius?: number;
 }

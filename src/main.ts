@@ -16,29 +16,29 @@ async function bootstrap() {
       seeder
         .sow({ klass: 'RolesSeed', up: true })
         .then(() => {
-          console.log('Roles Seeding complete!');
+          //console.log('Roles Seeding complete!');
         })
         .catch((error) => {
-          console.log('Roles Seeding failed!');
+          //console.log('Roles Seeding failed!');
           throw error;
         });
 
       seeder
         .sow({ klass: 'PlanSeed', up: true })
         .then(() => {
-          console.log('Plan Seeding complete!');
+          //console.log('Plan Seeding complete!');
         })
         .catch((error) => {
-          console.log('Plan Seeding failed!');
+          //console.log('Plan Seeding failed!');
           throw error;
         });
       seeder
         .sow({ klass: 'CreateAdminSeed', up: true })
         .then(() => {
-          console.log('user Seeding complete!');
+          //console.log('user Seeding complete!');
         })
         .catch((error) => {
-          console.log('User Seeding failed!');
+          //console.log('User Seeding failed!');
           throw error;
         })
         .finally(() => {
@@ -70,12 +70,18 @@ async function bootstrap() {
     new ValidationPipe({
       errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
       transform: true,
+      skipMissingProperties: true,
+      skipNullProperties: true,
+      skipUndefinedProperties: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
       exceptionFactory: (errors) => {
         errors = Object.assign(
           {},
           ...errors.map((item) => ({ [item.property]: item.constraints })),
         );
-        console.log(errors);
+        //console.log(errors);
         return new HttpException(
           {
             errors: errors,

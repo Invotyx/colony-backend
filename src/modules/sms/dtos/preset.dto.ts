@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, Length } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  Length,
+  MinLength,
+} from 'class-validator';
 
 export enum presetTrigger {
   onBoard = 'onBoard',
@@ -24,7 +30,12 @@ export class PresetsDto {
 
   @ApiProperty()
   @IsNotEmpty()
+  @MinLength(1)
   public body: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public enabled: boolean;
 }
 
 export class PresetsUpdateDto {
@@ -35,5 +46,10 @@ export class PresetsUpdateDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @MinLength(1)
   public body: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public enabled: boolean;
 }

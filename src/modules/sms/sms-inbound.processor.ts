@@ -16,6 +16,22 @@ export class InboundSmsProcessor {
   @Process('inboundSms')
   async handleInboundSms(job: Job) {
     const body = job.data;
+
+    const tones = JSON.parse(body.AddOns);
+    console.log('tones', tones);
+    let emotions =
+      tones.results.message_tone.result.document_tone.tone_categories;
+
+    let _emotion;
+
+    emotions.forEach((emotion) => {
+      if (emotion.category_id == 'emotion_tone') {
+        _emotion = emotion.tones;
+      }
+    });
+
+    console.log('_emotion', _emotion);
+
     await this.service.receiveSms(
       body.From,
       body.To,
@@ -23,30 +39,7 @@ export class InboundSmsProcessor {
       new Date(),
       body.MessageSid,
       body.FromCountry,
+      _emotion,
     );
-  }
-
-  @Process('outBoundSmsStatus')
-  async handleOutboundSmsStatus(job: Job) {
-    const body = job.data;
-    if (
-      body.MessageStatus == 'delivered' ||
-      body.MessageStatus == 'undelivered' ||
-      body.MessageStatus == 'failed' ||
-      body.MessageStatus == 'sent'
-    ) {
-      //
-      await this.service.updateStatus(
-        body.MessageSid,
-        body.MessageStatus,
-        body.From,
-      );
-      await this.bcService.updateStatus(
-        body.MessageSid,
-        body.MessageStatus,
-        body.From,
-      );
-    }
-    this.logger.debug(job.data);
   }
 }

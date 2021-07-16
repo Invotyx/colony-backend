@@ -12,7 +12,18 @@ export class AppController {
 
   @Get('merge-tags')
   getSystemMergeTags() {
-    const tags = ['${name}', '${inf_name}', '${link:id}'];
+    const tags = [
+      '${first_name}',
+      '${city}',
+      '${country}',
+      '${inf_first_name}',
+    ];
+
+    /* 
+
+      '${last_name}',
+      '${inf_last_name}',
+    */
     return tags;
   }
 }

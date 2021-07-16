@@ -1,16 +1,20 @@
 import {
   BadRequestException,
+  ForbiddenException,
   HttpException,
   HttpStatus,
-  Injectable
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
+import { error } from 'src/shared/error.dto';
 import {
   dataViewer,
   mapColumns,
   paginateQuery,
   PaginatorError,
-  PaginatorErrorHandler
+  PaginatorErrorHandler,
 } from 'src/shared/paginator';
+import { Like } from 'typeorm';
 import { TABLES } from '../../consts/tables.const';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { uniqueId } from '../../shared/random-keygen';
@@ -28,17 +32,51 @@ export class InfluencerLinksService {
     private readonly contactService: ContactsService,
   ) {}
 
-  async addLink(link: string, user: UserEntity) {
+  public async findCountInLinks(condition?: any) {
+    if (condition) return this.trackingRepo.count(condition);
+    else return this.trackingRepo.count();
+  }
+
+  public async sumTotalLinksSent(
+    user: UserEntity,
+    bid: number,
+  ): Promise<number> {
+    const data = await this.trackingRepo.query(
+      `select SUM("clicks") from influencer_links_tracking where "broadcastId"=${bid}`,
+    );
+    return data[0].sum;
+  }
+
+  async addLink(link: string, user: UserEntity, title?: string) {
     try {
+      const check = await this.repository.findOne({
+        where: { link: link, user: user },
+      });
+      if (check) {
+        throw new BadRequestException('Link already exists.');
+      }
       const inf_links = new InfluencerLinksEntity();
       inf_links.link = link;
       inf_links.urlMapper = uniqueId(6);
       inf_links.user = user;
-
+      inf_links.title = title ? title : null;
       return this.repository.save(inf_links);
     } catch (e) {
       throw e;
     }
+  }
+
+  public validURL(str) {
+    var pattern = new RegExp(
+      '^(https?:\\/\\/)?' + // protocol
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+        '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+        '(\\#[-a-z\\d_]*)?$',
+      'i',
+    ); // fragment locator
+    return !!pattern.test(str);
   }
 
   async getLinkDetailsByUniqueId(id: any) {
@@ -54,9 +92,27 @@ export class InfluencerLinksService {
 
   async deleteLink(id: number, user: UserEntity) {
     try {
-      return this.repository.softDelete({ id: id, user: user });
+      const link = await this.repository.findOne({ id: id, user: user });
+      //console.log(link);
+      if (!link) {
+        throw new BadRequestException('You cannot delete this link.');
+      }
+      return this.repository.delete(link.id);
     } catch (e) {
-      throw e;
+      throw new ForbiddenException(
+        error(
+          [
+            {
+              key: 'link',
+              reason: 'ActionForbidden',
+              description:
+                "You cannot delete a link if it's already sent in messages or campaigns.",
+            },
+          ],
+          HttpStatus.FORBIDDEN,
+          "You cannot delete a link if it's already sent in messages or campaigns.",
+        ),
+      );
     }
   }
 
@@ -74,9 +130,27 @@ export class InfluencerLinksService {
     }
   }
 
+  async searchLink(_link: string, user: UserEntity) {
+    try {
+      const link = await this.repository.findOne({
+        where: {
+          link: Like(_link),
+          user: user,
+        },
+      });
+      if (!link) {
+        throw new NotFoundException('Link not found');
+      }
+      return link;
+    } catch (e) {
+      //console.log(e);
+      throw new BadRequestException(e.message);
+    }
+  }
+
   async getLinkStats(id: number, user: UserEntity) {
     try {
-      console.log('Logged In User: ', user);
+      //console.log('Logged In User: ', user);
       const statsOpened = await this.trackingRepo.count({
         where: { influencerLink: id, isOpened: true },
       });
@@ -85,6 +159,7 @@ export class InfluencerLinksService {
       });
 
       return {
+        clicks: statsOpened,
         opened: statsOpened,
         sent: statsSent,
         notOpened: statsSent - statsOpened,
@@ -113,21 +188,24 @@ export class InfluencerLinksService {
     }
   }
 
-  async updateLinkStatus(id: string, status: string, sid: string) {
+  async updateLinkStatus(status: string, sid: string, rId: string) {
     try {
       const linkUrl = await this.trackingRepo.findOne({
-        where: { smsSid: id },
+        where: { smsSid: rId.includes },
       });
-      linkUrl.sent = status == 'sent' || status == 'delivered' ? true : false;
-      linkUrl.smsSid = sid;
 
-      return this.trackingRepo.save(linkUrl);
+      if (linkUrl) {
+        linkUrl.sent = status != 'failed' ? true : false;
+        linkUrl.smsSid = sid;
+
+        return this.trackingRepo.save(linkUrl);
+      }
     } catch (e) {
       throw e;
     }
   }
 
-  async sendLink(url: string, sid: string, broadcast: BroadcastsEntity) {
+  async sendLink(url: string, sid: string, broadcast?: BroadcastsEntity) {
     try {
       const parts = url.split(':');
       if (parts.length != 2) {
@@ -148,9 +226,9 @@ export class InfluencerLinksService {
         contact: contactUrl,
         influencerLink: linkUrl,
         isOpened: false,
-        sent: false,
+        sent: true,
         smsSid: sid,
-        broadcast: broadcast,
+        broadcast: broadcast ? broadcast : null,
       });
       linkSent.contact = linkSent.contact.id as any;
       linkSent.influencerLink = linkSent.influencerLink.id as any;
@@ -177,22 +255,25 @@ export class InfluencerLinksService {
       if (!contactUrl) {
         throw new BadRequestException('contact does not exist.');
       }
+      //console.log(contactUrl);
       const linkUrl = await this.repository.findOne({
         where: { urlMapper: link },
       });
       if (!linkUrl) {
         throw new BadRequestException("link doesn't exist.");
       }
+      //console.log(linkUrl);
+
       const linkSent = await this.trackingRepo.findOne({
         where: { influencerLink: linkUrl, contact: contactUrl },
       });
+      //console.log('linkSent', linkSent);
       if (linkSent) {
         linkSent.isOpened = true;
-      } else {
-        throw new BadRequestException('link is not sent to this contact yet.');
+        linkSent.clicks = linkSent.clicks ? linkSent.clicks + 1 : 1;
+        await this.trackingRepo.update(linkSent.id, linkSent);
       }
-      const linkOpened = await this.trackingRepo.save(linkSent);
-      return linkOpened;
+      return linkUrl;
     } catch (e) {
       throw e;
     }

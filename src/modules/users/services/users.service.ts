@@ -2,7 +2,8 @@ import {
   BadRequestException,
   HttpException,
   HttpStatus,
-  Injectable
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import * as fs from 'fs';
 import { nanoid } from 'nanoid';
@@ -12,7 +13,16 @@ import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer
 import { ForgotPassword } from 'src/modules/users/entities/forgottenpassword.entity';
 import { CityRepository } from 'src/services/city-country/repos/city.repo';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
-import { columnListToSelect, dataViewer, mapColumns, paginateQuery, PaginatorError, PaginatorErrorHandler } from 'src/shared/paginator';
+import { error } from 'src/shared/error.dto';
+import {
+  columnListToSelect,
+  dataViewer,
+  mapColumns,
+  paginateQuery,
+  PaginatorError,
+  PaginatorErrorHandler,
+} from 'src/shared/paginator';
+import { Not } from 'typeorm';
 import { EmailTokenSender } from '../../../mails/users/emailtoken.mailer';
 import { RoleRepository } from '../../../repos/roles.repo';
 import { PasswordHashEngine } from '../../../shared/hash.service';
@@ -22,12 +32,17 @@ import { EmailVerifications } from '../entities/verifyemail.entity';
 import {
   EmailAlreadyExistError,
   PhoneAlreadyExistError,
-  UserNameAlreadyExistError
+  UserNameAlreadyExistError,
 } from '../errors/users.error';
 import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
 import { UserRepository } from '../repos/user.repo';
 import { EmailVerificationsRepository } from '../repos/verifyemail.repo';
-import { CreateUserDto, UpdateProfileDto, UpdateRole } from '../users.dto';
+import {
+  CreateUserDto,
+  UpdateProfileDto,
+  UpdateProfilePasswordDto,
+  UpdateRole,
+} from '../users.dto';
 
 @Injectable()
 export class UsersService {
@@ -153,9 +168,9 @@ export class UsersService {
 
   async createUser(user: CreateUserDto) {
     try {
-      if (this.isValidEmail(user.email)) {
+      if (this.isValidEmail(user.email.toLowerCase())) {
         let count = await this.repository.count({
-          where: { email: user.email },
+          where: { email: user.email.toLowerCase() },
         });
 
         if (count > 0) {
@@ -163,7 +178,7 @@ export class UsersService {
         }
 
         count = await this.repository.count({
-          where: { username: user.username },
+          where: { username: user.username.toLowerCase() },
         });
         if (count > 0) {
           throw new BadRequestException(UserNameAlreadyExistError);
@@ -175,6 +190,7 @@ export class UsersService {
 
         user.password = await PasswordHashEngine.make(user.password);
         user.urlId = nanoid(10);
+        user.username = user.username.toLowerCase();
         const newUser: UserEntity = await this.repository.save(user);
         await this.updateRoles(newUser.id, { userId: newUser.id, roleId: [2] });
         /* await this.createEmailToken(user.email);
@@ -216,7 +232,7 @@ export class UsersService {
       const forget = await this.createForgottenPasswordToken(email);
       return this.sendForgotPassword.sendEmail(forget);
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       throw e;
     }
   }
@@ -224,7 +240,7 @@ export class UsersService {
   async verifyResetPasswordToken(
     token: string,
     email: string,
-  ): Promise<boolean> {
+  ): Promise<UserEntity> {
     const emailVerif = await this.password.findOne({
       where: {
         newPasswordToken: token,
@@ -236,18 +252,18 @@ export class UsersService {
         where: { email: emailVerif.email },
       });
       if (userFromDb) {
-        return true;
+        return userFromDb;
       } else {
-        return false;
+        throw new NotFoundException('User not found');
       }
     } else {
-      return false;
+      throw new NotFoundException('Invalid Token');
     }
   }
 
   async createForgottenPasswordToken(email: string): Promise<ForgotPassword> {
     const user = await this.repository.findOne({
-      where: { email: email, isActive: true, isApproved: true },
+      where: { email: email },
     });
     if (user) {
       const forgottenPassword = await this.password.findOne({
@@ -337,32 +353,21 @@ export class UsersService {
   }
 
   async updateUser(id: string | number | any, user: UpdateProfileDto) {
-    const updateData: any = {};
+    const updateData = await this.repository.findOne({
+      where: { id: id },
+    });
     // let isAlreadyExist: any;
     try {
-      /* if (user.email && this.isValidEmail(user.email)) {
-        
-        isAlreadyExist = await this.isEmailExists(user.email);
-        if (isAlreadyExist && isAlreadyExist.email !== user.email) {
-          throw EmailAlreadyExistError;
-        }
-        updateData.email = user.email;
+      const phone = await this.repository.findOne({
+        where: { mobile: user.mobile, id: Not(id) },
+      });
+      if (phone) {
+        throw new HttpException(
+          'Phone number already exists.',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
       }
 
-      if (user.username) {
-        isAlreadyExist = await this.isUserNameExists(user.username);
-        if (isAlreadyExist && isAlreadyExist.username !== user.username) {
-          throw UserNameAlreadyExistError;
-        }
-        updateData.username = user.username;
-      } */
-
-      console.log('===========', user);
-      updateData.id = id;
-      if (user.password) {
-        user.password = await PasswordHashEngine.make(user.password);
-        updateData.password = user.password;
-      }
       if (user.mobile) {
         updateData.mobile = user.mobile;
       }
@@ -370,29 +375,25 @@ export class UsersService {
         updateData.meta = user.meta;
       }
 
-      if (user.isActive) {
-        updateData.isActive = user.isActive;
-      }
+      updateData.gender = user.gender;
 
-      if (user.gender) {
-        updateData.gender = user.gender;
-      }
+      updateData.dob = user.dob ? user.dob : null;
 
-      if (user.language) {
-        updateData.language = user.language;
-      }
-      if (user.dob) {
-        updateData.dob = user.dob;
-      }
-      if (user.statusMessage) {
-        updateData.statusMessage = user.statusMessage;
-      }
-      if (user.city) {
+      updateData.statusMessage = user.statusMessage;
+
+      if (!user.city) {
+        updateData.city = null;
+      } else {
         const _c = await this.city.findOne({ where: { id: user.city } });
         if (_c) updateData.city = _c;
       }
-      if (user.country) {
-        const _c = await this.country.findOne({ where: { id: user.country } });
+
+      if (!user.country) {
+        updateData.country = null;
+      } else {
+        const _c = await this.country.findOne({
+          where: { id: user.country },
+        });
         if (_c) updateData.country = _c;
       }
 
@@ -403,14 +404,122 @@ export class UsersService {
       if (user.lastName) {
         updateData.lastName = user.lastName;
       }
-      if (user.timezone) {
-        updateData.timezone = user.timezone;
-      }
+      updateData.timezone = user.timezone;
+      //console.log('updateData: ', updateData);
+      //console.log('user: ', user);
 
       await this.repository.save(updateData);
       return { message: 'User details updated.' };
     } catch (error) {
-      console.log(error);
+      throw error;
+    }
+  }
+
+  async updatePassword(
+    id: string | number | any,
+    data: UpdateProfilePasswordDto,
+  ) {
+    const updateData = await this.repository.findOne({
+      where: { id: id },
+    });
+
+    try {
+      if (data.password && !data.oldPassword) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'oldPassword',
+                reason: 'MissingValue',
+                description: 'Your old password cannot be empty.',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+      if (!data.password && data.oldPassword) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'password',
+                reason: 'MissingValue',
+                description: 'Password cannot be empty.',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+
+      if (!data.confirmPassword && data.password) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'confirmPassword',
+                reason: 'MissingValue',
+                description: 'Confirm Password cannot be empty.',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+      if (data.password && data.oldPassword) {
+        if (data.oldPassword == data.password) {
+          throw new HttpException(
+            error(
+              [
+                {
+                  key: 'password',
+                  reason: 'Mismatch',
+                  description:
+                    'Your old password is same as new password you have provided.',
+                },
+              ],
+              HttpStatus.UNPROCESSABLE_ENTITY,
+              'Unprocessable entity',
+            ),
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+
+        const oldPassword = await PasswordHashEngine.check(
+          data.oldPassword,
+          updateData.password,
+        );
+        if (!oldPassword) {
+          throw new HttpException(
+            error(
+              [
+                {
+                  key: 'oldPassword',
+                  reason: 'Mismatch',
+                  description:
+                    'Your old password does not match with password you have provided.',
+                },
+              ],
+              HttpStatus.UNPROCESSABLE_ENTITY,
+              'Unprocessable entity',
+            ),
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+
+        data.password = await PasswordHashEngine.make(data.password);
+        updateData.password = data.password;
+      }
+      await this.repository.save(updateData);
+      return { message: 'Password changed.' };
+    } catch (error) {
       throw error;
     }
   }
@@ -420,14 +529,14 @@ export class UsersService {
     const users = await this.repository.findOne(id, {
       relations: ['roles'],
     });
-    console.log(users);
+    //console.log(users);
 
     // await this.repository.save(users);
     const allRoles = await this.roleRepository
       .createQueryBuilder('s')
       .where(' s.id IN (:...RoleId)', { RoleId })
       .getMany();
-    console.log(allRoles);
+    //console.log(allRoles);
     users.roles = allRoles;
     await this.repository.save(users);
   }
@@ -447,11 +556,13 @@ export class UsersService {
     return { profileImage: user.image };
   }
 
-  async searchUserForAuth(username: any) {
+  async searchUserForAuth(username: string) {
     try {
       const user = await this.repository
         .createQueryBuilder('users')
-        .where('users.username = :val OR users.email = :val', { val: username })
+        .where('users.username = :val OR users.email = :val', {
+          val: username.toLowerCase(),
+        })
         .getOne();
       return user;
     } catch (error) {

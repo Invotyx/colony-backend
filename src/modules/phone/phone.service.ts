@@ -68,7 +68,8 @@ export class PhoneService {
 
       return this.repo.update({ id: phone.id }, phone);
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -153,15 +154,11 @@ export class PhoneService {
         }, [])
         .join('&');
 
-    console.log(str);
+    //console.log(str);
     return str;
   }
 
-  async searchNumbers(
-    country: string,
-    limit: number,
-    number_must_have: string = '',
-  ) {
+  async searchNumbers(country: string, limit: number, number_must_have = '') {
     try {
       const cc = await this.cityCountry.countryRepo.findOne({
         where: { id: country, active: true },
@@ -201,14 +198,15 @@ export class PhoneService {
       );
       return numbers;
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
   private async searchPhoneNumbers(
     cc: string,
     limit: number,
-    number_must_have: string = '',
+    number_must_have = '',
   ) {
     const country = cc.toUpperCase();
     //
@@ -216,7 +214,7 @@ export class PhoneService {
       let numbers;
       if (country == 'US' || country == 'CA') {
         numbers = await this.client.availablePhoneNumbers(country).local.list({
-          contains: number_must_have,
+          areaCode: number_must_have,
           smsEnabled: true,
           limit: limit,
         });
@@ -283,7 +281,7 @@ export class PhoneService {
             const country = await this.cityCountry.countryRepo.findOne({
               where: { code: cc.toUpperCase() },
             });
-            console.log(country);
+            //console.log(country);
             if (country) {
               const existingNumbers = await this.repo.findOne({
                 where: { user: user, type: 'default' },
@@ -441,7 +439,7 @@ export class PhoneService {
           throw ex;
         }
       } else {
-        console.log('=== dummy ===');
+        //console.log('=== dummy ===');
         const dummy = {
           number: num,
           country: cc.toUpperCase(),

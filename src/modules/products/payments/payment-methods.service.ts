@@ -45,6 +45,16 @@ export class PaymentMethodsService {
         await this.stripe.paymentMethods.attach(pm.id, {
           customer: customer.customerId,
         });
+
+
+        const sameFinger = await this.repository.findOne({
+          where: { fingerprint: pm.card.fingerprint, user: customer },
+        });
+
+        if (sameFinger) {
+          await this.repository.remove(sameFinger);
+        }
+        
         const def = await this.repository.findOne({
           where: { default: true, user: customer },
         });
@@ -72,7 +82,7 @@ export class PaymentMethodsService {
         throw new BadRequestException('Invalid Data entered');
       }
     } catch (e) {
-      console.log(e, 'exp === inner ');
+      //console.log(e, 'exp === inner ');
       throw e;
     }
   }
@@ -85,7 +95,7 @@ export class PaymentMethodsService {
       const exist = await this.repository.findOne({
         where: { id: paymentId, user: customer },
       });
-      console.log(exist, '=== === ===');
+      //console.log(exist, '=== === ===');
       if (exist) {
         const exDef = await this.repository.findOne({
           where: { default: true, user: customer },

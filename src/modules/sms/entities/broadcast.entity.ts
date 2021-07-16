@@ -54,6 +54,21 @@ export class BroadcastsEntity {
   })
   public contacts!: BroadcastsContactsEntity[];
 
+  @Column({ type: 'int4', default: 0 })
+  public anger: number;
+
+  @Column({ type: 'int4', default: 0 })
+  public disgust: number;
+
+  @Column({ type: 'int4', default: 0 })
+  public fear: number;
+
+  @Column({ type: 'int4', default: 0 })
+  public joy: number;
+
+  @Column({ type: 'int4', default: 0 })
+  public sadness: number;
+
   @CreateDateColumn()
   public createdAt: Date;
 
@@ -72,6 +87,7 @@ export class BroadcastsEntity {
   @ManyToOne(() => BroadcastsEntity, (b) => b.id, { nullable: true })
   public successor?: BroadcastsEntity;
 
+  public broadcastIncomingMessages: any;
   @AfterLoad()
   async getLastConversationMessage() {
     const innerSelect = getRepository(ConversationMessagesEntity)
@@ -82,6 +98,18 @@ export class BroadcastsEntity {
       .orderBy('"createdAt"', 'DESC')
       .limit(1);
 
+    const inboundMessages = getRepository(ConversationMessagesEntity)
+      .createQueryBuilder()
+      .select('*')
+      .where('"broadcastId" = :id', { id: this.id })
+      .andWhere('"type"=:type', { type: 'broadcastInbound' })
+      .orderBy('"createdAt"', 'DESC');
+
+    const messages = await inboundMessages.getRawMany();
+    console.log(messages);
+    if (messages) {
+      this.broadcastIncomingMessages = messages;
+    }
     const val = await innerSelect.getOne();
     if (val) {
       this.lastMessage = val.sms;

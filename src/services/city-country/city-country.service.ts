@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CityRepository } from './repos/city.repo';
 import fetch from 'node-fetch';
-import { CountryEntity } from './entities/country.entity';
 import { CityEntity } from 'src/services/city-country/entities/city.entity';
+import { CountryEntity } from './entities/country.entity';
+import { CityRepository } from './repos/city.repo';
 import { CountryRepository } from './repos/country.repo';
 import { TimezonesRepository } from './repos/timezone.repo';
 
@@ -40,12 +40,12 @@ export class CityCountryService {
         try {
           await this.countryRepo.save(_country);
         } catch (e) {
-          console.log(e);
+          //console.log(e);
           throw e;
         }
       });
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       throw e;
     }
   }

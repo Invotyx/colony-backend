@@ -50,7 +50,8 @@ export class PlansService {
         return { message: 'No records found.' };
       }
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 

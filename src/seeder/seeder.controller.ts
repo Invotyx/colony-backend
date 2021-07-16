@@ -3,7 +3,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Query
+  Query,
 } from '@nestjs/common';
 import { SeederService } from './seeder.service';
 
@@ -14,9 +14,9 @@ export class SeederController {
   @Get()
   public async seed(@Query() data: any) {
     try {
-      console.log(data);
+      //console.log(data);
       const crop = { klass: data.klass, up: !!Number(data.up) };
-      console.log(crop);
+      //console.log(crop);
       return this.seederService.sow(crop);
     } catch (error) {
       return new HttpException(

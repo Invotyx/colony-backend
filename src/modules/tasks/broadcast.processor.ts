@@ -17,26 +17,36 @@ export class OutboundBroadcastSmsProcessor {
 
   @Process('broadcast_message')
   async handleBroadcastOutbound(job: Job) {
-    const body = job.data;
+    try {
+      const body = job.data;
+      //console.log('***************************');
 
-    const sms = await this.service.sendSms(
-      body.contact,
-      body.phone,
-      body.message,
-      'broadcastOutbound',
-    );
+      const sms = await this.service.sendSms(
+        body.contact,
+        body.phone,
+        body.message,
+        'broadcastOutbound',
+        null,
+        body.broadcast,
+      );
+      //console.log(sms, '/*/*/*/*/*/*');
+      await this.broadcastService.addContactToBroadcastList(
+        body.broadcast,
+        body.contact,
+        sms.sid,
+        sms.status,
+      );
 
-    await this.broadcastService.addContactToBroadcastList(
-      body.broadcast,
-      body.contact,
-      sms.sid,
-      sms.status,
-    );
-
-    await this.infLinksService.updateLinkStatus(
-      body.contact.id + ':' + body.broadcast.id,
-      sms.status,
-      sms.sid,
-    );
+      //console.log('+++++++*/*/*+++++');
+      await this.infLinksService.updateLinkStatus(
+        sms.status,
+        sms.sid,
+        body.contact.id + ':' + body.broadcast.id,
+      );
+      //console.log('***********/*/************');
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
   }
 }

@@ -11,7 +11,7 @@ import {
   Put,
   Query,
   UploadedFile,
-  UseInterceptors
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
@@ -70,11 +70,11 @@ export class ContentController {
   @Post('page')
   async createPage(@Body() data: PagesDto) {
     try {
-      console.log(data);
+      //console.log(data);
       const res = await this.contentService.createPage(data);
       return res;
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
     }
   }
@@ -123,7 +123,7 @@ export class ContentController {
       const res = await this.contentService.updateSection(pid, secId, data);
       return res;
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
     }
   }
@@ -259,8 +259,6 @@ export class ContentController {
 
     return this.contentService.getAllFaqs(data);
   }
-
-  
 
   @Post('faqs')
   async addFaq(@Body() faq: FaqsDto) {

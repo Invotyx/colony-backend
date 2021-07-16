@@ -7,13 +7,16 @@ import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { ContentModule } from './modules/content/content.module';
 import { InfluencerLinksModule } from './modules/influencer-links/influencer-links.module';
+import { KeywordsModule } from './modules/keywords/keywords.module';
 import { LanguageModule } from './modules/language/language.module';
 import { PaymentHistoryModule } from './modules/payment-history/payment-history.module';
 import { PhoneModule } from './modules/phone/phone.module';
 import { ProductsModule } from './modules/products/products.module';
+import { ShareableLinkHandlerModule } from './modules/shareable-link-handler/shareable-link-handler.module';
 import { SmsModule } from './modules/sms/sms.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { PermissionsService } from './modules/users/services/permissions.service';
@@ -29,7 +32,7 @@ import { CompressionInterceptor } from './services/common/compression/compressio
 import { AppLogger } from './services/logs/log.service';
 import { MailModule } from './services/mail/mail.module';
 import { MainMysqlModule } from './shared/main-mysql.module';
-import { ShareableLinkHandlerModule } from './modules/shareable-link-handler/shareable-link-handler.module';
+import { SupportModule } from './modules/support/support.module';
 
 @Module({
   imports: [
@@ -63,6 +66,9 @@ import { ShareableLinkHandlerModule } from './modules/shareable-link-handler/sha
     InfluencerLinksModule,
     PaymentHistoryModule,
     ShareableLinkHandlerModule,
+    KeywordsModule,
+    CloudinaryModule,
+    SupportModule,
   ],
   controllers: [AppController, SeederController, CityCountryController],
   providers: [

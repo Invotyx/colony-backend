@@ -5,11 +5,10 @@ import { Queue } from 'bull';
 import { env } from 'process';
 import { tagReplace } from 'src/shared/tag-replace';
 import Stripe from 'stripe';
-import { LessThanOrEqual } from 'typeorm';
+import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { ContactsService } from '../contacts/contacts.service';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
-import { PhonesRepository } from '../phone/phone.repo';
 import { PhoneService } from '../phone/phone.service';
 import { PaymentMethodsService } from '../products/payments/payment-methods.service';
 import { PlansService } from '../products/plan/plans.service';
@@ -33,6 +32,7 @@ export class TasksService {
     private readonly infLinks: InfluencerLinksService,
     private readonly broadcastService: BroadcastService,
     @InjectQueue('broadcast_q') private readonly queue: Queue,
+    @InjectQueue('sms_q') private readonly sms_q: Queue,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
@@ -46,13 +46,44 @@ export class TasksService {
       },
     );
   }
+  @Cron('10 * * * * *')
+  async checkForScheduledSms() {
+    const scheduledSms = await this.smsService.findOneConversationsMessages({
+      where: {
+        scheduled: LessThanOrEqual(this.getCurrentDatetime()),
+        status: 'scheduled',
+      },
+      relations: ['conversations'],
+    });
+    if (!scheduledSms) {
+      return;
+    }
+    const conversation = await this.smsService.findOneConversations({
+      where: {
+        id: scheduledSms.conversations.id,
+      },
+      relations: ['contact', 'phone'],
+    });
 
+    const q_obj = {
+      contact: conversation.contact,
+      inf_phone: conversation.phone,
+      id: scheduledSms.id,
+      type: 'outBound',
+    };
+
+    await this.sms_q.add('scheduled_message', q_obj, {
+      removeOnComplete: true,
+      removeOnFail: false,
+      attempts: 2,
+    });
+    ////console.log(q_obj, 'Added to queue');
+  }
   @Cron('10 * * * * *')
   async checkForBroadcasts() {
     //get all broadcasts where broadcast schedule is less than 1
     // get contact list for each broadcast
 
-    await this.broadcastService.find();
     const broadcasts = await this.broadcastService.find({
       where: {
         scheduled: LessThanOrEqual(this.getCurrentDatetime()),
@@ -61,9 +92,12 @@ export class TasksService {
       relations: ['user'],
     });
 
+    ////console.log(broadcasts);
+
     for (let broadcast of broadcasts) {
       let contacts;
-      if (JSON.parse(broadcast.filters).successorId == null) {
+      ////console.log(JSON.parse(broadcast.filters));
+      if (!JSON.parse(broadcast.filters).successorId) {
         contacts = await this.contactService.filterContacts(
           broadcast.user.id,
           JSON.parse(broadcast.filters),
@@ -81,11 +115,18 @@ export class TasksService {
       for (let contact of contacts.contacts) {
         const phone = await this.phoneService.findOne({
           where: { country: contact.cCode, user: broadcast.user },
+          relations: ['user'],
+        });
+        const _contact = await this.contactService.findOne({
+          where: { id: contact.id },
+          relations: ['city', 'country'],
         });
         if (phone) {
+          this.logger.log('phone');
+          ////console.log(phone);
           let messageBody = broadcast.body;
           const links = messageBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
-          if (links.length > 0) {
+          if (links && links.length > 0) {
             for (let link of links) {
               let id = link.replace('${link:', '').replace('}', '');
               const shareableUri = (
@@ -107,23 +148,33 @@ export class TasksService {
           }
           const q_obj = {
             message: tagReplace(messageBody, {
-              name: contact.name ? contact.name : '',
-              inf_name:
-                broadcast.user.firstName + ' ' + broadcast.user.lastName,
+              first_name: contact.firstName ? contact.firstName : '',
+              last_name: contact.lastName ? contact.lastName : '',
+              inf_first_name: broadcast.user.firstName,
+              inf_last_name: broadcast.user.lastName,
+              country: _contact.country ? _contact.country.name : '',
+              city: _contact.city ? _contact.city.name : '',
             }),
             contact: contact,
             phone: phone,
             broadcast: broadcast,
           };
 
+          this.logger.log('message enqueued');
+          ////console.log(q_obj);
           await this.queue.add('broadcast_message', q_obj, {
             removeOnComplete: true,
-            removeOnFail: true,
+            removeOnFail: false,
             attempts: 2,
             delay: 1000,
           });
         } else {
           //operation if phone number for contact country cannot be found.
+          this.logger.log(
+            'Influencer does not have number to send sms to this contact',
+          );
+          ////console.log(phone);
+          ////console.log(contact);
         }
       }
     }
@@ -131,7 +182,7 @@ export class TasksService {
   }
 
   //cron to check for due payments.
-  @Cron('0 59 11 * * *')
+  @Cron('10 * * * * *')
   async checkForPackageExpiryAndResubscribe() {
     try {
       const subscriptions = await (await this.subscriptionService.qb('sub'))
@@ -139,24 +190,26 @@ export class TasksService {
           `(CAST(sub.currentEndDate AS date) - CAST('${this.getCurrentDate()}' AS date))<=1`,
         )
         .getMany();
-      for (let subscription of subscriptions) {
+      for (let _subscription of subscriptions) {
+        let subscription = await this.subscriptionService.findOne({
+          where: { id: _subscription.id },
+          relations: ['user', 'plan'],
+        });
         const requests = await Promise.all([
-          this.planService.findOne({ where: { id: subscription.plan } }),
           this.paymentService.findOne({
             where: { default: true, user: subscription.user },
           }),
           this.phoneService.getUserPurchasedActiveNumbers(subscription.user),
           this.paymentHistoryService.getDues('contacts', subscription.user),
         ]);
-        const plan = requests[0];
-        const default_pm = requests[1];
-        const phones = requests[2];
-        const fans = requests[3];
+        const default_pm = requests[0];
+        const phones = requests[1];
+        const fans = requests[2];
 
         const metaPayment = {
-          subscription: plan.amount_decimal,
-          fan: fans.cost,
-          phones: []
+          subscription: +subscription.plan.amount_decimal,
+          fan: fans ? +fans.cost : 0,
+          phones: [],
         };
 
         let phonesCost = 0;
@@ -165,8 +218,8 @@ export class TasksService {
           const check = {
             number: phone.number,
             country: phone.country,
-            cost:phone.phonecost
-          }
+            cost: +phone.phonecost,
+          };
           metaPayment.phones.push(check);
           phonesCost += parseInt(phone.phonecost);
         }
@@ -175,7 +228,10 @@ export class TasksService {
           // charge client here
           const charge = await this.stripe.paymentIntents.create({
             amount: Math.round(
-              (plan.amount_decimal + phonesCost + fans.cost) * 100,
+              (+subscription.plan.amount_decimal +
+                +phonesCost +
+                metaPayment.fan) *
+                100,
             ),
             currency: 'GBP',
             capture_method: 'automatic',
@@ -205,111 +261,96 @@ export class TasksService {
               user: subscription.user,
               description:
                 'Base Package Re-subscribed with phone numbers and fans due charges.',
-              cost: plan.amount_decimal,
+              cost: +subscription.plan.amount_decimal,
               costType: 'base-plan-purchase',
               chargeId: charge.id,
               meta: JSON.stringify(metaPayment),
             });
             //send email here
           } else {
-            this.logger.debug('payment charge failed with details:');
-            this.logger.debug(charge);
+            this.logger.log('payment charge failed with details:');
+            ////console.log(charge);
           }
         }
-        this.logger.debug(subscriptions);
       }
     } catch (e) {
-      this.logger.debug(e);
+      console.log(e);
     }
   }
 
   //cron to check for due payments.
-  @Cron('0 59 11 * * *')
+  @Cron('10 * * * * *')
   async checkForSmsThreshold() {
     try {
-      const subscriptions = await (await this.subscriptionService.qb('sub'))
-        .where(
-          `(CAST(sub.currentEndDate AS date) - CAST('${this.getCurrentDate()}' AS date))<=1`,
-        )
-        .getMany();
-      for (let subscription of subscriptions) {
-        const requests = await Promise.all([
-          this.planService.findOne({ where: { id: subscription.plan } }),
-          this.paymentService.findOne({
-            where: { default: true, user: subscription.user },
-          }),
-          this.paymentHistoryService.getDues('sms', subscription.user),
-        ]);
-        const plan = requests[0];
-        const default_pm = requests[1];
-        const sms = requests[2];
+      const plan = await this.planService.findOne();
+      ////console.log(plan);
+      const due_payments = await this.paymentHistoryService.find({
+        where: {
+          cost: MoreThanOrEqual(+plan.threshold - 1),
+          costType: 'sms',
+        },
+        relations: ['user'],
+      });
 
-        if (default_pm && sms.cost < plan.threshold) {
-          // charge client here
-          const charge = await this.stripe.paymentIntents.create({
-            amount: Math.round(sms.cost * 100),
-            currency: 'GBP',
-            capture_method: 'automatic',
-            confirm: true,
-            confirmation_method: 'automatic',
-            customer: subscription.user.customerId,
-            description: 'Sms Dues payed automatically on reaching threshold.',
-            payment_method: default_pm.id,
-          });
-          if (charge.status == 'succeeded') {
-            await this.paymentHistoryService.setDuesToZero({
-              type: 'sms',
-              user: subscription.user,
-            });
-
-            await this.paymentHistoryService.addRecordToHistory({
-              user: subscription.user,
-              description:
-                'Sms Dues payed automatically on reaching threshold.',
-              cost: sms.cost,
-              costType: 'sms-dues',
-              chargeId: charge.id,
-            });
-            //send email here
-          } else {
-            this.logger.debug('payment charge failed with details:');
-            this.logger.debug(charge);
-          }
-        }
-        this.logger.debug(subscriptions);
+      for (let payment of due_payments) {
+        ////console.log('payment', payment);
+        await this.paymentHistoryService.chargeOnThreshold(payment.user);
       }
     } catch (e) {
-      this.logger.debug(e);
+      ////console.log(e);
     }
   }
 
   // check if user has not completed profile yet.
-  @Cron('0 0 16 * * *')
+  @Cron('0 0 12 * * *')
   async checkIfContactHasCompletedProfile() {
     const contacts = await this.contactService.find({
       where: { isComplete: false },
-      relations: ['user'],
+      relations: ['user', 'city', 'country'],
     });
 
-    let influencer;
-
     for (let contact of contacts) {
-      influencer = contact.user;
+      for (let influencer of contact.user) {
+        const conversation = await this.smsService.findOneConversations({
+          where: {
+            contact: contact,
+            user: influencer,
+          },
+          relations: ['user', 'phone', 'contact'],
+        });
 
-      const noResponseMessage = this.search(
-        'noResponse',
-        await this.smsService.getPresetMessage(influencer),
-      );
+        if (!conversation) {
+          continue;
+        }
 
-      const threshold = 1;
-      const remindersFlag = true;
+        conversation.phone.user = conversation.user;
 
-      if (remindersFlag) {
-        if (this.dateDifference(new Date(), contact.createdAt) <= threshold) {
+        const noResponseMessage = await this.smsService.findOneInPreSets({
+          trigger: 'noResponse',
+          user: influencer,
+        });
+
+        if (noResponseMessage && noResponseMessage.enabled) {
+          const text_body: string = tagReplace(noResponseMessage.body, {
+            first_name: contact.firstName ? contact.firstName : '',
+            last_name: contact.lastName ? contact.lastName : '',
+            inf_first_name: influencer.firstName,
+            inf_last_name: influencer.lastName,
+            country: contact.country ? contact.country.name : '',
+            city: contact.city ? contact.city.name : '',
+            link:
+              env.PUBLIC_APP_URL +
+              '/contacts/enroll/' +
+              influencer.id +
+              ':' +
+              contact.urlMapper +
+              ':' +
+              influencer.id,
+          });
           await this.smsService.sendSms(
             contact,
-            influencer,
-            noResponseMessage.body,
+            conversation.phone,
+            text_body,
             'outBound',
           );
         }

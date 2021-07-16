@@ -1,3 +1,4 @@
+import { BlockedContactRepository } from '../modules/contacts/repo/blocked-contact.repo';
 import { ContactsRepository } from '../modules/contacts/repo/contact.repo';
 import { FavoriteContactRepository } from '../modules/contacts/repo/favorite-contact.repo';
 import { InfluencerContactRepository } from '../modules/contacts/repo/influencer-contact.repo';
@@ -9,6 +10,7 @@ import { PostsRepository } from '../modules/content/repos/posts.repo';
 import { SectionsRepository } from '../modules/content/repos/sections.repo';
 import { InfluencerLinksTrackingRepository } from '../modules/influencer-links/repo/influencer-links-tracking.repo';
 import { InfluencerLinksRepository } from '../modules/influencer-links/repo/influencer-links.repo';
+import { KeywordsRepository } from '../modules/keywords/keywords.repo';
 import { LanguageRepository } from '../modules/language/languages.repo';
 import { PaymentDuesRepository } from '../modules/payment-history/due-payment.repo';
 import { PaymentHistoryRepository } from '../modules/payment-history/payment-history.repo';
@@ -64,4 +66,6 @@ export const REPOS = [
   PaymentHistoryRepository,
   PaymentDuesRepository,
   FavoriteContactRepository,
+  BlockedContactRepository,
+  KeywordsRepository,
 ];

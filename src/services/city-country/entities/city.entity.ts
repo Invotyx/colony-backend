@@ -13,4 +13,10 @@ export class CityEntity {
   @ManyToOne(() => CountryEntity)
   @JoinColumn({ name: 'countryId' })
   public country: CountryEntity;
+
+  @Column({ nullable: true, type: 'decimal' })
+  public lat: number;
+
+  @Column({ nullable: true, type: 'decimal' })
+  public long: number;
 }

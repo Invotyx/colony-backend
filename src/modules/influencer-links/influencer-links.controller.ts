@@ -3,13 +3,16 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Injectable,
   Param,
   Post,
   Put,
-  Query
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { error } from 'src/shared/error.dto';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { UserEntity } from '../../modules/users/entities/user.entity';
@@ -27,10 +30,27 @@ export class InfluencerLinksController {
   async addLink(
     @LoginUser() influencer: UserEntity,
     @Body('link') link: string,
+    @Body('title') title?: string,
   ) {
     try {
+      if (!this.service.validURL(link)) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'link',
+                reason: 'invalidData',
+                description: 'Invalid link format',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
       return {
-        data: await this.service.addLink(link, influencer),
+        data: await this.service.addLink(link, influencer, title),
         message: 'Link added successfully.',
       };
     } catch (e) {
@@ -59,6 +79,22 @@ export class InfluencerLinksController {
     @Body('link') link: string,
   ) {
     try {
+      if (!this.service.validURL(link)) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'link',
+                reason: 'invalidData',
+                description: 'Invalid link format',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
       return {
         data: await this.service.updateLink(id, link, influencer),
         message: 'Link updated successfully.',
@@ -84,6 +120,14 @@ export class InfluencerLinksController {
     }
   }
 
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('search')
+  async searchLink(
+    @LoginUser() influencer: UserEntity,
+    @Query('link') link: string,
+  ) {
+    return this.service.searchLink(link, influencer);
+  }
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
   @Put(':uniqueId/open')

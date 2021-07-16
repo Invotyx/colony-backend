@@ -1,8 +1,10 @@
 import { classToPlain, Exclude } from 'class-transformer';
+import { BlockedContactsEntity } from 'src/modules/contacts/entities/blocked-contacts.entity';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
 import { FavoriteContactsEntity } from 'src/modules/contacts/entities/favorite-contacts.entity';
 import { InfluencerContactsEntity } from 'src/modules/contacts/entities/influencer-contacts.entity';
 import { InfluencerLinksEntity } from 'src/modules/influencer-links/entities/influencer-links.entity';
+import { KeywordsEntity } from 'src/modules/keywords/keywords.entity';
 import { LanguageEntity } from 'src/modules/language/entities/language.entity';
 import { PaymentHistoryEntity } from 'src/modules/payment-history/entities/purchaseHistory.entity';
 import { PhonesEntity } from 'src/modules/phone/entities/phone.entity';
@@ -160,6 +162,12 @@ export class UserEntity {
   })
   public presetMessages!: PresetMessagesEntity;
 
+  @OneToMany(() => KeywordsEntity, (tmp) => tmp.user, {
+    eager: false,
+    cascade: true,
+  })
+  public keywords!: KeywordsEntity;
+
   @OneToMany(() => BroadcastsEntity, (tmp) => tmp.user, {
     eager: false,
     cascade: true,
@@ -168,6 +176,9 @@ export class UserEntity {
 
   @OneToMany(() => FavoriteContactsEntity, (cToI) => cToI.user)
   public influencerFavorites!: FavoriteContactsEntity[];
+
+  @OneToMany(() => BlockedContactsEntity, (cToI) => cToI.user)
+  public influencerBlocked!: BlockedContactsEntity[];
 
   @ManyToMany(() => ContactsEntity, (c) => c.influencers, {
     eager: false,
@@ -180,11 +191,22 @@ export class UserEntity {
   })
   favorites: ContactsEntity[];
 
-  @OneToOne(() => CityEntity, { nullable: true, eager: true })
+  @ManyToMany(() => ContactsEntity, (c) => c.blockers, {
+    eager: false,
+    nullable: true,
+  })
+  @JoinTable({
+    name: TABLES.BLOCKED_CONTACTS.name,
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'contactId', referencedColumnName: 'id' },
+  })
+  blocked: ContactsEntity[];
+
+  @ManyToOne(() => CityEntity, { nullable: true, eager: true })
   @JoinColumn()
   city: CityEntity;
 
-  @OneToOne(() => CountryEntity, { nullable: true, eager: true })
+  @ManyToOne(() => CountryEntity, { nullable: true, eager: true })
   @JoinColumn()
   country: CountryEntity;
 

@@ -1,4 +1,5 @@
 import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -18,6 +19,7 @@ import { InfluencerLinksTrackingEntity } from '../../influencer-links/entities/i
 import { BroadcastsContactsEntity } from '../../sms/entities/broadcast-contacts.entity';
 import { ConversationsEntity } from '../../sms/entities/conversations.entity';
 import { UserEntity } from '../../users/entities/user.entity';
+import { BlockedContactsEntity } from './blocked-contacts.entity';
 import { FavoriteContactsEntity } from './favorite-contacts.entity';
 import { InfluencerContactsEntity } from './influencer-contacts.entity';
 
@@ -33,7 +35,13 @@ export class ContactsEntity {
   public id: number;
 
   @Column({ length: 100, nullable: true })
-  public name: string;
+  public firstName: string;
+
+  @Column({ length: 100, nullable: true })
+  public lastName: string;
+
+  @Column({ length: 100, nullable: true })
+  public email: string;
 
   @Column({ length: 20, nullable: false })
   public phoneNumber: string;
@@ -46,9 +54,6 @@ export class ContactsEntity {
 
   @Column({ nullable: true })
   public dob: Date;
-
-  @Column({ nullable: true, type: 'json' })
-  public socialLinks: string;
 
   @Column({ nullable: true })
   public profileImage: string;
@@ -82,6 +87,9 @@ export class ContactsEntity {
   @OneToMany(() => FavoriteContactsEntity, (cToI) => cToI.contact)
   public influencerFavorites!: FavoriteContactsEntity[];
 
+  @OneToMany(() => BlockedContactsEntity, (cToI) => cToI.contact)
+  public influencerBlocked!: BlockedContactsEntity[];
+
   @OneToMany(() => BroadcastsContactsEntity, (b) => b.contact)
   public broadcast!: [];
 
@@ -96,8 +104,29 @@ export class ContactsEntity {
   })
   user: UserEntity[];
 
+  @Column({ length: 200, nullable: true })
+  public facebook: string;
+
+  @Column({ length: 200, nullable: true })
+  public instagram: string;
+
+  @Column({ length: 200, nullable: true })
+  public linkedin: string;
+
+  @Column({ length: 200, nullable: true })
+  public twitter: string;
+
   @ManyToMany(() => UserEntity, (u) => u.favorites)
   public influencers!: UserEntity[];
+
+  @ManyToMany(() => UserEntity, (u) => u.blocked)
+  public blockers!: UserEntity[];
+
+  @Column({ nullable: true })
+  public lat: number;
+
+  @Column({ nullable: true })
+  public long: number;
 
   @CreateDateColumn()
   public createdAt: Date;
@@ -107,4 +136,11 @@ export class ContactsEntity {
 
   @DeleteDateColumn()
   public deletedAt: Date;
+
+  public name: string;
+
+  @AfterLoad()
+  async calcName() {
+    this.name = this.firstName + ' ' + this.lastName;
+  }
 }

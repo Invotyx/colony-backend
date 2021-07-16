@@ -10,6 +10,7 @@ import {
   Length,
   MaxLength,
 } from 'class-validator';
+import { Match } from 'src/shared/match.decorator';
 import { LanguageEntity } from '../../modules/language/entities/language.entity';
 import { CityEntity } from '../../services/city-country/entities/city.entity';
 import { CountryEntity } from '../../services/city-country/entities/country.entity';
@@ -100,6 +101,24 @@ export class CreateUserDto {
   urlId: string;
 }
 
+export class UpdateProfilePasswordDto {
+  @ApiProperty()
+  @Length(8, 20)
+  @IsOptional()
+  password: string;
+
+  @ApiProperty()
+  @Length(8, 20)
+  @IsNotEmpty()
+  oldPassword: string;
+
+  @ApiProperty()
+  @Length(8, 20)
+  @IsOptional()
+  @Match('password')
+  confirmPassword: string;
+}
+
 export class UpdateProfileDto {
   @ApiProperty()
   @IsOptional()
@@ -132,18 +151,8 @@ export class UpdateProfileDto {
   @IsOptional()
   mobile: string;
 
-  @ApiProperty()
-  @Length(8, 20)
-  @IsOptional()
-  password: string;
-
-  @ApiProperty()
-  @Length(8, 20)
-  @IsOptional()
-  oldPassword: string;
-
   @ApiProperty({ enum: ['male', 'female'], enumName: 'gender' })
-  @IsIn(['male', 'female'])
+  @IsIn(['male', 'female', ''])
   @IsOptional()
   gender: gender;
 

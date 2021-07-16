@@ -9,7 +9,7 @@ import {
   Put,
   Query,
   UploadedFile,
-  UseInterceptors
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
@@ -45,14 +45,13 @@ export class ContactsController {
     }
   }
 
-  @Auth({roles:[ROLES.ADMIN,ROLES.INFLUENCER]})
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Get('filter')
   async filterContactsByAge(
     @LoginUser() user: UserEntity,
     @Query() data: ContactFilter,
   ) {
     try {
-      
       return this.service.filterContacts(user.id, data);
     } catch (e) {
       throw e;
@@ -120,11 +119,10 @@ export class ContactsController {
   async updateContact(
     @Param('urlId') id: string,
     @Body() data: ContactDto,
-    @UploadedFile() image?: any,
+    @UploadedFile() image: any,
   ) {
     try {
-      if (!image) return this.service.updateContact(id, data);
-      else return this.service.updateContact(id, data, image);
+      return this.service.updateContact(id, data, image);
     } catch (e) {
       throw e;
     }
@@ -179,6 +177,16 @@ export class ContactsController {
     }
   }
 
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('spending')
+  async contactsSpending(@LoginUser() user: UserEntity) {
+    try {
+      return this.service.spending(user);
+    } catch (e) {
+      throw e;
+    }
+  }
+
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Delete('remove-from-list/:contactId')
   async removeFromList(
@@ -195,11 +203,62 @@ export class ContactsController {
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Get('specific-countries')
   async findContactSpecificCountries(@LoginUser() _user: UserEntity) {
-    
     try {
       return this.service.findContactSpecificCountries(_user);
     } catch (e) {
       throw e;
     }
   }
+
+  //#region  block list
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Post('blocked/:contactId')
+  async addToBlockList(
+    @LoginUser() _user: UserEntity,
+    @Param('contactId') contactId: number,
+  ) {
+    try {
+      return this.service.addToBlockList(_user, contactId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('blocked/:contactId')
+  async checkBlockList(
+    @LoginUser() _user: UserEntity,
+    @Param('contactId') contactId: number,
+  ) {
+    try {
+      return this.service.checkBlockList(_user, contactId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Delete('blocked/:contactId')
+  async removeFromBlockList(
+    @LoginUser() _user: UserEntity,
+    @Param('contactId') contactId: number,
+  ) {
+    try {
+      return this.service.removeFromBlockList(_user, contactId);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('blocked')
+  async myBlockList(@LoginUser() _user: UserEntity) {
+    try {
+      return this.service.myBlockList(_user);
+    } catch (e) {
+      throw e;
+    }
+  }
+  //#endregion
 }

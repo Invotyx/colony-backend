@@ -5,6 +5,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   HttpCode,
   Param,
   Post,
@@ -18,6 +19,7 @@ import { Response } from 'express';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { ROLES } from '../../services/access-control/consts/roles.const';
+import { PaginationDto } from '../contacts/contact.dto';
 import { ContactsService } from '../contacts/contacts.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { BroadcastService } from './broadcast.service';
@@ -33,38 +35,42 @@ export class SmsController {
     private readonly broadcastService: BroadcastService,
     private readonly contactService: ContactsService,
     @InjectQueue('receive_sms_and_send_welcome') private readonly queue: Queue,
+    @InjectQueue('outbound_status_callback')
+    private readonly obCallbackQ: Queue,
   ) {}
 
   @Post('receive-sms/webhook')
   @HttpCode(200)
+  @Header('Content-Type', 'text/xml')
   async receiveSms(@Body() body: any, @Res() res: Response) {
     try {
       await this.queue.add('inboundSms', body, {
         removeOnComplete: true,
-        removeOnFail: true,
+        removeOnFail: false,
         attempts: 2,
       });
-
-      res.status(200).send();
+      return '<Response></Response>';
     } catch (e) {
-      throw e;
+      //console.log('receiveSms/webhook', e);
+      return '<Response></Response>';
     }
   }
 
   @Post('receive-sms-status-callback/webhook')
   @HttpCode(200)
+  @Header('Content-Type', 'text/xml')
   async receiveSmsStatusCallback(@Body() body: any, @Res() res: Response) {
     try {
       //add checks here to write to Queue
-      await this.queue.add('outBoundSmsStatus', body, {
+      await this.obCallbackQ.add('outBoundSmsStatus', body, {
         removeOnComplete: true,
-        removeOnFail: true,
+        removeOnFail: false,
         attempts: 2,
       });
-
-      res.status(200).send('OK');
+      return '<Response></Response>';
     } catch (e) {
-      throw e;
+      //console.log('-callback/webhook', e);
+      return '<Response></Response>';
     }
   }
 
@@ -73,11 +79,10 @@ export class SmsController {
   @Get('/conversations')
   async getConversations(
     @LoginUser() inf: UserEntity,
-    @Query('page') page?: number,
-    @Query('perPage') perPage?: number,
+    @Query() data?: PaginationDto,
   ) {
     try {
-      return this.service.getConversations(inf, perPage, page);
+      return this.service.getConversations(inf, data.perPage, data.page);
     } catch (e) {
       throw e;
     }
@@ -88,14 +93,24 @@ export class SmsController {
   async getConversation(
     @LoginUser() inf: UserEntity,
     @Param('conversationId') conversationId: string,
-    @Query('page') page?: number,
-    @Query('perPage') perPage?: number,
+    @Query() data?: PaginationDto,
   ) {
     try {
-      return this.service.getConversation(inf, conversationId, perPage, page);
+      return this.service.getConversation(
+        inf,
+        conversationId,
+        data.perPage,
+        data.page,
+      );
     } catch (e) {
       throw e;
     }
+  }
+
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('/conversations/search')
+  async search(@LoginUser() user: UserEntity, @Query('query') query: string) {
+    return this.service.search(user, query);
   }
 
   @Auth({})
@@ -127,10 +142,21 @@ export class SmsController {
     @LoginUser() inf: UserEntity,
     @Body('to') contact: string,
     @Body('message') message: string,
-    @Body('scheduled') scheduled?: Date,
+    @Body('scheduled') scheduled?: any,
   ) {
     try {
-      return this.service.initiateSendSms(inf, contact, message, scheduled);
+      //console.log('SendSms start controller ****************** ');
+      //console.log('to: ', contact);
+      //console.log('message: ', message);
+      //console.log('scheduled: ', scheduled);
+      //console.log('Initiate SendSms Start *********************');
+
+      return this.service.initiateSendSms(
+        inf,
+        contact,
+        message,
+        scheduled ? scheduled : null,
+      );
     } catch (e) {
       throw e;
     }
@@ -138,6 +164,28 @@ export class SmsController {
   //#endregion
 
   //#region broadcast
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('broadcast/latest')
+  async getBroadcastLatestStatistics(@LoginUser() user: UserEntity) {
+    try {
+      return this.broadcastService.getBroadcastLatestStatistics(user);
+    } catch (e) {
+      throw e;
+    }
+  }
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('broadcast/:id')
+  async getBroadcastStatistics(
+    @LoginUser() user: UserEntity,
+    @Param('id') id: number,
+  ) {
+    try {
+      return this.broadcastService.getBroadcastStatistics(id, user);
+    } catch (e) {
+      throw e;
+    }
+  }
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Post('broadcast/:id/reschedule/:filter')
@@ -210,11 +258,10 @@ export class SmsController {
   @Get('broadcasts')
   async getBroadcasts(
     @LoginUser() user: UserEntity,
-    @Query('page') page?: number,
-    @Query('perPage') perPage?: number,
+    @Query() data: PaginationDto,
   ) {
     try {
-      return this.broadcastService.getBroadcasts(user, perPage, page);
+      return this.broadcastService.getBroadcasts(user, data.perPage, data.page);
     } catch (e) {
       throw e;
     }
@@ -361,4 +408,15 @@ export class SmsController {
   }
 
   //#endregion
+
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('activity')
+  async smsActivity(@LoginUser() influencer: UserEntity) {
+    return this.service.smsActivity(influencer);
+  }
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('popularity')
+  async popularity(@LoginUser() influencer: UserEntity) {
+    return this.service.popularity(influencer);
+  }
 }

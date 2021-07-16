@@ -1,9 +1,19 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { MessageBird } from 'messagebird/types';
+import {
+  BadRequestException,
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { env } from 'process';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
+import { error } from 'src/shared/error.dto';
+import { tagReplace } from 'src/shared/tag-replace';
+import { MoreThan, Not } from 'typeorm';
 import { ContactFilter } from '../contacts/contact.dto';
 import { ContactsService } from '../contacts/contacts.service';
+import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhoneService } from '../phone/phone.service';
 import { UserEntity } from '../users/entities/user.entity';
@@ -13,18 +23,17 @@ import { SmsService } from './sms.service';
 
 @Injectable()
 export class BroadcastService {
-  private mb: MessageBird;
   constructor(
     private readonly repository: BroadcastsRepository,
     private readonly bcRepo: BroadcastContactsRepository,
-    private readonly smsService: SmsService,
     private readonly phoneService: PhoneService,
     private readonly contactService: ContactsService,
     private readonly countryService: CityCountryService,
     private readonly paymentHistory: PaymentHistoryService,
-  ) {
-    this.mb = require('messagebird')(env.MESSAGEBIRD_KEY);
-  }
+    private readonly smsService: SmsService,
+    @Inject(forwardRef(() => InfluencerLinksService))
+    private readonly infLinks: InfluencerLinksService,
+  ) {}
 
   async save(user: any) {
     return this.repository.save(user);
@@ -52,17 +61,61 @@ export class BroadcastService {
     schedule?: Date,
   ) {
     try {
+      if (schedule && env.NODE_ENV == 'development') {
+        schedule = new Date(new Date().getTime() + 1.5 * 60 * 1000);
+      }
+      if (
+        (await this.contactService.filterContacts(user.id, filters)).count < 2
+      ) {
+        throw new BadRequestException(
+          'Broadcast must have more then 1 contacts.',
+        );
+      }
+
+      if (String(body).length < 2) {
+        throw new HttpException(
+          error(
+            [
+              {
+                key: 'body',
+                reason: 'length',
+                description: 'body must be greater then 2 characters',
+              },
+            ],
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            'Unprocessable entity',
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+
+      let check = body;
+      const links = check.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
+      if (links && links.length > 0) {
+        for (let link of links) {
+          check = check.replace(link, env.API_URL + '/api/s/o/');
+        }
+      }
+      tagReplace(check, {
+        first_name: 'test',
+        last_name: 'test',
+        inf_first_name: 'test',
+        inf_last_name: 'test',
+        country: 'test',
+        city: 'test',
+      });
+
       return this.repository.save({
         body: body,
         user: user,
         filters: JSON.stringify(filters),
         scheduled: schedule ? schedule : new Date(),
         name: name,
-        status: schedule ? 'scheduled' : 'inProgress',
+        status: 'scheduled',
       });
     } catch (e) {
-      console.log('createBroadcast', e);
-      throw new BadRequestException(e);
+      //console.log('createBroadcast', e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -78,7 +131,8 @@ export class BroadcastService {
         status: 'scheduled',
       });
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -89,7 +143,8 @@ export class BroadcastService {
       });
       return this.contactService.filterContacts(user.id, JSON.parse(b.filters));
     } catch (e) {
-      throw new BadRequestException(e);
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -98,6 +153,12 @@ export class BroadcastService {
       const broadcast = await this.repository.findOne({
         where: { id: id, user: user },
       });
+      if (!broadcast) {
+        throw new HttpException(
+          'Broadcast does not exists for this user.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       if (
         filter == 'sent' ||
@@ -118,6 +179,14 @@ export class BroadcastService {
       throw new BadRequestException('No contacts found.');
     } catch (e) {
       throw e;
+    }
+  }
+
+  public async getBroadcastMessages(bid: number) {
+    try {
+    } catch (e) {
+      console.error(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -144,7 +213,10 @@ export class BroadcastService {
       const b = await this.repository.find({
         where: { user: user },
         take: count,
-        skip: count * page - count,
+        skip: page == 1 ? 0 : count * page - count,
+        order: {
+          createdAt: 'DESC',
+        },
       });
       for (let i of b) {
         i.contacts = (await this.contactService.filterContacts(
@@ -154,8 +226,8 @@ export class BroadcastService {
       }
       return b;
     } catch (e) {
-      console.log(e);
-      throw new BadRequestException(e);
+      //console.log(e);
+      throw new BadRequestException(e.message);
     }
   }
 
@@ -163,6 +235,10 @@ export class BroadcastService {
     try {
       const bc = await this.bcRepo.findOne({ where: { smsSid: sid } });
 
+      if (!bc) {
+        //console.log('single sms');
+        return;
+      }
       const influencerNumber = await this.phoneService.findOne({
         where: { number: from },
       });
@@ -170,15 +246,176 @@ export class BroadcastService {
         where: { code: influencerNumber.country },
       });
 
-      if (bc.status != 'sent' && status == 'sent') {
+      if (status == 'failed') {
         await this.paymentHistory.updateDues({
-          cost: country.smsCost,
+          cost: -Math.abs(country.smsCost),
           type: 'sms',
           user: influencerNumber.user,
         });
       }
       bc.status = status;
       return this.bcRepo.save(bc);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async getBroadcastLatestStatistics(user: UserEntity) {
+    try {
+      const broadcast = await this.findOne({
+        where: {
+          user: user,
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+
+      if (!broadcast) {
+        throw new HttpException(
+          'Broadcast does not exists for this user.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const replied = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastInbound',
+        },
+      });
+
+      const opened = await this.infLinks.findCountInLinks({
+        where: {
+          broadcast: broadcast,
+          isOpened: true,
+        },
+      });
+
+      const reopened = await this.infLinks.findCountInLinks({
+        where: {
+          broadcast: broadcast,
+          isOpened: true,
+          clicks: MoreThan(0),
+        },
+      });
+
+      const link_clicks = await this.infLinks.sumTotalLinksSent(
+        user,
+        broadcast.id,
+      );
+
+      const sent = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastOutbound',
+          status: Not('failed'),
+        },
+      });
+
+      const not_sent = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastOutbound',
+          status: 'failed',
+        },
+      });
+
+      const total = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastOutbound',
+        },
+      });
+
+      const stats = {
+        opened: opened,
+        replied: replied,
+        link_clicks: link_clicks,
+        sent: sent,
+        not_sent: not_sent,
+        reopened: reopened,
+        total: total,
+      };
+      return { broadcast, stats };
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async getBroadcastStatistics(id: number, user: UserEntity) {
+    try {
+      const broadcast = await this.findOne({
+        where: { id: id, user: user },
+      });
+
+      if (!broadcast) {
+        throw new HttpException(
+          'Broadcast does not exists for this user.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const replied = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastInbound',
+        },
+      });
+
+      const opened = await this.infLinks.findCountInLinks({
+        where: {
+          broadcast: broadcast,
+          isOpened: true,
+        },
+      });
+
+      const reopened = await this.infLinks.findCountInLinks({
+        where: {
+          broadcast: broadcast,
+          isOpened: true,
+          clicks: MoreThan(0),
+        },
+      });
+
+      const link_clicks = await this.infLinks.sumTotalLinksSent(
+        user,
+        broadcast.id,
+      );
+
+      const sent = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastOutbound',
+          status: Not('failed'),
+        },
+      });
+
+      const not_sent = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastOutbound',
+          status: 'failed',
+        },
+      });
+
+      const total = await this.smsService.findCountInConversationsMessages({
+        where: {
+          broadcast: broadcast,
+          type: 'broadcastOutbound',
+        },
+      });
+
+      const stats = {
+        opened: opened,
+        replied: replied,
+        link_clicks: link_clicks,
+        sent: sent,
+        not_sent: not_sent,
+        reopened: reopened,
+        total: total,
+      };
+      return { broadcast, stats };
     } catch (e) {
       throw e;
     }

@@ -4,6 +4,7 @@ import { Job } from 'bull';
 import { SmsService } from '../sms/sms.service';
 
 @Processor('sms_q')
+@Processor('sms_q_dev')
 export class ScheduledSmsProcessor {
   private readonly logger = new Logger(ScheduledSmsProcessor.name);
 

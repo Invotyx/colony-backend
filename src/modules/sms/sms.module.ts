@@ -28,6 +28,12 @@ import { SmsService } from './sms.service';
       {
         name: 'outbound_status_callback',
       },
+      {
+        name: 'receive_sms_and_send_welcome_dev',
+      },
+      {
+        name: 'outbound_status_callback_dev',
+      },
     ),
     MainMysqlModule,
     forwardRef(() => UsersModule),

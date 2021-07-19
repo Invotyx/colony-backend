@@ -22,6 +22,12 @@ import { TasksService } from './tasks.service';
       {
         name: 'sms_q',
       },
+      {
+        name: 'broadcast_q_dev',
+      },
+      {
+        name: 'sms_q_dev',
+      },
     ),
     MainMysqlModule,
     forwardRef(() => ContactsModule),

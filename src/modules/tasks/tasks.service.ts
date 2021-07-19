@@ -33,6 +33,8 @@ export class TasksService {
     private readonly broadcastService: BroadcastService,
     @InjectQueue('broadcast_q') private readonly queue: Queue,
     @InjectQueue('sms_q') private readonly sms_q: Queue,
+    @InjectQueue('broadcast_q_dev') private readonly queue_dev: Queue,
+    @InjectQueue('sms_q_dev') private readonly sms_q_dev: Queue,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
@@ -72,11 +74,19 @@ export class TasksService {
       type: 'outBound',
     };
 
-    await this.sms_q.add('scheduled_message', q_obj, {
-      removeOnComplete: true,
-      removeOnFail: false,
-      attempts: 2,
-    });
+    if (env.NODE_ENV.toLowerCase() == 'production') {
+      await this.sms_q.add('scheduled_message', q_obj, {
+        removeOnComplete: true,
+        removeOnFail: false,
+        attempts: 1,
+      });
+    } else {
+      await this.sms_q_dev.add('scheduled_message', q_obj, {
+        removeOnComplete: true,
+        removeOnFail: false,
+        attempts: 1,
+      });
+    }
     ////console.log(q_obj, 'Added to queue');
   }
   @Cron('10 * * * * *')
@@ -162,12 +172,21 @@ export class TasksService {
 
           this.logger.log('message enqueued');
           ////console.log(q_obj);
-          await this.queue.add('broadcast_message', q_obj, {
-            removeOnComplete: true,
-            removeOnFail: false,
-            attempts: 2,
-            delay: 1000,
-          });
+          if (env.NODE_ENV.toLowerCase() == 'production') {
+            await this.queue.add('broadcast_message', q_obj, {
+              removeOnComplete: true,
+              removeOnFail: false,
+              attempts: 1,
+              delay: 1000,
+            });
+          } else {
+            await this.queue_dev.add('broadcast_message', q_obj, {
+              removeOnComplete: true,
+              removeOnFail: false,
+              attempts: 1,
+              delay: 1000,
+            });
+          }
         } else {
           //operation if phone number for contact country cannot be found.
           this.logger.log(

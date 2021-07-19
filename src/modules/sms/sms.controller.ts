@@ -188,7 +188,7 @@ export class SmsController {
   }
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
-  @Post('broadcast/:id/reschedule/:filter')
+  @Get('broadcast/:id/reschedule/:filter')
   async reschedule(
     @LoginUser() user: UserEntity,
     @Param('id') id: number,

@@ -122,7 +122,7 @@ export class BroadcastService {
   public async reschedule(id: number, type: string) {
     try {
       const b = await this.repository.findOne({ where: { id: id } });
-      return this.repository.save({
+      const rescheduled = await this.repository.save({
         body: b.body,
         user: b.user,
         filters: JSON.stringify({ successorId: b.id, filter: type }),
@@ -130,6 +130,10 @@ export class BroadcastService {
         name: b.name + ' ' + type,
         status: 'scheduled',
       });
+      return {
+        broadcast: rescheduled,
+        message: 'Broadcast rescheduled for specific filter.',
+      };
     } catch (e) {
       console.error(e);
       throw new BadRequestException(e.message);

@@ -1,5 +1,7 @@
 import { BullModule } from '@nestjs/bull';
 import { forwardRef, Module } from '@nestjs/common';
+import { InvoiceEmailSender } from 'src/mails/users/Invoice.mailer';
+import { MailModule } from 'src/services/mail/mail.module';
 import { MainMysqlModule } from 'src/shared/main-mysql.module';
 import { ContactsModule } from '../contacts/contacts.module';
 import { InfluencerLinksModule } from '../influencer-links/influencer-links.module';
@@ -38,11 +40,13 @@ import { TasksService } from './tasks.service';
     forwardRef(() => PlanModule),
     forwardRef(() => SubscriptionModule),
     forwardRef(() => InfluencerLinksModule),
+    MailModule,
   ],
   providers: [
     TasksService,
     OutboundBroadcastSmsProcessor,
     ScheduledSmsProcessor,
+    InvoiceEmailSender,
   ],
 })
 export class TasksModule {}

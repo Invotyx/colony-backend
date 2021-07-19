@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { env } from 'process';
+import { InvoiceEmailSender } from 'src/mails/users/Invoice.mailer';
 import Stripe from 'stripe';
 import { MoreThanOrEqual } from 'typeorm';
 import { UserEntity } from '../../modules/users/entities/user.entity';
@@ -17,6 +18,7 @@ export class PaymentHistoryService {
     private readonly duesRepo: PaymentDuesRepository,
     private readonly planService: PlansService,
     private readonly paymentService: PaymentMethodsService,
+    private readonly invoiceEmail: InvoiceEmailSender,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
@@ -118,13 +120,14 @@ export class PaymentHistoryService {
           user: user,
         });
 
-        await this.addRecordToHistory({
+        const record = await this.addRecordToHistory({
           user: user,
           description: 'Sms Dues payed automatically on reaching threshold.',
           cost: sms.cost,
           costType: 'sms-dues',
           chargeId: charge.id,
         });
+        await this.invoiceEmail.sendEmail(user, record);
         return true;
         //send email here
       } else {

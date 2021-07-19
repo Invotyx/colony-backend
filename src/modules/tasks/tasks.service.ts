@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Queue } from 'bull';
 import { env } from 'process';
+import { InvoiceEmailSender } from 'src/mails/users/Invoice.mailer';
 import { tagReplace } from 'src/shared/tag-replace';
 import Stripe from 'stripe';
 import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
@@ -35,6 +36,7 @@ export class TasksService {
     @InjectQueue('sms_q') private readonly sms_q: Queue,
     @InjectQueue('broadcast_q_dev') private readonly queue_dev: Queue,
     @InjectQueue('sms_q_dev') private readonly sms_q_dev: Queue,
+    private readonly invoiceEmail: InvoiceEmailSender,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
@@ -276,7 +278,7 @@ export class TasksService {
 
             await this.subscriptionService.save(subscription);
 
-            await this.paymentHistoryService.addRecordToHistory({
+            const record = await this.paymentHistoryService.addRecordToHistory({
               user: subscription.user,
               description:
                 'Base Package Re-subscribed with phone numbers and fans due charges.',
@@ -285,7 +287,7 @@ export class TasksService {
               chargeId: charge.id,
               meta: JSON.stringify(metaPayment),
             });
-            //send email here
+            await this.invoiceEmail.sendEmail(subscription.user, record);
           } else {
             this.logger.log('payment charge failed with details:');
             ////console.log(charge);

@@ -11,7 +11,7 @@ export class SupportEmailSender {
   async sendEmail(model: UserEntity, subject, body): Promise<boolean> {
     try {
       //console.log('model: ', model);
-      if (model && model.newPasswordToken) {
+      if (model) {
         const appConfig = await AppConfig();
 
         const html = body;

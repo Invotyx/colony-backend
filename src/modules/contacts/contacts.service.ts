@@ -605,7 +605,7 @@ export class ContactsService {
       if (contact) {
         const user = await this.users.findOne({ where: { id: userId } });
         return {
-          influencerName: user.firstName + ' ' + user.firstName,
+          influencerName: user.firstName + ' ' + user.lastName,
           influencerImage: user.image,
           contact,
         };

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { env } from 'process';
-import { InvoiceEmailSender } from 'src/mails/users/Invoice.mailer';
 import Stripe from 'stripe';
 import { MoreThanOrEqual } from 'typeorm';
+import { InvoiceEmailSender } from '../../mails/users/invoice.mailer';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { PaymentMethodsService } from '../products/payments/payment-methods.service';
 import { PlansService } from '../products/plan/plans.service';

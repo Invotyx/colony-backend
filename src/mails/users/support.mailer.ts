@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { env } from 'process';
-import { UserEntity } from 'src/modules/users/entities/user.entity';
 import { AppConfig } from '../../configs/app.config';
+import { UserEntity } from '../../modules/users/entities/user.entity';
 import { MailClient } from '../../services/mail/mail.service';
 
 @Injectable()

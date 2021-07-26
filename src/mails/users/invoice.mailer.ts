@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { env } from 'process';
-import { PaymentHistoryEntity } from 'src/modules/payment-history/entities/purchaseHistory.entity';
-import { UserEntity } from 'src/modules/users/entities/user.entity';
 import { AppConfig } from '../../configs/app.config';
+import { PaymentHistoryEntity } from '../../modules/payment-history/entities/purchaseHistory.entity';
+import { UserEntity } from '../../modules/users/entities/user.entity';
 import { MailClient } from '../../services/mail/mail.service';
 
 @Injectable()

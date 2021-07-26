@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { InvoiceEmailSender } from 'src/mails/users/Invoice.mailer';
+import { InvoiceEmailSender } from '../../mails/users/invoice.mailer';
 import { MailModule } from 'src/services/mail/mail.module';
 import { MainMysqlModule } from 'src/shared/main-mysql.module';
 import { PaymentsModule } from '../products/payments/payments.module';

@@ -1,8 +1,8 @@
 import { BullModule } from '@nestjs/bull';
 import { forwardRef, Module } from '@nestjs/common';
-import { InvoiceEmailSender } from 'src/mails/users/Invoice.mailer';
 import { MailModule } from 'src/services/mail/mail.module';
 import { MainMysqlModule } from 'src/shared/main-mysql.module';
+import { InvoiceEmailSender } from '../../mails/users/invoice.mailer';
 import { ContactsModule } from '../contacts/contacts.module';
 import { InfluencerLinksModule } from '../influencer-links/influencer-links.module';
 import { PaymentHistoryModule } from '../payment-history/payment-history.module';

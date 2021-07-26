@@ -1,10 +1,10 @@
 import { BullModule } from '@nestjs/bull';
 import { forwardRef, Module } from '@nestjs/common';
-import { InvoiceEmailSender } from 'src/mails/users/Invoice.mailer';
 import { CityCountryModule } from 'src/services/city-country/city-country.module';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { MailModule } from 'src/services/mail/mail.module';
 import { MainMysqlModule } from 'src/shared/main-mysql.module';
+import { InvoiceEmailSender } from '../../mails/users/invoice.mailer';
 import { ContactsModule } from '../contacts/contacts.module';
 import { InfluencerLinksModule } from '../influencer-links/influencer-links.module';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
@@ -58,7 +58,7 @@ import { SmsService } from './sms.service';
     PhoneService,
     BroadcastService,
     InfluencerLinksService,
-    InvoiceEmailSender
+    InvoiceEmailSender,
   ],
   exports: [SmsService, BroadcastService],
 })

@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { env } from 'process';
-import { ForgotPassword } from 'src/modules/users/entities/forgottenpassword.entity';
-import { ForgotPasswordRepository } from 'src/modules/users/repos/forgotpassword.repo';
+import { ForgotPassword } from '../../modules/users/entities/forgottenpassword.entity';
+import { ForgotPasswordRepository } from '../../modules/users/repos/forgotpassword.repo';
 import { AppConfig } from '../../configs/app.config';
 import { MailBuilder, MailClient } from '../../services/mail/mail.service';
 

@@ -8,7 +8,7 @@ import { ApiCallingService } from 'src/services/api-calling/api-calling.service'
 import { CityCountryModule } from 'src/services/city-country/city-country.module';
 import { MailModule } from 'src/services/mail/mail.module';
 import { MainMysqlModule } from 'src/shared/main-mysql.module';
-import { InvoiceEmailSender } from '../../mails/users/invoice.mailer';
+import { InvoiceEmailSender } from '../../../mails/users/invoice.mailer';
 import { PaymentsModule } from '../payments/payments.module';
 import { PlanModule } from '../plan/plan.module';
 import { SubscriptionsController } from './subscriptions.controller';

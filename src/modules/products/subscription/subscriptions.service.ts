@@ -7,7 +7,7 @@ import {
 import { env } from 'process';
 import Stripe from 'stripe';
 import { nanoid } from '../../../shared/random-keygen';
-import { InvoiceEmailSender } from '../../mails/users/invoice.mailer';
+import { InvoiceEmailSender } from '../../../mails/users/invoice.mailer';
 import { PaymentHistoryService } from '../../payment-history/payment-history.service';
 import { PhoneService } from '../../phone/phone.service';
 import { UserEntity } from '../../users/entities/user.entity';

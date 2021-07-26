@@ -1032,7 +1032,9 @@ export class SmsService {
     try {
       const sql = `SELECT
         cm."createdAt"::date as date,
-        COUNT ( cm."id" ) 
+        COUNT ( cm."id" ),            
+        sum ( case when cm."type"='inBound' then 1 else 0 end ) as "inBound",
+        sum ( case when cm."type"<>'inBound' then 1 else 0 end ) as "outBound"
       FROM
         conversation_messages cm
         LEFT JOIN conversations C ON cm."conversationsId" = C."id"

@@ -17,125 +17,99 @@ export class InvoiceEmailSender {
       //console.log('model: ', model);
       if (model && invoice) {
         const appConfig = await AppConfig();
+        const check = invoice.costType == 'base-plan-purchase' && invoice.meta;
+        const json = check ? JSON.parse(invoice.meta) : null;
+        let invoice_items;
+        if (check) {
+          let phone_cost = 0;
+          json.phones.forEach((phone) => {
+            phone_cost = phone_cost + phone.cost;
+          });
+          invoice_items = `
+                <tr><td>Base Package</td><td style="text-align: right;">£${json.subscription}</td></tr>
+                <tr><td>Phone Number</td><td style="text-align: right;">£${phone_cost}</td></tr>
+                <tr><td>Fans</td><td style="text-align: right;">£${json.fan}</td></tr>
+          `;
+        } else if (invoice.costType == 'number-purchase') {
+          invoice_items = `
+                <tr><td>Phone Number Purchase</td><td style="text-align: right;">£${invoice.cost}</td></tr>
+          `;
+        } else if (invoice.costType == 'sms-dues') {
+          invoice_items = `
+                <tr><td>SMS Cost</td><td style="text-align: right;">£${invoice.cost}</td></tr>
+          `;
+        } else {
+          invoice_items = `
+                <tr><td>Base Package Subscription</td><td style="text-align: right;">£${invoice.cost}</td></tr>
+          `;
+        }
 
-        const html = `<!doctype html>
-<html class="no-js" lang="" style="box-sizing: border-box;line-height: 1.15;-webkit-text-size-adjust: 100%;">
+        const html = `
+        		<!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="utf-8">
+                <title>Invoice</title>
+                <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/glacial-indifference" type="text/css"/>
+              </head>
+              <body>
+                <table style="width: 50%; margin:auto;">
+                  <tr>
+                    <td style="width: 50%; padding:2% 4%;"><img src="${env.MAIN_LOGO}" width="60"></td>
+                    <td style="width: 50%;text-align: right;  padding:2% 4%;"><p style="font-size:30px;font-style: italic; font-weight: 600; color: #e05d49;">INVOICE</p>
+                      <p style="font-size:12px;margin-top:-20px;">No. ${invoice.chargeId}</p></td>
+                  </tr>
+                  <tr><td colspan="2" style=""><hr style="margin: auto; height: 1px;background:#d6d3ce;border: 1px #d6d3ce ;"></td><td></td></tr>
+                </table>
+                <table style="width: 50%; margin:auto; padding:0% 4%; font-family: GlacialIndifferenceRegular">
+                  <tr>
+                    <td colspan="2"><br><br><br><b>Hi ${model.firstName} ${model.lastName}</b></td><td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="width: 100%; font-family: opensanslight;font-size: 12px; font-family: GlacialIndifferenceRegular; text-align:justify;">
+                      You have received this email because you have subscribed to our Package in Colony Messaging and you have been charged for due payments(see details below). 
+                    </td> <td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2"><br><br><br><br><br><br>ISSUED ON</td><td></td>
+                  </tr>
+                  <tr style="width:100%">
+                    <td colspan="2"><h3 style="font-style: italic;color:#e05d49;margin-top:-3px ;">${invoice.createdAt}</h3></td><td></td>
+                  </tr>
+                </table>
+                <table style="font-family: GlacialIndifferenceRegular; width: 50%; margin:auto; padding:0 4%;">
+                  <tr style="border-bottom:1px;">
+                    <td style="border-bottom:1px;"><b>Description</b></td><td style="text-align: right;"><b>Subtotal</b></td>
+                  </tr>
+                  <tr><td colspan="2" style="width: 100%;"><hr style=" margin: auto; height: 1px;background:#d6d3ce;border: 1px #d6d3ce ;"></td><td></td></tr>
+                  ${invoice_items}
+                  <tr><td colspan="2" style="width: 100%;"><hr style=" margin: auto; height: 1px;background:#d6d3ce;border: 1px #d6d3ce ;"></td><td></td></tr>
+                  <tr><td></td><td style="text-align: right;"><b>TOTAL:  </b> £${invoice.cost}</td></tr>
+                </table>
+                <table style="font-family: GlacialIndifferenceRegular; width: 50%; margin:auto;">
+                  <tr>
+                    <td colspan="2"; style="text-align: center;"><br><br><br>
+                      <a href="${env.PRIVACY_POLICY}" style="font-size:12px; color: black; padding: 10px;">Privacy and policy</a> 
+                      <a href="${env.TERMS_OF_SERVICE}" style="font-size:12px; color: black; padding: 10px;">Terms & Conditions</a> 
+                      <a href="${env.FAQS}" style="font-size:12px; color: black; padding: 10px;">FAQ</a></td><td></td>
+                  </tr>
 
-<head style="box-sizing: border-box;">
-  <meta charset="utf-8" style="box-sizing: border-box;">
-  <title style="box-sizing: border-box;">Invoice </title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" style="box-sizing: border-box;">
-  
-</head>
-<body style="box-sizing: border-box;font-size: 16px;margin: 0;font-family: system-ui,
-		-apple-system, 
-		'Segoe UI',
-		Roboto,
-		Helvetica,
-		Arial,
-		sans-serif,
-		'Apple Color Emoji',
-		'Segoe UI Emoji';">
-  
-<div class="web-container" style="box-sizing: border-box;max-width: 800px;margin: 0 auto;padding: 50px;">
-  <div class="page-container" style="box-sizing: border-box;display: none;">
-  Page
-  <span class="page" style="box-sizing: border-box;"></span>
-  of
-  <span class="pages" style="box-sizing: border-box;"></span>
-</div>
+                  
+                </table>
+                <table style="font-family: GlacialIndifferenceRegular; width: 50%; margin:auto; background-color: #d6d3ce; padding: 1%;">
+                  <tr>
+                    <td style="width: 50%; padding:2% 4%;"><img src="${env.FOOTER_LOGO}" width="150"></td>
+                    
+                    <td style="width: 50%;text-align: right;"><p style="font-size:12px;">${env.SUPPORT_EMAIL}<br>
+                      ${env.CONTACT_NUMBER}<br>
+                      ${env.PUBLIC_APP_URL}<br>
+                      ${env.MAILING_ADDRESS}</p></td>
+                  </tr>
+                </table>
 
-<div class="logo-container" style="box-sizing: border-box;margin: 20px 0 70px 0;text-align: center;">
-  <img style="height: 50px;box-sizing: border-box;" src="https://colony.ga/_next/image?url=%2Fimages%2Findex-logo.svg&w=256&q=75">
-</div>
-
-<table class="invoice-info-container" style="box-sizing: border-box;width: 100%;border-collapse: collapse;text-indent: 0;border-color: inherit;font-size: 0.875em;">
-  <tr style="box-sizing: border-box;">
-    <td rowspan="2" class="client-name" style="box-sizing: border-box;padding: 4px 0;font-size: 1.5em;vertical-align: top;">
-      ${model.firstName} ${model.lastName}
-    </td>
-    <td style="box-sizing: border-box;padding: 4px 0;text-align: right;">
-      Colony Systems
-    </td>
-  </tr>
-  <tr style="box-sizing: border-box;">
-    <td style="box-sizing: border-box;padding: 4px 0;text-align: right;">
-      Street A, London, 
-    </td>
-  </tr>
-  <tr style="box-sizing: border-box;">
-    <td style="box-sizing: border-box;padding: 4px 0;">
-      Invoice Date: <strong style="box-sizing: border-box;font-weight: bolder;">${invoice.createdAt}</strong>
-    </td>
-    <td style="box-sizing: border-box;padding: 4px 0;text-align: right;">
-      United Kingdom, 94103B
-    </td>
-  </tr>
-  <tr style="box-sizing: border-box;">
-    <td style="box-sizing: border-box;padding: 4px 0;">
-      Invoice No: <strong style="box-sizing: border-box;font-weight: bolder;">${invoice.chargeId}</strong>
-    </td>
-    <td style="box-sizing: border-box;padding: 4px 0;text-align: right;">
-      ${env.SUPPORT_EMAIL}
-    </td>
-  </tr>
-</table>
-
-
-<table class="line-items-container" style="box-sizing: border-box;width: 100%;border-collapse: collapse;text-indent: 0;border-color: inherit;margin: 70px 0;font-size: 0.875em;">
-  <thead style="box-sizing: border-box;">
-    <tr style="box-sizing: border-box;">
-      <th class="heading-quantity" style="box-sizing: border-box;text-align: left;color: #999;border-bottom: 2px solid #ddd;padding: 10px 0 15px 0;font-size: 0.75em;text-transform: uppercase;width: 50px;">Qty</th>
-      <th class="heading-description" style="box-sizing: border-box;text-align: left;color: #999;border-bottom: 2px solid #ddd;padding: 10px 0 15px 0;font-size: 0.75em;text-transform: uppercase;">Description</th>
-      <th class="heading-price" style="box-sizing: border-box;text-align: right;color: #999;border-bottom: 2px solid #ddd;padding: 10px 0 15px 0;font-size: 0.75em;text-transform: uppercase;width: 100px;">Price</th>
-      <th class="heading-subtotal" style="box-sizing: border-box;text-align: right;color: #999;border-bottom: 2px solid #ddd;padding: 10px 0 15px 0;font-size: 0.75em;text-transform: uppercase;width: 100px;">Subtotal</th>
-    </tr>
-  </thead>
-  <tbody style="box-sizing: border-box;">
-    <tr style="box-sizing: border-box;">
-      <td style="box-sizing: border-box;padding: 15px 0;">1</td>
-      <td style="box-sizing: border-box;padding: 15px 0;">${invoice.description}</td>
-      <td class="right" style="box-sizing: border-box;padding: 15px 0;text-align: right;">£${invoice.cost}</td>
-      <td class="bold" style="box-sizing: border-box;padding: 15px 0;font-weight: bold;text-align: right;">£${invoice.cost}</td>
-    </tr>
-  </tbody>
-</table>
-
-
-<table class="line-items-container has-bottom-border" style="box-sizing: border-box;width: 100%;border-collapse: collapse;text-indent: 0;border-color: inherit;margin: 70px 0;font-size: 0.875em;margin-bottom: 0;">
-  <thead style="box-sizing: border-box;">
-    <tr style="box-sizing: border-box;">
-      <th style="box-sizing: border-box;text-align: left;color: #999;border-bottom: 2px solid #ddd;padding: 10px 0 15px 0;font-size: 0.75em;text-transform: uppercase;">Payment Info</th>
-      <th style="box-sizing: border-box;text-align: left;color: #999;border-bottom: 2px solid #ddd;padding: 10px 0 15px 0;font-size: 0.75em;text-transform: uppercase;">Paid On</th>
-      <th style="box-sizing: border-box;text-align: right;color: #999;border-bottom: 2px solid #ddd;padding: 10px 0 15px 0;font-size: 0.75em;text-transform: uppercase;">Total Paid</th>
-    </tr>
-  </thead>
-  <tbody style="box-sizing: border-box;">
-    <tr style="box-sizing: border-box;">
-      <td class="payment-info" style="box-sizing: border-box;padding: 15px 0;width: 38%;font-size: 0.75em;line-height: 1.5;">
-        
-      </td>
-      <td class="large" style="box-sizing: border-box;padding: 15px 0;font-size: 1.75em;">${invoice.createdAt}</td>
-      <td class="large total" style="box-sizing: border-box;padding: 15px 0;font-size: 1.75em;font-weight: bold;color: #fb7578;text-align: right;">${invoice.cost}</td>
-    </tr>
-  </tbody>
-</table>
-
-<div class="footer" style="box-sizing: border-box;margin-top: 100px;">
-  <div class="footer-info" style="box-sizing: border-box;float: right;margin-top: 5px;font-size: 0.75em;color: #ccc;">
-    <span style="box-sizing: border-box;padding: 0 5px;color: black;">${env.SUPPORT_EMAIL}</span> |
-    <span style="box-sizing: border-box;padding: 0 5px;color: black;">${env.CONTACT_NUMBER}</span> |
-    <span style="box-sizing: border-box;padding: 0 5px;color: black;padding-right: 0;">${env.APP_URL}</span>
-  </div>
-  <div class="footer-thanks" style="box-sizing: border-box;font-size: 1.125em;">
-    <span alt="heart" style="box-sizing: border-box;display: inline-block;position: relative;top: 1px;width: 16px;margin-right: 4px;">❤️</span>
-    <span style="box-sizing: border-box;">Thank you!</span>
-  </div>
-</div>
-
-</div>
-
-</body></html>`;
+              </body>
+              </html>
+        `;
 
         const mail = await this.mailClient.send({
           to: {

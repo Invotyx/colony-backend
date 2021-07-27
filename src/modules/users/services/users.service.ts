@@ -10,6 +10,8 @@ import { nanoid } from 'nanoid';
 import { join } from 'path';
 import { TABLES } from 'src/consts/tables.const';
 import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer';
+import { presetTrigger } from 'src/modules/sms/entities/preset-message.entity';
+import { PresetMessagesRepository } from 'src/modules/sms/repo/sms-presets.repo';
 import { ForgotPassword } from 'src/modules/users/entities/forgottenpassword.entity';
 import { CityRepository } from 'src/services/city-country/repos/city.repo';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
@@ -55,6 +57,7 @@ export class UsersService {
     private readonly sendForgotPassword: ForgotPasswordTokenSender,
     private readonly country: CountryRepository,
     private readonly city: CityRepository,
+    private readonly presetRepo: PresetMessagesRepository,
   ) {}
 
   findAll(): Promise<UserEntity[]> {
@@ -195,7 +198,31 @@ export class UsersService {
         await this.updateRoles(newUser.id, { userId: newUser.id, roleId: [2] });
         /* await this.createEmailToken(user.email);
         await this.emailTokenSend.sendEmailVerification(user.email); */
+        Promise.all([
+          this.presetRepo.save({
+            body:
+              'Hi, You have subscribed to ${inf_first_name}. Please complete your profile using this link ${link}',
+            name: 'Welcome',
+            trigger: presetTrigger.welcome,
+            user: newUser,
+          }),
+          this.presetRepo.save({
+            body:
+              'Welcome ${first_name}! Glad to have you onboard.  Regards ${inf_first_name}. ',
+            name: 'OnBoard',
+            trigger: presetTrigger.onBoard,
+            user: newUser,
+          }),
 
+          this.presetRepo.save({
+            body:
+              'Hi! This is ${inf_first_name}. You recently sent an sms to my number. Please complete your profile using this link ${link} so that I can get to know my fans better!',
+            name: 'NoResponse',
+            trigger: presetTrigger.noResponse,
+            user: newUser,
+            enabled: true,
+          }),
+        ]);
         return { user: newUser };
       } else {
         throw new BadRequestException('Invalid email format');

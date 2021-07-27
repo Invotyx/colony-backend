@@ -604,11 +604,10 @@ export class ContactsService {
 
       if (contact) {
         const user = await this.users.findOne({ where: { id: userId } });
-        return {
-          influencerName: user.firstName + ' ' + user.lastName,
-          influencerImage: user.image,
-          contact,
-        };
+        user.subscription = null;
+        user.paymentMethod = null;
+        user.customerId = null;
+        return { influencer: user, contact };
       } else {
         throw new BadRequestException('Contact does not exist in our system.');
       }

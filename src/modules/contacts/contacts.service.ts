@@ -604,10 +604,17 @@ export class ContactsService {
 
       if (contact) {
         const user = await this.users.findOne({ where: { id: userId } });
+        const conversation = await this.smsService.findOneConversations({
+          where: {
+            user: user,
+            contact: contact,
+          },
+          relations: ['phone'],
+        });
         user.subscription = null;
         user.paymentMethod = null;
         user.customerId = null;
-        return { influencer: user, contact };
+        return { influencer: user, contact, phone: conversation.phone };
       } else {
         throw new BadRequestException('Contact does not exist in our system.');
       }

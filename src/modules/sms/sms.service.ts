@@ -139,7 +139,7 @@ export class SmsService {
 
         if (!preset_welcome) {
           preset_welcome = {
-            body: 'Welcome from ${inf_name}.',
+            body: 'Welcome from ${inf_first_name}.',
           };
         }
 

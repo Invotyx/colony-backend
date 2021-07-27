@@ -1,14 +1,15 @@
 import {
-  BadRequestException,
-  forwardRef,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
+    BadRequestException,
+    forwardRef,
+    HttpException,
+    HttpStatus,
+    Inject,
+    Injectable
 } from '@nestjs/common';
 import e from 'express';
 import { env } from 'process';
 import Stripe from 'stripe';
+import { InvoiceEmailSender } from '../../mails/users/invoice.mailer';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { CityCountryService } from '../../services/city-country/city-country.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
@@ -30,6 +31,7 @@ export class PhoneService {
     @Inject(forwardRef(() => SubscriptionsService))
     private readonly subscriptionService: SubscriptionsService,
     private readonly planService: PlansService,
+    private readonly invoiceEmail: InvoiceEmailSender,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -346,14 +348,18 @@ export class PhoneService {
                       },
                     );
 
-                    await this.paymentHistory.addRecordToHistory({
-                      user: user,
-                      description:
-                        'Phone number: ' + number.phoneNumber + ' purchased.',
-                      cost: country.phoneCost,
-                      costType: 'number-purchase',
-                      chargeId: charge.id,
-                    });
+                    const record = await this.paymentHistory.addRecordToHistory(
+                      {
+                        user: user,
+                        description:
+                          'Phone number: ' + number.phoneNumber + ' purchased.',
+                        cost: country.phoneCost,
+                        costType: 'number-purchase',
+                        chargeId: charge.id,
+                      },
+                    );
+
+                    await this.invoiceEmail.sendEmail(user, record);
                     // save to database;
                     if (number) {
                       const date = new Date(); // Now

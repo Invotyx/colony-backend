@@ -16,6 +16,7 @@ import {
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Queue } from 'bull';
 import { Response } from 'express';
+import { env } from 'process';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { ROLES } from '../../services/access-control/consts/roles.const';
@@ -37,6 +38,10 @@ export class SmsController {
     @InjectQueue('receive_sms_and_send_welcome') private readonly queue: Queue,
     @InjectQueue('outbound_status_callback')
     private readonly obCallbackQ: Queue,
+    @InjectQueue('receive_sms_and_send_welcome_dev')
+    private readonly queue_dev: Queue,
+    @InjectQueue('outbound_status_callback_dev')
+    private readonly obCallbackQ_dev: Queue,
   ) {}
 
   @Post('receive-sms/webhook')
@@ -44,11 +49,19 @@ export class SmsController {
   @Header('Content-Type', 'text/xml')
   async receiveSms(@Body() body: any, @Res() res: Response) {
     try {
-      await this.queue.add('inboundSms', body, {
-        removeOnComplete: true,
-        removeOnFail: false,
-        attempts: 2,
-      });
+      if (env.NODE_ENV.toLowerCase() == 'production') {
+        await this.queue.add('inboundSms', body, {
+          removeOnComplete: true,
+          removeOnFail: false,
+          attempts: 1,
+        });
+      } else {
+        await this.queue_dev.add('inboundSms', body, {
+          removeOnComplete: true,
+          removeOnFail: false,
+          attempts: 1,
+        });
+      }
       return '<Response></Response>';
     } catch (e) {
       //console.log('receiveSms/webhook', e);
@@ -62,11 +75,19 @@ export class SmsController {
   async receiveSmsStatusCallback(@Body() body: any, @Res() res: Response) {
     try {
       //add checks here to write to Queue
-      await this.obCallbackQ.add('outBoundSmsStatus', body, {
-        removeOnComplete: true,
-        removeOnFail: false,
-        attempts: 2,
-      });
+      if (env.NODE_ENV.toLowerCase() == 'production') {
+        await this.obCallbackQ.add('outBoundSmsStatus', body, {
+          removeOnComplete: true,
+          removeOnFail: false,
+          attempts: 1,
+        });
+      } else {
+        await this.obCallbackQ_dev.add('outBoundSmsStatus', body, {
+          removeOnComplete: true,
+          removeOnFail: false,
+          attempts: 1,
+        });
+      }
       return '<Response></Response>';
     } catch (e) {
       //console.log('-callback/webhook', e);
@@ -188,7 +209,7 @@ export class SmsController {
   }
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
-  @Post('broadcast/:id/reschedule/:filter')
+  @Get('broadcast/:id/reschedule/:filter')
   async reschedule(
     @LoginUser() user: UserEntity,
     @Param('id') id: number,

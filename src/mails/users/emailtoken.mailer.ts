@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { EmailVerificationsRepository } from 'src/modules/users/repos/verifyemail.repo';
 import { AppConfig } from '../../configs/app.config';
+import { EmailVerificationsRepository } from '../../modules/users/repos/verifyemail.repo';
 import { MailBuilder, MailClient } from '../../services/mail/mail.service';
 import { MarkDown } from '../../shared/marked';
 

@@ -5,6 +5,7 @@ import { BroadcastService } from './broadcast.service';
 import { SmsService } from './sms.service';
 
 @Processor('outbound_status_callback')
+@Processor('outbound_status_callback_dev')
 export class OutboundCallbackSmsProcessor {
   private readonly logger = new Logger(OutboundCallbackSmsProcessor.name);
 

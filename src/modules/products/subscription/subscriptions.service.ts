@@ -7,6 +7,7 @@ import {
 import { env } from 'process';
 import Stripe from 'stripe';
 import { nanoid } from '../../../shared/random-keygen';
+import { InvoiceEmailSender } from '../../../mails/users/invoice.mailer';
 import { PaymentHistoryService } from '../../payment-history/payment-history.service';
 import { PhoneService } from '../../phone/phone.service';
 import { UserEntity } from '../../users/entities/user.entity';
@@ -29,6 +30,7 @@ export class SubscriptionsService {
     @Inject(forwardRef(() => PhoneService))
     private readonly phoneService: PhoneService,
     private readonly paymentHistory: PaymentHistoryService,
+    private readonly invoiceEmail: InvoiceEmailSender,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
@@ -123,13 +125,14 @@ export class SubscriptionsService {
             'sub',
           );
 
-          await this.paymentHistory.addRecordToHistory({
+          const record = await this.paymentHistory.addRecordToHistory({
             user: customer,
             description: 'Base Plan purchased',
             cost: _plan.amount_decimal,
             costType: 'base-plan-purchase',
             chargeId: charge.id,
           });
+          await this.invoiceEmail.sendEmail(customer, record);
           const newChargeDays = +env.SUB_RENEW_DAYS;
 
           if (purchasedNumber.number != null) {

@@ -5,6 +5,7 @@ import { BroadcastService } from './broadcast.service';
 import { SmsService } from './sms.service';
 
 @Processor('receive_sms_and_send_welcome')
+@Processor('receive_sms_and_send_welcome_dev')
 export class InboundSmsProcessor {
   private readonly logger = new Logger(InboundSmsProcessor.name);
 

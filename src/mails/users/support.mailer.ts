@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { env } from 'process';
-import { UserEntity } from 'src/modules/users/entities/user.entity';
 import { AppConfig } from '../../configs/app.config';
+import { UserEntity } from '../../modules/users/entities/user.entity';
 import { MailClient } from '../../services/mail/mail.service';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class SupportEmailSender {
   async sendEmail(model: UserEntity, subject, body): Promise<boolean> {
     try {
       //console.log('model: ', model);
-      if (model && model.newPasswordToken) {
+      if (model) {
         const appConfig = await AppConfig();
 
         const html = body;

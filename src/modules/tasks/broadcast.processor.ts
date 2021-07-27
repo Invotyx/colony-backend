@@ -6,6 +6,7 @@ import { BroadcastService } from '../sms/broadcast.service';
 import { SmsService } from '../sms/sms.service';
 
 @Processor('broadcast_q')
+@Processor('broadcast_q_dev')
 export class OutboundBroadcastSmsProcessor {
   private readonly logger = new Logger(OutboundBroadcastSmsProcessor.name);
 

@@ -179,11 +179,13 @@ export class SmsService {
               lastConversationMessage.type == 'broadcastOutbound'
                 ? 'broadcastInbound'
                 : 'inBound';
- 
 
             if (msgType == 'broadcastInbound') {
               const b = lastConversationMessage.broadcast;
-              const emotion = emotions.reduce((em1, em2) => (em1 = em1.score > em2.score ? em1 : em2), 0);
+              const emotion = emotions.reduce(
+                (em1, em2) => (em1 = em1.score > em2.score ? em1 : em2),
+                0,
+              );
               if (+emotion.score > 0) {
                 b[emotion.tone_id] = b[emotion.tone_id] + 1;
                 await this.broadcastRepo.save(b);
@@ -444,7 +446,7 @@ export class SmsService {
       }
 
       const _contact = await this.contactService.findOne({
-        where: { phoneNumber: contact },
+        where: { phoneNumber: contact, isComplete: true },
         relations: ['country', 'city'],
       });
       if (_contact) {
@@ -535,7 +537,7 @@ export class SmsService {
                 key: 'to',
                 reason: 'contact_has_not_subscribed',
                 description:
-                  'You cannot send message to contact who has not subscribed you yet.',
+                  'You cannot send message to fan who has not subscribed you yet or fan who has not completed his/her profile',
               },
             ],
             HttpStatus.UNPROCESSABLE_ENTITY,

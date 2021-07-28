@@ -394,6 +394,12 @@ export class ContactsService {
       }
     }
 
+    if (!query.includes('WHERE')) {
+      query = query + ` WHERE c."isComplete" = true`;
+    } else {
+      query = query + ` and c."isComplete" = true`;
+    }
+
     const contacts = await this.repository.query(query);
     return { contacts: contacts, count: contacts.length };
   }
@@ -412,7 +418,7 @@ export class ContactsService {
       });
       let _contact = [];
       for (let contact of contacts) {
-        _contact.push(contact.contact);
+        if (contact.contact.isComplete) _contact.push(contact.contact);
       }
       return _contact;
     } catch (e) {
@@ -433,7 +439,8 @@ export class ContactsService {
         select "c".* from "contacts" "c"
         inner join "influencer_contacts" "ic" on ("ic"."contactId"="c"."id" and "ic"."userId"=${user.id})
         WHERE extract(month from "c"."dob") = extract(month from current_date)
-        and extract(day from "c"."dob") = extract(day from current_date);
+        and extract(day from "c"."dob") = extract(day from current_date)
+        and c."isComplete" = true;
       `);
       return contacts;
     } catch (e) {

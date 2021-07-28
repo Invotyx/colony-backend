@@ -10,7 +10,10 @@ export class ShareableLinkHandlerController {
   @Redirect()
   public async linkOpened(@Param('id') id: string, @Res() res: Response) {
     try {
-      const link = await this.service.linkOpened(id);
+      let link = await this.service.linkOpened(id);
+      if (!link.includes('http')) {
+        link = 'https://' + link;
+      }
       return { url: link, statusCode: 301 };
     } catch (e) {
       throw e;

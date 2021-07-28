@@ -21,7 +21,7 @@ export class InfluencerLinksEntity {
   @Column({ length: 255, nullable: false })
   public title: string;
 
-  @Column({ length: 255, nullable: false })
+  @Column({ type:'text', nullable: false })
   public link: string;
 
   @Column({ length: 255, nullable: false })

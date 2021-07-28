@@ -444,6 +444,7 @@ export class ContactsService {
 
   async updateContact(urlId: string, data: ContactDto, image?: any) {
     const consolidatedIds = urlId.split(':');
+    console.log(consolidatedIds);
     const userId = consolidatedIds[0];
     const contactUniqueMapper = consolidatedIds[1];
     const number = consolidatedIds[2];
@@ -537,16 +538,19 @@ export class ContactsService {
         };
       }
 
-      let infNum = await this.phoneService.findOne({
-        where: { id: number },
-        relations: ['user'],
+      const conv = await this.smsService.findOneConversations({
+        where: {
+          user: user,
+          contact: contactDetails,
+        },
+        relations: ['phone'],
       });
 
       await this.repository.save(contactDetails);
-      console.log('infNum', infNum);
+
       await this.smsService.sendSms(
         contactDetails,
-        infNum,
+        conv.phone,
         tagReplace(preset_onboard.body, {
           first_name: contactDetails.firstName ? contactDetails.firstName : '',
           last_name: contactDetails.lastName ? contactDetails.lastName : '',

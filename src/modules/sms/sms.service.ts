@@ -446,10 +446,10 @@ export class SmsService {
       }
 
       const _contact = await this.contactService.findOne({
-        where: { phoneNumber: contact, isComplete: true },
+        where: { phoneNumber: contact },
         relations: ['country', 'city'],
       });
-      if (_contact) {
+      if (_contact && _contact.isComplete) {
         const conversation = await this.conversationsRepo.findOne({
           where: { contact: _contact, user: inf },
           relations: ['user', 'contact', 'phone'],
@@ -541,7 +541,7 @@ export class SmsService {
               },
             ],
             HttpStatus.UNPROCESSABLE_ENTITY,
-            'Unprocessable entity',
+            'You cannot send message to fan who has not subscribed you yet or fan who has not completed his/her profile',
           ),
           HttpStatus.UNPROCESSABLE_ENTITY,
         );

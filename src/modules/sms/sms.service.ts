@@ -449,7 +449,8 @@ export class SmsService {
         where: { phoneNumber: contact },
         relations: ['country', 'city'],
       });
-      if (_contact && _contact.isComplete) {
+      console.log('*****************', _contact, '*****************');
+      if (_contact && _contact.isComplete==true) {
         const conversation = await this.conversationsRepo.findOne({
           where: { contact: _contact, user: inf },
           relations: ['user', 'contact', 'phone'],

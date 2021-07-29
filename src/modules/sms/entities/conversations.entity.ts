@@ -58,6 +58,7 @@ export class ConversationsEntity {
 
   public lastMessage: string;
   public lastSmsTime: Date;
+  public joinDate: Date;
 
   @Column({ nullable: true, default: false })
   public removedFromList: boolean;
@@ -83,10 +84,9 @@ export class ConversationsEntity {
       .select('*')
       .where('"userId" = :id', { id: check.userId })
       .andWhere('"contactId" = :cid', { cid: check.contactId });
-    const c = await join.getRawOne();
+    const c = await join.getRawMany();
 
-    console.log(check,c,join.getSql(),join.getParameters());
-    this.contact.createdAt = c?c.createdAt:this.contact.createdAt;
+    this.joinDate = c ? c[0].createdAt : null;
 
     const lastSms = await query.getRawOne();
 

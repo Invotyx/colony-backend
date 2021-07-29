@@ -285,14 +285,6 @@ export class PhoneService {
     try {
       if (env.NODE_ENV !== 'development') {
         try {
-          const check = await this.repo.findOne({
-            where: { number: num, status: 'in-use' },
-          });
-          if (check) {
-            throw new BadRequestException(
-              'Number is not available for purchase.',
-            );
-          }
           if (type != 'sub') {
             const country = await this.cityCountry.countryRepo.findOne({
               where: { code: cc.toUpperCase() },
@@ -314,6 +306,15 @@ export class PhoneService {
                 });
                 const date = new Date(); // Now
                 date.setDate(date.getDate() + 30);
+
+                const check = await this.repo.findOne({
+                  where: { number: num, status: 'in-use' },
+                });
+                if (check) {
+                  throw new BadRequestException(
+                    'Number is not available for purchase.',
+                  );
+                }
                 const savedNumber = await this.repo.save({
                   country: cc.toUpperCase(),
                   features: 'sms',
@@ -378,6 +379,15 @@ export class PhoneService {
                     if (number) {
                       const date = new Date(); // Now
                       date.setDate(date.getDate() + 30);
+
+                      const check = await this.repo.findOne({
+                        where: { number: num, status: 'in-use' },
+                      });
+                      if (check) {
+                        throw new BadRequestException(
+                          'Number is not available for purchase.',
+                        );
+                      }
                       await this.repo.save({
                         country: cc.toUpperCase(),
                         features: 'sms',
@@ -432,6 +442,15 @@ export class PhoneService {
             if (number) {
               const date = new Date(); // Now
               date.setDate(date.getDate() + 30);
+
+              const check = await this.repo.findOne({
+                where: { number: num, status: 'in-use' },
+              });
+              if (check) {
+                throw new BadRequestException(
+                  'Number is not available for purchase.',
+                );
+              }
               number = await this.repo.save({
                 country: cc.toUpperCase(),
                 features: 'sms',

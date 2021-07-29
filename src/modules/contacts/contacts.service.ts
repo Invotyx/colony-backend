@@ -258,11 +258,11 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE  c."createdAt"::date between CURRENT_DATE::date- INTERVAL '2 days' and CURRENT_DATE::date `;
+          ` WHERE  ic."createdAt"::date between CURRENT_DATE::date- INTERVAL '2 days' and CURRENT_DATE::date `;
       } else {
         query =
           query +
-          ` and  c."createdAt"::date between CURRENT_DATE::date- INTERVAL '2 days' and CURRENT_DATE::date `;
+          ` and  ic."createdAt"::date between CURRENT_DATE::date- INTERVAL '2 days' and CURRENT_DATE::date `;
       }
     }
 
@@ -271,13 +271,13 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE c."createdAt"::date between (CURRENT_DATE::date- INTERVAL '7 days')
+          ` WHERE ic."createdAt"::date between (CURRENT_DATE::date- INTERVAL '7 days')
             and CURRENT_DATE::date 
           `;
       } else {
         query =
           query +
-          ` and c."createdAt"::date between (CURRENT_DATE::date- INTERVAL '7 days')
+          ` and ic."createdAt"::date between (CURRENT_DATE::date- INTERVAL '7 days')
             and CURRENT_DATE::date 
             `;
       }
@@ -288,14 +288,14 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE  date_part('month', c."createdAt"::date) = date_part('month', CURRENT_DATE::date)
-            AND date_part('day', c."createdAt"::date) between 1 and date_part('day', CURRENT_DATE::date) 
+          ` WHERE  date_part('month', ic."createdAt"::date) = date_part('month', CURRENT_DATE::date)
+            AND date_part('day', ic."createdAt"::date) between 1 and date_part('day', CURRENT_DATE::date) 
           `;
       } else {
         query =
           query +
-          ` and  date_part('month', c."createdAt"::date) = date_part('month', CURRENT_DATE::date)
-            AND date_part('day', c."createdAt"::date) between 1 and date_part('day', CURRENT_DATE::date) 
+          ` and  date_part('month', ic."createdAt"::date) = date_part('month', CURRENT_DATE::date)
+            AND date_part('day', ic."createdAt"::date) between 1 and date_part('day', CURRENT_DATE::date) 
             `;
       }
     }

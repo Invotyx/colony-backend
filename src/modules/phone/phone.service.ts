@@ -1,10 +1,10 @@
 import {
-    BadRequestException,
-    forwardRef,
-    HttpException,
-    HttpStatus,
-    Inject,
-    Injectable
+  BadRequestException,
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
 } from '@nestjs/common';
 import e from 'express';
 import { env } from 'process';
@@ -79,8 +79,14 @@ export class PhoneService {
     try {
       if (env.NODE_ENV !== 'development') {
         const numb = await this.repo.findOne({
-          where: { user: user, number: num, status: 'active' },
+          where: { user: user, number: num, status: 'in-use' },
         });
+        if (numb.type == 'default') {
+          throw new HttpException(
+            'Default phone number cannot be deleted.',
+            HttpStatus.FORBIDDEN,
+          );
+        }
         if (numb) {
           const number = this.client.incomingPhoneNumbers(numb.sid).remove();
 
@@ -100,7 +106,7 @@ export class PhoneService {
         }
       } else {
         const numb = await this.repo.findOne({
-          where: { user: user, number: num, status: 'active' },
+          where: { user: user, number: num, status: 'in-use' },
         });
         if (numb) {
           numb.status = 'canceled';
@@ -123,7 +129,7 @@ export class PhoneService {
   public async getPurchasedPhoneNumbers(user: UserEntity) {
     try {
       const numbers = await this.repo.find({
-        where: { user: user },
+        where: { user: user, status: 'in-use' },
         order: { createdAt: 'DESC' },
       });
       if (numbers) {
@@ -279,6 +285,14 @@ export class PhoneService {
     try {
       if (env.NODE_ENV !== 'development') {
         try {
+          const check = await this.repo.findOne({
+            where: { number: num, status: 'in-use' },
+          });
+          if (check) {
+            throw new BadRequestException(
+              'Number is not available for purchase.',
+            );
+          }
           if (type != 'sub') {
             const country = await this.cityCountry.countryRepo.findOne({
               where: { code: cc.toUpperCase() },

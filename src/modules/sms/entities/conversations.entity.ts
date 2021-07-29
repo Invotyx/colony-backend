@@ -77,12 +77,12 @@ export class ConversationsEntity {
       .where('id = :id', { id: this.id });
 
     const check = await conversation.getRawOne();
-    
+
     const join = getRepository(InfluencerContactsEntity)
       .createQueryBuilder()
       .select('*')
-      .where('userId = :id', { id: check.userId })
-      .andWhere('contactId = :id', { id: check.contactId });
+      .where('"userId" = :id', { id: check.userId })
+      .andWhere('"contactId" = :cid', { cid: check.contactId });
     this.contact.createdAt = (await join.getRawOne()).createdAt;
 
     const lastSms = await query.getRawOne();

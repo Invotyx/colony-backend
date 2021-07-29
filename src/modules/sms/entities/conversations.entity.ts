@@ -83,7 +83,9 @@ export class ConversationsEntity {
       .select('*')
       .where('"userId" = :id', { id: check.userId })
       .andWhere('"contactId" = :cid', { cid: check.contactId });
-    this.contact.createdAt = (await join.getRawOne()).createdAt;
+    const c = await join.getRawOne();
+    console.log(c);
+    this.contact.createdAt = c.createdAt;
 
     const lastSms = await query.getRawOne();
 

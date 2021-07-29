@@ -57,7 +57,6 @@ export class ConversationsEntity {
 
   public lastMessage: string;
   public lastSmsTime: Date;
-  public joinDate: any;
 
   @Column({ nullable: true, default: false })
   public removedFromList: boolean;
@@ -71,7 +70,7 @@ export class ConversationsEntity {
       .andWhere('"type" <> :type', { type: 'broadcastOutbound' })
       .orderBy('"createdAt"', 'DESC');
 
-    this.joinDate = await getRepository(ContactsEntity).query(
+    this.contact.createdAt = await getRepository(ContactsEntity).query(
       `Select ic."createdAt" FROM ${TABLES.INFLUENCER_CONTACTS.name} ic on (ic."contactId" = ${this.contact.id} and ic."userId" = ${this.user.id})`,
     );
     

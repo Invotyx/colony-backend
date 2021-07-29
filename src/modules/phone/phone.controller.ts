@@ -4,8 +4,9 @@ import {
   Delete,
   Get,
   Injectable,
+  Param,
   Post,
-  Query
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../decorators/auth.decorator';
@@ -79,10 +80,10 @@ export class PhoneController {
   }
 
   @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
-  @Delete('cancel-number')
+  @Delete(':number')
   public async cancelPhoneNumber(
     @LoginUser() user: UserEntity,
-    @Query('number') number: string,
+    @Param('number') number: string,
   ) {
     try {
       return this.service.cancelPhoneNumber(number, user);

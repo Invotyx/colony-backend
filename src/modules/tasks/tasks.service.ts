@@ -126,7 +126,11 @@ export class TasksService {
       await this.broadcastService.save(broadcast);
       for (let contact of contacts.contacts) {
         const phone = await this.phoneService.findOne({
-          where: { country: contact.cCode, user: broadcast.user },
+          where: {
+            country: contact.cCode,
+            user: broadcast.user,
+            status: 'in-use',
+          },
           relations: ['user'],
         });
         const _contact = await this.contactService.findOne({

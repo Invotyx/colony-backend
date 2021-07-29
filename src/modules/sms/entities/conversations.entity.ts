@@ -84,9 +84,10 @@ export class ConversationsEntity {
       .select('*')
       .where('"userId" = :id', { id: check.userId })
       .andWhere('"contactId" = :cid', { cid: check.contactId });
-    const c = await join.getRawMany();
+    const c = await join.getRawOne();
 
-    this.joinDate = c ? c[0].createdAt : null;
+
+    this.joinDate = c ? c.createdAt : null;
 
     const lastSms = await query.getRawOne();
 

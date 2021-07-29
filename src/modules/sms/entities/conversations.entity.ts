@@ -1,3 +1,5 @@
+import { InfluencerContactsEntity } from 'src/modules/contacts/entities/influencer-contacts.entity';
+import { InfluencerContactRepository } from 'src/modules/contacts/repo/influencer-contact.repo';
 import {
   AfterLoad,
   Column,
@@ -70,9 +72,15 @@ export class ConversationsEntity {
       .andWhere('"type" <> :type', { type: 'broadcastOutbound' })
       .orderBy('"createdAt"', 'DESC');
 
-    this.contact.createdAt = await getRepository(ContactsEntity).query(
-      `Select ic."createdAt" FROM ${TABLES.INFLUENCER_CONTACTS.name} ic on (ic."contactId" = ${this.contact.id} and ic."userId" = ${this.user.id})`,
-    );
+    console.log(this.user);
+    console.log(this.contact);
+    
+    const check =  getRepository(InfluencerContactRepository).createQueryBuilder()
+      .select('*')
+      .where('"contactId" = :id', { id: this.contact.id })
+      .andWhere('"userId" = :uid', { uid: this.user.id });
+    const contactJoins= await check.getRawOne();
+    this.contact.createdAt = contactJoins?.createdAt;
     
 
 

@@ -1,5 +1,4 @@
 import { InfluencerContactsEntity } from 'src/modules/contacts/entities/influencer-contacts.entity';
-import { InfluencerContactRepository } from 'src/modules/contacts/repo/influencer-contact.repo';
 import {
   AfterLoad,
   Column,
@@ -72,17 +71,19 @@ export class ConversationsEntity {
       .andWhere('"type" <> :type', { type: 'broadcastOutbound' })
       .orderBy('"createdAt"', 'DESC');
 
-    console.log(this.user);
-    console.log(this.contact);
-    
-    const check =  getRepository(InfluencerContactRepository).createQueryBuilder()
+    const conversation = getRepository(ConversationsEntity)
+      .createQueryBuilder()
       .select('*')
-      .where('"contactId" = :id', { id: this.contact.id })
-      .andWhere('"userId" = :uid', { uid: this.user.id });
-    const contactJoins= await check.getRawOne();
-    this.contact.createdAt = contactJoins?.createdAt;
-    
+      .where('id = :id', { id: this.id });
 
+    const check = await conversation.getRawOne();
+    
+    const join = getRepository(InfluencerContactsEntity)
+      .createQueryBuilder()
+      .select('*')
+      .where('userId = :id', { id: check.userId })
+      .andWhere('contactId = :id', { id: check.contactId });
+    this.contact.createdAt = (await join.getRawOne()).createdAt;
 
     const lastSms = await query.getRawOne();
 

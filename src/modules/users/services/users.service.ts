@@ -582,6 +582,14 @@ export class UsersService {
     const dbRes = await this.repository.update(user.id, { image: null });
     return dbRes;
   }
+  async deleteUserVoiceMail(user: UserEntity) {
+    if (user.voiceUrl) {
+      const filePath = join(__dirname, '../../../..', 'uploads', user.voiceUrl);
+      fs.unlinkSync(filePath);
+    }
+    const dbRes = await this.repository.update(user.id, { voiceUrl: null });
+    return dbRes;
+  }
 
   async setProfileImage(user: UserEntity, file: any) {
     if (user.image) {
@@ -614,7 +622,10 @@ export class UsersService {
       });
     });
 
-    return { voiceUrl: user.voiceUrl, message:'Voicemail is set for your purchased numbers.' };
+    return {
+      voiceUrl: user.voiceUrl,
+      message: 'Voicemail is set for your purchased numbers.',
+    };
   }
 
   async searchUserForAuth(username: string) {

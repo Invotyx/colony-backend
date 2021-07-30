@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -279,5 +280,10 @@ export class UsersController {
       throw new BadRequestException('Voice cannot be empty');
     }
     return this.userService.setVoicemail(user, voice);
+  }
+
+  @Delete('/voicemail')
+  async deleteVoicemail(@LoginUser() user: UserEntity) {
+    return this.userService.deleteUserVoiceMail(user);
   }
 }

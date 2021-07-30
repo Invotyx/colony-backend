@@ -7,6 +7,8 @@ import {
   Param,
   Post,
   Query,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
@@ -37,7 +39,7 @@ export class PhoneController {
   }
 
   @Post('voice')
-  async voicemail(req: Request, res: Response) {
+  async voicemail(@Req() req: Request, @Res() res: Response) {
     console.log('call started');
     const VoiceResponse = require('twilio').twiml.VoiceResponse;
     const twiml = new VoiceResponse();

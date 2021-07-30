@@ -36,12 +36,22 @@ export class PhoneController {
   }
 
   @Post('voice')
-  async voicemail(req:Request,res:Response) {
-    const voiceResponse = this.client.twiml.VoiceResponse;
-    console.log(req.body);
-    const twiml = new voiceResponse();
-    twiml.say({ voice: 'alice' }, `This is automated message.`);
-    twiml.play({}, 'https://demo.twilio.com/docs/classic.mp3');
+  async voicemail(req: Request, res: Response) {
+    const VoiceResponse = require('twilio').twiml.VoiceResponse;
+    const twiml = new VoiceResponse();
+    const number = await this.service.findOne({
+      where: {
+        number: req.body.To,
+      },
+      relations: ['user'],
+    });
+    if (number.user.voiceUrl) twiml.play({}, number.user.voiceUrl);
+    else
+      twiml.say(
+        { voice: 'alice' },
+        `Your call cannot be placed at the moment. Kindly send sms to this number.`,
+      );
+
     res.type('text/xml');
     res.send(twiml.toString());
   }

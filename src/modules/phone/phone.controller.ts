@@ -40,13 +40,14 @@ export class PhoneController {
     const VoiceResponse = require('twilio').twiml.VoiceResponse;
     const twiml = new VoiceResponse();
     try {
-      console.log(req.body);
+      console.log('******** call ********', req.body, '******** call ********');
       const number = await this.service.findOne({
         where: {
           number: req.body.To,
         },
         relations: ['user'],
       });
+      console.log('number: ', number);
       if (number.user.voiceUrl) twiml.play({}, number.user.voiceUrl);
       else
         twiml.say(
@@ -57,7 +58,7 @@ export class PhoneController {
       res.type('text/xml');
       res.send(twiml.toString());
     } catch (e) {
-      console.log(e);
+      console.log('call error log>:', e);
 
       twiml.say(
         { voice: 'alice' },

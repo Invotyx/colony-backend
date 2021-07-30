@@ -1,5 +1,5 @@
-import { extname } from 'path';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { extname } from 'path';
 
 export const imageFileFilter = (req: any, file: any, callback: any) => {
   if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
@@ -8,6 +8,16 @@ export const imageFileFilter = (req: any, file: any, callback: any) => {
         'Only image files are allowed!',
         HttpStatus.BAD_REQUEST,
       ),
+      false,
+    );
+  }
+  callback(null, true);
+};
+
+export const audioFileFilter = (req: any, file: any, callback: any) => {
+  if (!file.originalname.match(/\.(mp3)$/)) {
+    return callback(
+      new HttpException('Only mp3 files are allowed!', HttpStatus.BAD_REQUEST),
       false,
     );
   }

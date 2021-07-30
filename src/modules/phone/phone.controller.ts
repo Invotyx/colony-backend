@@ -9,6 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { UserEntity } from '../../modules/users/entities/user.entity';
@@ -20,10 +21,30 @@ import { PhoneService } from './phone.service';
 @Controller('phone')
 @ApiTags('phone')
 export class PhoneController {
+  private client;
   constructor(
     private readonly service: PhoneService,
     private readonly countryRepo: CountryRepository,
-  ) {}
+  ) {
+    this.client = require('twilio')(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN,
+      {
+        lazyLoading: true,
+      },
+    );
+  }
+
+  @Post('voice')
+  async voicemail(req:Request,res:Response) {
+    const voiceResponse = this.client.twiml.VoiceResponse;
+    console.log(req.body);
+    const twiml = new voiceResponse();
+    twiml.say({ voice: 'alice' }, `This is automated message.`);
+    twiml.play({}, 'https://demo.twilio.com/docs/classic.mp3');
+    res.type('text/xml');
+    res.send(twiml.toString());
+  }
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Get('my-numbers')

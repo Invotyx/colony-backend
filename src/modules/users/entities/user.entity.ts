@@ -25,7 +25,6 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -80,6 +79,9 @@ export class UserEntity {
 
   @Column({ default: false })
   public isApproved: boolean;
+
+  @Column({ length: 1000, default: null, nullable: true })
+  public voiceUrl: string;
 
   @Column({ default: 0.0, type: 'decimal' })
   public consumedSmsCost: number;

@@ -18,7 +18,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { Auth } from 'src/decorators/auth.decorator';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
-import { editFileName, imageFileFilter } from '../users/imageupload.service';
+import { editFileName, imageFileFilter } from '../users/fileupload.service';
 import { ContentService } from './content.service';
 import { FaqsDto } from './dtos/faqs.dto';
 import { PagesDto } from './dtos/pages.dto';

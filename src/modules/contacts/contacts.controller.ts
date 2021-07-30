@@ -18,7 +18,7 @@ import { LoginUser } from 'src/decorators/user.decorator';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { Auth } from '../../decorators/auth.decorator';
 import { UserEntity } from '../users/entities/user.entity';
-import { editFileName, imageFileFilter } from '../users/imageupload.service';
+import { editFileName, imageFileFilter } from '../users/fileupload.service';
 import { ContactDto, ContactFilter, PaginationDto } from './contact.dto';
 import { ContactsService } from './contacts.service';
 

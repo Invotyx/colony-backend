@@ -1,4 +1,5 @@
-import { Controller, Get, Param, Redirect } from '@nestjs/common';
+import { Controller, Get, Param, Redirect, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { ShareableLinkHandlerService } from './shareable-link-handler.service';
 
 @Controller('s')
@@ -7,10 +8,13 @@ export class ShareableLinkHandlerController {
 
   @Get('o/:id')
   @Redirect()
-  public async linkOpened(@Param('id') id: string) {
+  public async linkOpened(@Param('id') id: string, @Res() res: Response) {
     try {
-      const link = await this.service.linkOpened(id);
-      return { url: link };
+      let link = await this.service.linkOpened(id);
+      if (!link.includes('http')) {
+        link = 'https://' + link;
+      }
+      return { url: link, statusCode: 301 };
     } catch (e) {
       throw e;
     }

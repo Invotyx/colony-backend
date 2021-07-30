@@ -1,3 +1,4 @@
+import { InfluencerContactsEntity } from 'src/modules/contacts/entities/influencer-contacts.entity';
 import {
   AfterLoad,
   Column,
@@ -57,6 +58,7 @@ export class ConversationsEntity {
 
   public lastMessage: string;
   public lastSmsTime: Date;
+  public joinDate: Date;
 
   @Column({ nullable: true, default: false })
   public removedFromList: boolean;
@@ -69,6 +71,23 @@ export class ConversationsEntity {
       .where('"conversationsId" = :id', { id: this.id })
       .andWhere('"type" <> :type', { type: 'broadcastOutbound' })
       .orderBy('"createdAt"', 'DESC');
+
+    const conversation = getRepository(ConversationsEntity)
+      .createQueryBuilder()
+      .select('*')
+      .where('id = :id', { id: this.id });
+
+    const check = await conversation.getRawOne();
+
+    const join = getRepository(InfluencerContactsEntity)
+      .createQueryBuilder()
+      .select('*')
+      .where('"userId" = :id', { id: check.userId })
+      .andWhere('"contactId" = :cid', { cid: check.contactId });
+    const c = await join.getRawOne();
+
+
+    this.joinDate = c ? c.createdAt : null;
 
     const lastSms = await query.getRawOne();
 

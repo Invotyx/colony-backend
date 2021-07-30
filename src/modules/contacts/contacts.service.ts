@@ -258,11 +258,11 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE  c."createdAt"::date between CURRENT_DATE::date- INTERVAL '2 days' and CURRENT_DATE::date `;
+          ` WHERE  ic."createdAt"::date between CURRENT_DATE::date- INTERVAL '2 days' and CURRENT_DATE::date `;
       } else {
         query =
           query +
-          ` and  c."createdAt"::date between CURRENT_DATE::date- INTERVAL '2 days' and CURRENT_DATE::date `;
+          ` and  ic."createdAt"::date between CURRENT_DATE::date- INTERVAL '2 days' and CURRENT_DATE::date `;
       }
     }
 
@@ -271,13 +271,13 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE c."createdAt"::date between (CURRENT_DATE::date- INTERVAL '7 days')
+          ` WHERE ic."createdAt"::date between (CURRENT_DATE::date- INTERVAL '7 days')
             and CURRENT_DATE::date 
           `;
       } else {
         query =
           query +
-          ` and c."createdAt"::date between (CURRENT_DATE::date- INTERVAL '7 days')
+          ` and ic."createdAt"::date between (CURRENT_DATE::date- INTERVAL '7 days')
             and CURRENT_DATE::date 
             `;
       }
@@ -288,14 +288,14 @@ export class ContactsService {
       if (!query.includes('WHERE')) {
         query =
           query +
-          ` WHERE  date_part('month', c."createdAt"::date) = date_part('month', CURRENT_DATE::date)
-            AND date_part('day', c."createdAt"::date) between 1 and date_part('day', CURRENT_DATE::date) 
+          ` WHERE  date_part('month', ic."createdAt"::date) = date_part('month', CURRENT_DATE::date)
+            AND date_part('day', ic."createdAt"::date) between 1 and date_part('day', CURRENT_DATE::date) 
           `;
       } else {
         query =
           query +
-          ` and  date_part('month', c."createdAt"::date) = date_part('month', CURRENT_DATE::date)
-            AND date_part('day', c."createdAt"::date) between 1 and date_part('day', CURRENT_DATE::date) 
+          ` and  date_part('month', ic."createdAt"::date) = date_part('month', CURRENT_DATE::date)
+            AND date_part('day', ic."createdAt"::date) between 1 and date_part('day', CURRENT_DATE::date) 
             `;
       }
     }
@@ -394,6 +394,12 @@ export class ContactsService {
       }
     }
 
+    if (!query.includes('WHERE')) {
+      query = query + ` WHERE c."isComplete" = true`;
+    } else {
+      query = query + ` and c."isComplete" = true`;
+    }
+
     const contacts = await this.repository.query(query);
     return { contacts: contacts, count: contacts.length };
   }
@@ -412,7 +418,7 @@ export class ContactsService {
       });
       let _contact = [];
       for (let contact of contacts) {
-        _contact.push(contact.contact);
+        if (contact.contact.isComplete) _contact.push(contact.contact);
       }
       return _contact;
     } catch (e) {
@@ -433,7 +439,8 @@ export class ContactsService {
         select "c".* from "contacts" "c"
         inner join "influencer_contacts" "ic" on ("ic"."contactId"="c"."id" and "ic"."userId"=${user.id})
         WHERE extract(month from "c"."dob") = extract(month from current_date)
-        and extract(day from "c"."dob") = extract(day from current_date);
+        and extract(day from "c"."dob") = extract(day from current_date)
+        and c."isComplete" = true;
       `);
       return contacts;
     } catch (e) {
@@ -444,6 +451,7 @@ export class ContactsService {
 
   async updateContact(urlId: string, data: ContactDto, image?: any) {
     const consolidatedIds = urlId.split(':');
+    console.log(consolidatedIds);
     const userId = consolidatedIds[0];
     const contactUniqueMapper = consolidatedIds[1];
     const number = consolidatedIds[2];
@@ -537,16 +545,19 @@ export class ContactsService {
         };
       }
 
-      let infNum = await this.phoneService.findOne({
-        where: { id: number },
-        relations: ['user'],
+      const conv = await this.smsService.findOneConversations({
+        where: {
+          user: user,
+          contact: contactDetails,
+        },
+        relations: ['phone'],
       });
 
       await this.repository.save(contactDetails);
-      console.log('infNum', infNum);
+
       await this.smsService.sendSms(
         contactDetails,
-        infNum,
+        conv.phone,
         tagReplace(preset_onboard.body, {
           first_name: contactDetails.firstName ? contactDetails.firstName : '',
           last_name: contactDetails.lastName ? contactDetails.lastName : '',

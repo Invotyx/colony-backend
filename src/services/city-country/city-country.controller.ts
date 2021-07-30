@@ -4,6 +4,7 @@ import {
   Get,
   Injectable,
   Param,
+  Post,
   Put,
   Query,
 } from '@nestjs/common';
@@ -17,7 +18,8 @@ import {
   PaginatorErrorHandler,
 } from 'src/shared/paginator';
 import { ILike, Like } from 'typeorm';
-import { CountryCost } from './country-cost.dto';
+import { CityCountryService } from './city-country.service';
+import { City, Country, CountryCost } from './country-cost.dto';
 import { CityRepository } from './repos/city.repo';
 import { CountryRepository } from './repos/country.repo';
 
@@ -28,7 +30,17 @@ export class CityCountryController {
   constructor(
     public readonly cityRepo: CityRepository,
     public readonly countryRepo: CountryRepository,
+    private readonly service: CityCountryService,
   ) {}
+
+  @Post()
+  async addCountry(@Body() country: Country) {
+    return this.service.addCountry(country);
+  }
+  @Post('city')
+  async addCity(@Body() city: City) {
+    return this.service.addCity(city);
+  }
 
   @Get()
   async getCountries() {

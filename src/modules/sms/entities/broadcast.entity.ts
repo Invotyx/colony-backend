@@ -98,18 +98,14 @@ export class BroadcastsEntity {
       .orderBy('"createdAt"', 'DESC')
       .limit(1);
 
-    const inboundMessages = getRepository(ConversationMessagesEntity)
-      .createQueryBuilder()
-      .select('*')
-      .where('"broadcastId" = :id', { id: this.id })
-      .andWhere('"type"=:type', { type: 'broadcastInbound' })
-      .orderBy('"createdAt"', 'DESC');
+    const inboundMessages = await getRepository(ConversationMessagesEntity)
+      .query(`select "cm".*, "con"."id" as contactId, "con"."firstName","con"."lastName","con"."phoneNumber","con"."profileImage" from "conversation_messages" "cm"
+      left join "conversations" "c" on "c"."id"="cm"."conversationsId"
+      left join "contacts" "con" on "con"."id" = "c"."contactId"
+      where "cm"."broadcastId" = ${this.id} and "cm"."type"='broadcastInbound' order by "cm"."createdAt" DESC;`);
 
-    const messages = await inboundMessages.getRawMany();
-    console.log(messages);
-    if (messages) {
-      this.broadcastIncomingMessages = messages;
-    }
+    this.broadcastIncomingMessages = inboundMessages ? inboundMessages : [];
+
     const val = await innerSelect.getOne();
     if (val) {
       this.lastMessage = val.sms;

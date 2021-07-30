@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import fetch from 'node-fetch';
 import { CityEntity } from 'src/services/city-country/entities/city.entity';
+import { Country } from './country-cost.dto';
 import { CountryEntity } from './entities/country.entity';
 import { CityRepository } from './repos/city.repo';
 import { CountryRepository } from './repos/country.repo';
@@ -78,5 +79,34 @@ export class CityCountryService {
         await this.cityRepo.save(_city);
       });
     });
+  }
+
+  async addCity(city: any) {
+    try {
+      const country = await this.countryRepo.findOne({
+        where: { id: city.country },
+      });
+      return this.cityRepo.save({
+        id: city.id,
+        name: city.name,
+        country: country,
+        lat: city.lat,
+        long: city.long,
+      });
+    } catch (e) {
+      throw e;
+    }
+  }
+  async addCountry(country: Country) {
+    try {
+      return this.countryRepo.save({
+        id: country.id,
+        code: country.code,
+        name: country.name,
+        native: country.native,
+      });
+    } catch (e) {
+      throw e;
+    }
   }
 }

@@ -603,7 +603,7 @@ export class UsersService {
 
     const phoneNumbers = await this.repository.findOne({
       where: {
-        user: user,
+        id: user.id,
       },
       relations: ['numbers'],
     });

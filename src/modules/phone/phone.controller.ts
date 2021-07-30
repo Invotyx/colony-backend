@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { env } from 'process';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { UserEntity } from '../../modules/users/entities/user.entity';
@@ -37,6 +38,7 @@ export class PhoneController {
 
   @Post('voice')
   async voicemail(req: Request, res: Response) {
+    console.log('call started');
     const VoiceResponse = require('twilio').twiml.VoiceResponse;
     const twiml = new VoiceResponse();
     try {
@@ -48,7 +50,8 @@ export class PhoneController {
         relations: ['user'],
       });
       console.log('number: ', number);
-      if (number.user.voiceUrl) twiml.play({}, number.user.voiceUrl);
+      if (number.user.voiceUrl)
+        twiml.play({}, env.API_URL + '/' + number.user.voiceUrl);
       else
         twiml.say(
           { voice: 'alice' },

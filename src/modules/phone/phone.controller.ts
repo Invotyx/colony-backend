@@ -39,21 +39,34 @@ export class PhoneController {
   async voicemail(req: Request, res: Response) {
     const VoiceResponse = require('twilio').twiml.VoiceResponse;
     const twiml = new VoiceResponse();
-    const number = await this.service.findOne({
-      where: {
-        number: req.body.To,
-      },
-      relations: ['user'],
-    });
-    if (number.user.voiceUrl) twiml.play({}, number.user.voiceUrl);
-    else
+    try {
+      console.log(req.body);
+      const number = await this.service.findOne({
+        where: {
+          number: req.body.To,
+        },
+        relations: ['user'],
+      });
+      if (number.user.voiceUrl) twiml.play({}, number.user.voiceUrl);
+      else
+        twiml.say(
+          { voice: 'alice' },
+          `Your call cannot be placed at the moment. Kindly send sms to this number.`,
+        );
+
+      res.type('text/xml');
+      res.send(twiml.toString());
+    } catch (e) {
+      console.log(e);
+
       twiml.say(
         { voice: 'alice' },
         `Your call cannot be placed at the moment. Kindly send sms to this number.`,
       );
 
-    res.type('text/xml');
-    res.send(twiml.toString());
+      res.type('text/xml');
+      res.send(twiml.toString());
+    }
   }
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })

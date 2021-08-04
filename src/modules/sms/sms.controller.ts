@@ -161,7 +161,7 @@ export class SmsController {
   @Post('/conversation')
   async sendSms(
     @LoginUser() inf: UserEntity,
-    @Body('to') contact: string,
+    @Body('to') contact: any,
     @Body('message') message: string,
     @Body('scheduled') scheduled?: any,
   ) {
@@ -172,6 +172,17 @@ export class SmsController {
       //console.log('scheduled: ', scheduled);
       //console.log('Initiate SendSms Start *********************');
 
+      if (Array.isArray(contact)) {
+        contact.forEach(async (con) => {
+          await this.service.initiateSendSms(
+            inf,
+            con,
+            message,
+            scheduled ? scheduled : null,
+          );
+        });
+        return { message: 'Messages sent' };
+      }
       return this.service.initiateSendSms(
         inf,
         contact,

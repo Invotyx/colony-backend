@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import * as fs from 'fs';
 import { join } from 'path';
+import { env } from 'process';
 import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
 import { uniqueId } from 'src/shared/random-keygen';
@@ -455,6 +456,10 @@ export class ContactsService {
     const userId = consolidatedIds[0];
     const contactUniqueMapper = consolidatedIds[1];
     const number = consolidatedIds[2];
+    const phoneNumber = await this.phoneService.findOne({
+      where: { id: number },
+      relations: ['user'],
+    });
     let contactDetails = await this.repository.findOne({
       where: { urlMapper: contactUniqueMapper },
       relations: ['country', 'city'],
@@ -553,7 +558,7 @@ export class ContactsService {
         relations: ['phone'],
       });
 
-      await this.repository.save(contactDetails);
+      const savedContact = await this.repository.save(contactDetails);
 
       await this.smsService.sendSms(
         contactDetails,
@@ -563,8 +568,16 @@ export class ContactsService {
           last_name: contactDetails.lastName ? contactDetails.lastName : '',
           inf_first_name: user.firstName,
           inf_last_name: user.lastName,
-          country: contactDetails.country ? contactDetails.country.name : '',
-          city: contactDetails.city ? contactDetails.city.name : '',
+          country: savedContact.country ? savedContact.country.name : '',
+          city: savedContact.city ? savedContact.city.name : '',
+          link:
+            env.PUBLIC_APP_URL +
+            '/contacts/enroll/' +
+            phoneNumber.user.id +
+            ':' +
+            savedContact.urlMapper +
+            ':' +
+            phoneNumber.id,
         }),
         'outBound',
       );

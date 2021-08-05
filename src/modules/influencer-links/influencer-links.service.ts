@@ -53,7 +53,7 @@ export class InfluencerLinksService {
         where: { link: link, user: user },
       });
       if (check) {
-        throw new BadRequestException('Link already exists.');
+        return check;
       }
       const inf_links = new InfluencerLinksEntity();
       inf_links.link = link;

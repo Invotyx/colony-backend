@@ -161,7 +161,7 @@ export class SmsController {
   @Post('/conversation')
   async sendSms(
     @LoginUser() inf: UserEntity,
-    @Body('to') contact: any,
+    @Body('to') contact: string[],
     @Body('message') message: string,
     @Body('scheduled') scheduled?: any,
   ) {
@@ -172,6 +172,9 @@ export class SmsController {
       //console.log('scheduled: ', scheduled);
       //console.log('Initiate SendSms Start *********************');
 
+      if (contact.length == 0) {
+        throw new BadRequestException('Contact list cannot be empty');
+      }
       if (Array.isArray(contact)) {
         contact.forEach(async (con) => {
           await this.service.initiateSendSms(
@@ -181,7 +184,7 @@ export class SmsController {
             scheduled ? scheduled : null,
           );
         });
-        return { message: 'Messages sent' };
+        return { message: 'Messages sent/scheduled' };
       }
       return this.service.initiateSendSms(
         inf,

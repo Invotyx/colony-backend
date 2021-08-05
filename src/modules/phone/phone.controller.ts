@@ -7,8 +7,12 @@ import {
   Param,
   Post,
   Query,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
+import { env } from 'process';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { UserEntity } from '../../modules/users/entities/user.entity';
@@ -20,10 +24,56 @@ import { PhoneService } from './phone.service';
 @Controller('phone')
 @ApiTags('phone')
 export class PhoneController {
+  private client;
   constructor(
     private readonly service: PhoneService,
     private readonly countryRepo: CountryRepository,
-  ) {}
+  ) {
+    this.client = require('twilio')(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN,
+      {
+        lazyLoading: true,
+      },
+    );
+  }
+
+  @Post('voice')
+  async voicemail(@Req() req: Request, @Res() res: Response) {
+    console.log('call started');
+    const VoiceResponse = require('twilio').twiml.VoiceResponse;
+    const twiml = new VoiceResponse();
+    try {
+      console.log('******** call ********', req.body, '******** call ********');
+      const number = await this.service.findOne({
+        where: {
+          number: req.body.To,
+        },
+        relations: ['user'],
+      });
+      console.log('number: ', number);
+      if (number.user.voiceUrl)
+        twiml.play({}, env.API_URL + '/' + number.user.voiceUrl);
+      else
+        twiml.say(
+          { voice: 'alice' },
+          `Your call cannot be placed at the moment. Kindly send sms to this number.`,
+        );
+
+      res.type('text/xml');
+      res.send(twiml.toString());
+    } catch (e) {
+      console.log('call error log>:', e);
+
+      twiml.say(
+        { voice: 'alice' },
+        `Your call cannot be placed at the moment. Kindly send sms to this number.`,
+      );
+
+      res.type('text/xml');
+      res.send(twiml.toString());
+    }
+  }
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Get('my-numbers')

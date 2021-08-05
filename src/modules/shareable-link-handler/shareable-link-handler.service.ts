@@ -11,9 +11,10 @@ export class ShareableLinkHandlerService {
     try {
       const r = await this.influencerLinksService.linkOpened(id);
 
+      console.log('r', r);
       return r.link;
     } catch (e) {
-      //console.log('ShareableLinkHandlerService.linkOpened', e);
+      console.log('ShareableLinkHandlerService.linkOpened', e);
       throw e;
     }
   }

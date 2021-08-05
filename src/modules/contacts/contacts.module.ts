@@ -1,5 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { MainMysqlModule } from 'src/shared/main-mysql.module';
+import { InfluencerLinksModule } from '../influencer-links/influencer-links.module';
 import { PaymentHistoryModule } from '../payment-history/payment-history.module';
 import { PhoneModule } from '../phone/phone.module';
 import { SubscriptionModule } from '../products/subscription/subscription.module';
@@ -16,6 +17,7 @@ import { ContactsService } from './contacts.service';
     forwardRef(() => PhoneModule),
     forwardRef(() => PaymentHistoryModule),
     forwardRef(() => SubscriptionModule),
+    forwardRef(() => InfluencerLinksModule),
   ],
   controllers: [ContactsController],
   providers: [ContactsService],

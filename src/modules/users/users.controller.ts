@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -28,7 +29,11 @@ import { PaginatorError, PaginatorErrorHandler } from '../../shared/paginator';
 import { inValidDataRes } from '../../shared/res.fun';
 import { UserEntity } from './entities/user.entity';
 import { InValidDataError, UserNotExistError } from './errors/users.error';
-import { editFileName, imageFileFilter } from './imageupload.service';
+import {
+  audioFileFilter,
+  editFileName,
+  imageFileFilter,
+} from './fileupload.service';
 import { RolesService } from './services/roles.service';
 import { UsersService } from './services/users.service';
 import { PasswordChange, UpdateProfileDto, UpdateRole } from './users.dto';
@@ -254,5 +259,31 @@ export class UsersController {
     } catch (e) {
       throw e;
     }
+  }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Post('/voicemail')
+  @UseInterceptors(
+    FileInterceptor('voice', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: editFileName,
+      }),
+      fileFilter: audioFileFilter,
+    }),
+  )
+  async setVoicemail(
+    @LoginUser() user: UserEntity,
+    @UploadedFile() voice: any,
+  ) {
+    if (!voice) {
+      throw new BadRequestException('Voice cannot be empty');
+    }
+    return this.userService.setVoicemail(user, voice);
+  }
+
+  @Delete('/voicemail')
+  async deleteVoicemail(@LoginUser() user: UserEntity) {
+    return this.userService.deleteUserVoiceMail(user);
   }
 }

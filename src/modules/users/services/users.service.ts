@@ -8,6 +8,7 @@ import {
 import * as fs from 'fs';
 import { nanoid } from 'nanoid';
 import { join } from 'path';
+import { env } from 'process';
 import { TABLES } from 'src/consts/tables.const';
 import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer';
 import { presetTrigger } from 'src/modules/sms/entities/preset-message.entity';
@@ -48,6 +49,7 @@ import {
 
 @Injectable()
 export class UsersService {
+  private client;
   constructor(
     private readonly repository: UserRepository,
     private readonly roleRepository: RoleRepository,
@@ -58,7 +60,15 @@ export class UsersService {
     private readonly country: CountryRepository,
     private readonly city: CityRepository,
     private readonly presetRepo: PresetMessagesRepository,
-  ) {}
+  ) {
+    this.client = require('twilio')(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN,
+      {
+        lazyLoading: true,
+      },
+    );
+  }
 
   findAll(): Promise<UserEntity[]> {
     return this.repository.find({
@@ -212,6 +222,8 @@ export class UsersService {
             name: 'OnBoard',
             trigger: presetTrigger.onBoard,
             user: newUser,
+            fixedText:
+              'Msg frequency will vary. Msg & Data rates may apply. Reply HELP for help, STOP to cancel.',
           }),
 
           this.presetRepo.save({
@@ -572,6 +584,14 @@ export class UsersService {
     const dbRes = await this.repository.update(user.id, { image: null });
     return dbRes;
   }
+  async deleteUserVoiceMail(user: UserEntity) {
+    if (user.voiceUrl) {
+      const filePath = join(__dirname, '../../../..', 'uploads', user.voiceUrl);
+      fs.unlinkSync(filePath);
+    }
+    const dbRes = await this.repository.update(user.id, { voiceUrl: null });
+    return dbRes;
+  }
 
   async setProfileImage(user: UserEntity, file: any) {
     if (user.image) {
@@ -581,6 +601,33 @@ export class UsersService {
     user.image = file.filename;
     await this.repository.save(user);
     return { profileImage: user.image };
+  }
+
+  async setVoicemail(user: UserEntity, file: any) {
+    if (user.voiceUrl) {
+      const filePath = join(__dirname, '../../../..', 'uploads', user.voiceUrl);
+      fs.unlinkSync(filePath);
+    }
+    user.voiceUrl = file.filename;
+    await this.repository.save(user);
+
+    const phoneNumbers = await this.repository.findOne({
+      where: {
+        id: user.id,
+      },
+      relations: ['numbers'],
+    });
+
+    phoneNumbers.numbers.forEach(async (number) => {
+      await this.client.incomingPhoneNumbers(number.sid).update({
+        voiceUrl: env.API_URL + '/api/phone/voice',
+      });
+    });
+
+    return {
+      voiceUrl: user.voiceUrl,
+      message: 'Voicemail is set for your purchased numbers.',
+    };
   }
 
   async searchUserForAuth(username: string) {

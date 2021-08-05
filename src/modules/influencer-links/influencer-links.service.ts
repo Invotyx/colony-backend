@@ -53,7 +53,7 @@ export class InfluencerLinksService {
         where: { link: link, user: user },
       });
       if (check) {
-        throw new BadRequestException('Link already exists.');
+        return check;
       }
       const inf_links = new InfluencerLinksEntity();
       inf_links.link = link;
@@ -230,6 +230,7 @@ export class InfluencerLinksService {
         smsSid: sid,
         broadcast: broadcast ? broadcast : null,
       });
+      console.log('linkSent', linkSent);
       linkSent.contact = linkSent.contact.id as any;
       linkSent.influencerLink = linkSent.influencerLink.id as any;
       return linkSent;
@@ -262,12 +263,12 @@ export class InfluencerLinksService {
       if (!linkUrl) {
         throw new BadRequestException("link doesn't exist.");
       }
-      //console.log(linkUrl);
+      console.log('linkUrl', linkUrl);
 
       const linkSent = await this.trackingRepo.findOne({
         where: { influencerLink: linkUrl, contact: contactUrl },
       });
-      //console.log('linkSent', linkSent);
+      console.log('linkSent', linkSent);
       if (linkSent) {
         linkSent.isOpened = true;
         linkSent.clicks = linkSent.clicks ? linkSent.clicks + 1 : 1;

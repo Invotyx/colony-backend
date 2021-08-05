@@ -21,6 +21,7 @@ export const tagReplace = function template(literal, params) {
           key: 'body',
           reason: 'invalidMergeTag',
           description: 'You have used invalid merge tag.',
+          input: {literal, params}
         },
       ],
       HttpStatus.UNPROCESSABLE_ENTITY,

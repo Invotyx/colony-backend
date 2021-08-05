@@ -589,7 +589,9 @@ export class ContactsService {
           inf_last_name: user.lastName,
           country: savedContact.country ? savedContact.country.name : '',
           city: savedContact.city ? savedContact.city.name : '',
-        }),
+        }) +
+          ' ' +
+          preset_onboard.fixedText,
         'outBound',
       );
 

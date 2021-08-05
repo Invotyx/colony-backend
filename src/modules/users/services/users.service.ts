@@ -222,6 +222,8 @@ export class UsersService {
             name: 'OnBoard',
             trigger: presetTrigger.onBoard,
             user: newUser,
+            fixedText:
+              'Msg frequency will vary. Msg & Data rates may apply. Reply HELP for help, STOP to cancel.',
           }),
 
           this.presetRepo.save({

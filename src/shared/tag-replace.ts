@@ -21,7 +21,6 @@ export const tagReplace = function template(literal, params) {
           key: 'body',
           reason: 'invalidMergeTag',
           description: 'You have used invalid merge tag.',
-          input: {literal, params}
         },
       ],
       HttpStatus.UNPROCESSABLE_ENTITY,
@@ -30,6 +29,7 @@ export const tagReplace = function template(literal, params) {
     HttpStatus.UNPROCESSABLE_ENTITY,
   );
   try {
+    console.log({literal, params})
     return new Function(
       Object.keys(params) as any,
       'return `' + literal + '`;',

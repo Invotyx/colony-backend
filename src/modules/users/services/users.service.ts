@@ -14,6 +14,7 @@ import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer
 import { presetTrigger } from 'src/modules/sms/entities/preset-message.entity';
 import { PresetMessagesRepository } from 'src/modules/sms/repo/sms-presets.repo';
 import { ForgotPassword } from 'src/modules/users/entities/forgottenpassword.entity';
+import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { CityRepository } from 'src/services/city-country/repos/city.repo';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
 import { error } from 'src/shared/error.dto';
@@ -205,9 +206,14 @@ export class UsersService {
         user.urlId = nanoid(10);
         user.username = user.username.toLowerCase();
         const newUser: UserEntity = await this.repository.save(user);
-        await this.updateRoles(newUser.id, { userId: newUser.id, roleId: [2] });
-        /* await this.createEmailToken(user.email);
-        await this.emailTokenSend.sendEmailVerification(user.email); */
+        const roles = await this.roleRepository.findOne({
+          where: { role: ROLES.INFLUENCER },
+        });
+        await this.updateRoles(newUser.id, {
+          userId: newUser.id,
+          roleId: [roles.id],
+        });
+
         Promise.all([
           this.presetRepo.save({
             body:

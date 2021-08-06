@@ -216,6 +216,7 @@ export class InfluencerLinksService {
       }
       const link = parts[0];
       const contact = parts[1];
+
       const contactUrl = await this.contactService.findOne({
         where: { urlMapper: contact },
       });
@@ -274,6 +275,7 @@ export class InfluencerLinksService {
         linkSent.clicks = linkSent.clicks ? linkSent.clicks + 1 : 1;
         await this.trackingRepo.update(linkSent.id, linkSent);
       }
+      console.log('linkSent updated', linkSent);
       return linkUrl;
     } catch (e) {
       throw e;

@@ -251,6 +251,8 @@ export class SmsService {
             return 200;
           }
         }
+
+        
         await this.contactOnboarding(
           sender,
           influencerNumber,
@@ -260,6 +262,22 @@ export class SmsService {
           preset_welcome,
           fromCountry,
         );
+
+        const checkKeyword = await this.keywordsService.findOne({
+          where: {
+            keyword: body,
+            user: influencerNumber.user,
+          },
+        });
+
+        if (checkKeyword) {
+          await this.sendSms(
+            contact,
+            influencerNumber,
+            checkKeyword.message,
+            'outBound',
+          );
+        }
         return 200;
       } else {
         //console.log(

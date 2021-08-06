@@ -252,8 +252,7 @@ export class SmsService {
           }
         }
 
-        
-        await this.contactOnboarding(
+        const newContact = await this.contactOnboarding(
           sender,
           influencerNumber,
           body,
@@ -271,19 +270,51 @@ export class SmsService {
         });
 
         if (checkKeyword) {
+          let welcomeBody = checkKeyword.message;
+          const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
+          if (links && links.length > 0) {
+            for (let link of links) {
+              let id = link.replace('${link:', '').replace('}', '');
+              const shareableUri = (
+                await this.infLinks.getUniqueLinkForContact(
+                  parseInt(id),
+                  newContact.phoneNumber,
+                )
+              ).url;
+
+              await this.infLinks.sendLink(shareableUri, newContact.id + ':');
+              welcomeBody = welcomeBody.replace(
+                link,
+                env.API_URL + '/api/s/o/' + shareableUri,
+              );
+            }
+          }
+          const text_body: string = tagReplace(welcomeBody, {
+            first_name: newContact.firstName ? newContact.firstName : '',
+            last_name: newContact.lastName ? newContact.lastName : '',
+            inf_first_name: influencerNumber.user.firstName,
+            inf_last_name: influencerNumber.user.lastName,
+            country: newContact.country ? newContact.country.name : '',
+            city: newContact.city ? newContact.city.name : '',
+            link:
+              env.PUBLIC_APP_URL +
+              '/contacts/enroll/' +
+              influencerNumber.user.id +
+              ':' +
+              newContact.urlMapper +
+              ':' +
+              influencerNumber.id,
+          });
+
           await this.sendSms(
-            contact,
+            newContact,
             influencerNumber,
-            checkKeyword.message,
+            text_body,
             'outBound',
           );
         }
         return 200;
       } else {
-        //console.log(
-        //   'Influencer not found. Error generated. Returned 200 to twillio hook.',
-        // );
-        return 200;
       }
     } catch (e) {
       //console.log('Receive SMS', e);
@@ -365,6 +396,7 @@ export class SmsService {
     //   ' body ',
     //   text_body,
     // );
+    return contact;
   }
 
   async saveSms(

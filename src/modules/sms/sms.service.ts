@@ -332,6 +332,9 @@ export class SmsService {
       }
     }
     let text_body: string;
+    if (skipLink===false && welcomeBody.includes('${link}')===false) {
+      welcomeBody = welcomeBody + ' Click this link ${link} to add yourself in my contact list.';
+    }
     if (skipLink) {
       text_body = tagReplace(welcomeBody, {
         first_name: newContact.firstName ? newContact.firstName : '',

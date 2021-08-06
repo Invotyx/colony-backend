@@ -4,7 +4,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
-  Injectable,
+  Injectable
 } from '@nestjs/common';
 import { env } from 'process';
 import Pusher from 'pusher';
@@ -270,41 +270,12 @@ export class SmsService {
         });
 
         if (checkKeyword) {
-          let welcomeBody = checkKeyword.message;
-          const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
-          if (links && links.length > 0) {
-            for (let link of links) {
-              let id = link.replace('${link:', '').replace('}', '');
-              const shareableUri = (
-                await this.infLinks.getUniqueLinkForContact(
-                  parseInt(id),
-                  newContact.phoneNumber,
-                )
-              ).url;
-
-              await this.infLinks.sendLink(shareableUri, newContact.id + ':');
-              welcomeBody = welcomeBody.replace(
-                link,
-                env.API_URL + '/api/s/o/' + shareableUri,
-              );
-            }
-          }
-          const text_body: string = tagReplace(welcomeBody, {
-            first_name: newContact.firstName ? newContact.firstName : '',
-            last_name: newContact.lastName ? newContact.lastName : '',
-            inf_first_name: influencerNumber.user.firstName,
-            inf_last_name: influencerNumber.user.lastName,
-            country: newContact.country ? newContact.country.name : '',
-            city: newContact.city ? newContact.city.name : '',
-            link:
-              env.PUBLIC_APP_URL +
-              '/contacts/enroll/' +
-              influencerNumber.user.id +
-              ':' +
-              newContact.urlMapper +
-              ':' +
-              influencerNumber.id,
-          });
+          const text_body: string = await this.replaceTextUtility(
+            checkKeyword.message,
+            influencerNumber,
+            newContact,
+            false
+          );
 
           await this.sendSms(
             newContact,
@@ -322,6 +293,62 @@ export class SmsService {
     }
   }
 
+  private async replaceTextUtility(
+    message: string,
+    influencerNumber: PhonesEntity,
+    newContact: ContactsEntity,
+    skipLink: boolean = false,
+  ) {
+    let welcomeBody = message;
+    const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
+    if (links && links.length > 0) {
+      for (let link of links) {
+        let id = link.replace('${link:', '').replace('}', '');
+        const shareableUri = (
+          await this.infLinks.getUniqueLinkForContact(
+            parseInt(id),
+            newContact.phoneNumber,
+          )
+        ).url;
+
+        await this.infLinks.sendLink(shareableUri, newContact.id + ':');
+        welcomeBody = welcomeBody.replace(
+          link,
+          env.API_URL + '/api/s/o/' + shareableUri,
+        );
+      }
+    }
+    let text_body: string;
+    if (skipLink) {
+      text_body = tagReplace(welcomeBody, {
+        first_name: newContact.firstName ? newContact.firstName : '',
+        last_name: newContact.lastName ? newContact.lastName : '',
+        inf_first_name: influencerNumber.user.firstName,
+        inf_last_name: influencerNumber.user.lastName,
+        country: newContact.country ? newContact.country.name : '',
+        city: newContact.city ? newContact.city.name : '',
+      });
+    } else {
+      text_body = tagReplace(welcomeBody, {
+        first_name: newContact.firstName ? newContact.firstName : '',
+        last_name: newContact.lastName ? newContact.lastName : '',
+        inf_first_name: influencerNumber.user.firstName,
+        inf_last_name: influencerNumber.user.lastName,
+        country: newContact.country ? newContact.country.name : '',
+        city: newContact.city ? newContact.city.name : '',
+        link:
+          env.PUBLIC_APP_URL +
+          '/contacts/enroll/' +
+          influencerNumber.user.id +
+          ':' +
+          newContact.urlMapper +
+          ':' +
+          influencerNumber.id,
+      });
+    }
+
+    return text_body;
+  }
   private async contactOnboarding(
     sender,
     influencerNumber,
@@ -352,50 +379,13 @@ export class SmsService {
       type: 'contacts',
       user: influencerNumber.user,
     });
-    let welcomeBody = preset_welcome.body;
-    const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
-    if (links && links.length > 0) {
-      for (let link of links) {
-        let id = link.replace('${link:', '').replace('}', '');
-        const shareableUri = (
-          await this.infLinks.getUniqueLinkForContact(
-            parseInt(id),
-            contact.phoneNumber,
-          )
-        ).url;
-
-        await this.infLinks.sendLink(shareableUri, contact.id + ':');
-        welcomeBody = welcomeBody.replace(
-          link,
-          env.API_URL + '/api/s/o/' + shareableUri,
-        );
-      }
-    }
-    const text_body: string = tagReplace(welcomeBody, {
-      first_name: contact.firstName ? contact.firstName : '',
-      last_name: contact.lastName ? contact.lastName : '',
-      inf_first_name: influencerNumber.user.firstName,
-      inf_last_name: influencerNumber.user.lastName,
-      country: contact.country ? contact.country.name : '',
-      city: contact.city ? contact.city.name : '',
-      link:
-        env.PUBLIC_APP_URL +
-        '/contacts/enroll/' +
-        influencerNumber.user.id +
-        ':' +
-        contact.urlMapper +
-        ':' +
-        influencerNumber.id,
-    });
+    const text_body: string = await this.replaceTextUtility(
+      preset_welcome.body,
+      influencerNumber,
+      contact,
+      false
+    );
     await this.sendSms(contact, influencerNumber, text_body, 'outBound');
-    //console.log(
-    //   'outbound sms sent to:',
-    //   contact.phoneNumber,
-    //   ' from ',
-    //   influencerNumber.number,
-    //   ' body ',
-    //   text_body,
-    // );
     return contact;
   }
 
@@ -522,25 +512,12 @@ export class SmsService {
           }
         }
 
-        let welcomeBody = message;
-        const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
-        if (links && links.length > 0) {
-          for (let link of links) {
-            let id = link.replace('${link:', '').replace('}', '');
-            const shareableUri = (
-              await this.infLinks.getUniqueLinkForContact(
-                parseInt(id),
-                _contact.phoneNumber,
-              )
-            ).url;
-            await this.infLinks.sendLink(shareableUri, _contact.id + ':');
-
-            welcomeBody = welcomeBody.replace(
-              link,
-              env.API_URL + '/api/s/o/' + shareableUri,
-            );
-          }
-        }
+        const text_body: string = await this.replaceTextUtility(
+          message,
+          _inf_phone,
+          _contact,
+          true,
+        );
 
         //console.log(welcomeBody);
         if (scheduled != null) {
@@ -550,14 +527,7 @@ export class SmsService {
           this.saveSms(
             _contact,
             _inf_phone,
-            tagReplace(welcomeBody, {
-              first_name: _contact.firstName ? _contact.firstName : '',
-              last_name: _contact.lastName ? _contact.lastName : '',
-              inf_first_name: _inf_phone.user.firstName,
-              inf_last_name: _inf_phone.user.lastName,
-              country: _contact.country ? _contact.country.name : '',
-              city: _contact.city ? _contact.city.name : '',
-            }),
+            text_body,
             null,
             'outBound',
             '',
@@ -566,19 +536,7 @@ export class SmsService {
           );
           return { message: 'Sms scheduled' };
         }
-        await this.sendSms(
-          _contact,
-          _inf_phone,
-          tagReplace(welcomeBody, {
-            first_name: _contact.firstName ? _contact.firstName : '',
-            last_name: _contact.lastName ? _contact.lastName : '',
-            inf_first_name: _inf_phone.user.firstName,
-            inf_last_name: _inf_phone.user.lastName,
-            country: _contact.country ? _contact.country.name : '',
-            city: _contact.city ? _contact.city.name : '',
-          }),
-          'outBound',
-        );
+        await this.sendSms(_contact, _inf_phone, text_body, 'outBound');
         return { message: 'Sms sent' };
       } else {
         throw new HttpException(

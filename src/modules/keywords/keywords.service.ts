@@ -12,6 +12,9 @@ export class KeywordsService {
   public async findOne(condition: any) {
     return this.repository.findOne(condition);
   }
+  public async save(data: KeywordsEntity) {
+    return this.repository.save(data);
+  }
   public async findMany(condition: any) {
     return this.repository.find(condition);
   }

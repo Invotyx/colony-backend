@@ -54,6 +54,26 @@ export class InfluencerLinksService {
     return data[0].sum;
   }
 
+  public async allLinksReopen(
+    user: UserEntity,
+    linkID: number,
+  ): Promise<number> {
+    const data = await this.trackingRepo.query(
+      `select count("id") from influencer_links_tracking where "influencerLinkId"=${linkID} and "clicks">1`,
+    );
+    return data[0].count;
+  }
+
+  public async sumTotalLinksSentLumpSum(
+    user: UserEntity,
+    linkId: number,
+  ): Promise<number> {
+    const data = await this.trackingRepo.query(
+      `select SUM("clicks") from influencer_links_tracking where "influencerLinkId"=${linkId}`,
+    );
+    return data[0].sum;
+  }
+
   async addLink(link: string, user: UserEntity, title?: string) {
     try {
       const check = await this.repository.findOne({
@@ -164,10 +184,12 @@ export class InfluencerLinksService {
       const statsSent = await this.trackingRepo.count({
         where: { influencerLink: id, sent: true },
       });
-
+      const clicks = await this.sumTotalLinksSentLumpSum(user, id);
+      const reopen = await this.allLinksReopen(user, id);
       return {
-        clicks: statsOpened,
+        clicks: clicks,
         opened: statsOpened,
+        reopen: reopen,
         sent: statsSent,
         notOpened: statsSent - statsOpened,
       };

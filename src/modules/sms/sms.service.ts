@@ -4,7 +4,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
-  Injectable
+  Injectable,
 } from '@nestjs/common';
 import { env } from 'process';
 import Pusher from 'pusher';
@@ -232,12 +232,22 @@ export class SmsService {
             });
 
             if (checkKeyword) {
+              const text_body: string = await this.replaceTextUtility(
+                checkKeyword.message,
+                influencerNumber,
+                contact,
+                false,
+              );
+
               await this.sendSms(
                 contact,
                 influencerNumber,
-                checkKeyword.message,
+                text_body,
                 'outBound',
               );
+
+              checkKeyword.usageCount = checkKeyword.usageCount + 1;
+              await this.keywordsService.save(checkKeyword);
             }
             //console.log(
             //   'saved as regular ' + msgType + ' sms from:',
@@ -274,7 +284,7 @@ export class SmsService {
             checkKeyword.message,
             influencerNumber,
             newContact,
-            false
+            false,
           );
 
           await this.sendSms(
@@ -283,6 +293,9 @@ export class SmsService {
             text_body,
             'outBound',
           );
+
+          checkKeyword.usageCount = checkKeyword.usageCount + 1;
+          await this.keywordsService.save(checkKeyword);
         }
         return 200;
       } else {
@@ -383,7 +396,7 @@ export class SmsService {
       preset_welcome.body,
       influencerNumber,
       contact,
-      false
+      false,
     );
     await this.sendSms(contact, influencerNumber, text_body, 'outBound');
     return contact;

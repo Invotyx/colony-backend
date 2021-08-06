@@ -21,6 +21,9 @@ export class KeywordsEntity {
   @Column({ length: 500, nullable: false })
   public message: string;
 
+  @Column({ default: 0, unsigned: true })
+  public usageCount: number;
+
   @ApiHideProperty()
   @ManyToOne(() => UserEntity, (user) => user.keywords, { eager: false })
   public user: UserEntity;

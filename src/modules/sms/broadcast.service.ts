@@ -10,7 +10,7 @@ import { env } from 'process';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { error } from 'src/shared/error.dto';
 import { tagReplace } from 'src/shared/tag-replace';
-import { MoreThan, Not } from 'typeorm';
+import { MoreThan, MoreThanOrEqual, Not } from 'typeorm';
 import { ContactFilter } from '../contacts/contact.dto';
 import { ContactsService } from '../contacts/contacts.service';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
@@ -300,7 +300,7 @@ export class BroadcastService {
         where: {
           broadcast: broadcast,
           isOpened: true,
-          clicks: MoreThan(1),
+          clicks: MoreThanOrEqual(2),
         },
       });
 

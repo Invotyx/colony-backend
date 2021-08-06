@@ -10,7 +10,7 @@ import { env } from 'process';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { error } from 'src/shared/error.dto';
 import { tagReplace } from 'src/shared/tag-replace';
-import { MoreThan, MoreThanOrEqual, Not } from 'typeorm';
+import { MoreThan, Not } from 'typeorm';
 import { ContactFilter } from '../contacts/contact.dto';
 import { ContactsService } from '../contacts/contacts.service';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
@@ -296,13 +296,7 @@ export class BroadcastService {
         },
       });
 
-      const reopened = await this.infLinks.findCountInLinks({
-        where: {
-          broadcast: broadcast,
-          isOpened: true,
-          clicks: MoreThanOrEqual(2),
-        },
-      });
+      const reopened = await this.infLinks.linksReopen(user, broadcast.id);
 
       const link_clicks = await this.infLinks.sumTotalLinksSent(
         user,

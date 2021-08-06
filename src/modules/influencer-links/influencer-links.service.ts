@@ -37,6 +37,13 @@ export class InfluencerLinksService {
     else return this.trackingRepo.count();
   }
 
+  public async linksReopen(user: UserEntity, bid: number): Promise<number> {
+    const data = await this.trackingRepo.query(
+      `select count("id") from influencer_links_tracking where "broadcastId"=${bid} and "clicks">1`,
+    );
+    return data[0].count;
+  }
+
   public async sumTotalLinksSent(
     user: UserEntity,
     bid: number,

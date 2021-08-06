@@ -300,7 +300,7 @@ export class BroadcastService {
         where: {
           broadcast: broadcast,
           isOpened: true,
-          clicks: MoreThan(0),
+          clicks: MoreThan(1),
         },
       });
 

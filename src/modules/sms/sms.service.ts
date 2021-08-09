@@ -130,6 +130,7 @@ export class SmsService {
       });
 
       if (influencerNumber) {
+        console.log('Phone found');
         const contact = await this.contactService.findOne({
           where: { phoneNumber: sender },
         });
@@ -145,6 +146,8 @@ export class SmsService {
         }
 
         if (contact) {
+          console.log('Contact found');
+
           const check = await this.contactService.checkBlockList(
             influencerNumber.user,
             contact.id,
@@ -162,7 +165,11 @@ export class SmsService {
             relations: ['contact', 'phone'],
           });
 
+          console.log('Conversation found');
+
           if (rel && conversation) {
+            console.log('Relation and Conversation found');
+
             const lastConversationMessage = await this.conversationsMessagesRepo.findOne(
               {
                 where: {
@@ -233,6 +240,8 @@ export class SmsService {
             });
 
             if (checkKeyword) {
+              console.log('Keyword Conversation found');
+
               const text_body: string = await this.replaceTextUtility(
                 checkKeyword.message,
                 influencerNumber,
@@ -265,6 +274,8 @@ export class SmsService {
           }
         }
 
+        console.log('Onboarding start');
+
         const newContact = await this.contactOnboarding(
           sender,
           influencerNumber,
@@ -274,6 +285,7 @@ export class SmsService {
           preset_welcome,
           fromCountry,
         );
+        console.log('Onboarding end');
 
         const checkKeyword = await this.keywordsService.findOne({
           where: {
@@ -283,6 +295,8 @@ export class SmsService {
         });
 
         if (checkKeyword) {
+        console.log('Keyword found');
+
           const text_body: string = await this.replaceTextUtility(
             checkKeyword.message,
             influencerNumber,
@@ -323,12 +337,15 @@ export class SmsService {
       for (let link of links) {
         let id = link.replace('${link:', '').replace('}', '');
         const check = keyword ? keyword.id : '';
-        const shareableUri = (
-          await this.infLinks.getUniqueLinkForContact(
-            parseInt(id),
-            newContact.phoneNumber,
-          )
-        ).url+':'+check;
+        const shareableUri =
+          (
+            await this.infLinks.getUniqueLinkForContact(
+              parseInt(id),
+              newContact.phoneNumber,
+            )
+          ).url +
+          ':' +
+          check;
 
         await this.infLinks.sendLink(
           shareableUri,

@@ -283,8 +283,9 @@ export class UsersController {
     return this.userService.setVoicemail(user, voice);
   }
 
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Delete('/voicemail')
-  async deleteVoicemail(@GetUser() user: UserEntity) {
+  async deleteVoicemail(@LoginUser() user: UserEntity) {
     return this.userService.deleteUserVoiceMail(user);
   }
 }

@@ -120,8 +120,12 @@ export class ContactsService {
             where: { contactId: con.id, userId: user.id },
           });
           if (!rel) {
-            con.user.push(user);
-            await this.repository.save(con);
+            await this.influencerContactRepo.save({
+              contact: con,
+              user:user
+            })
+            // con.user.push(user);
+            // await this.repository.save(con);
           }
           con.user = null;
           return con;

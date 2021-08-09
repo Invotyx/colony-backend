@@ -56,7 +56,7 @@ export class KeywordsEntity {
     try {
       const clicks = await getRepository(InfluencerLinksTrackingEntity).find({
         select: ['clicks'],
-        where: { keywordId: this.id },
+        where: { keyword: this },
       });
       if (clicks && clicks.length == 0) {
         this.clicks = 0;

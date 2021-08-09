@@ -287,6 +287,7 @@ export class InfluencerLinksService {
       }
       const link = parts[0];
       const contact = parts[1];
+      const keyword = parts[2] ? +parts[2] : undefined;
       const contactUrl = await this.contactService.findOne({
         where: { urlMapper: contact },
       });
@@ -294,7 +295,7 @@ export class InfluencerLinksService {
         throw new BadRequestException('contact does not exist.');
       }
       //console.log(contactUrl);
-      const linkUrl = await this.repository.findOne({
+      let linkUrl = await this.repository.findOne({
         where: { urlMapper: link },
       });
       if (!linkUrl) {
@@ -302,9 +303,17 @@ export class InfluencerLinksService {
       }
       console.log('linkUrl', linkUrl);
 
-      const linkSent = await this.trackingRepo.findOne({
-        where: { influencerLink: linkUrl, contact: contactUrl },
-      });
+      const linkSent = keyword
+        ? await this.trackingRepo.findOne({
+            where: { influencerLink: linkUrl, contact: contactUrl },
+          })
+        : await this.trackingRepo.findOne({
+            where: {
+              influencerLink: linkUrl,
+              contact: contactUrl,
+              keyword: keyword,
+            },
+          });
       console.log('linkSent', linkSent);
       if (linkSent) {
         linkSent.isOpened = true;

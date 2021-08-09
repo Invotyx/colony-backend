@@ -322,12 +322,13 @@ export class SmsService {
     if (links && links.length > 0) {
       for (let link of links) {
         let id = link.replace('${link:', '').replace('}', '');
+        const check = keyword ? keyword.id : '';
         const shareableUri = (
           await this.infLinks.getUniqueLinkForContact(
             parseInt(id),
             newContact.phoneNumber,
           )
-        ).url;
+        ).url+':'+check;
 
         await this.infLinks.sendLink(
           shareableUri,

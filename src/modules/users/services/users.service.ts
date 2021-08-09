@@ -591,11 +591,12 @@ export class UsersService {
     return dbRes;
   }
   async deleteUserVoiceMail(user: UserEntity) {
-    if (user.voiceUrl) {
-      const filePath = join(__dirname, '../../../..', 'uploads', user.voiceUrl);
+    const _user = await this.repository.findOne(user.id);
+    if (_user.voiceUrl) {
+      const filePath = join(__dirname, '../../../..', 'uploads', _user.voiceUrl);
       fs.unlinkSync(filePath);
     }
-    const dbRes = await this.repository.update(user.id, { voiceUrl: null });
+    const dbRes = await this.repository.update(_user.id, { voiceUrl: null });
     return dbRes;
   }
 

@@ -34,6 +34,7 @@ import {
   editFileName,
   imageFileFilter,
 } from './fileupload.service';
+import { GetUser } from './get-user.decorator';
 import { RolesService } from './services/roles.service';
 import { UsersService } from './services/users.service';
 import { PasswordChange, UpdateProfileDto, UpdateRole } from './users.dto';
@@ -273,8 +274,8 @@ export class UsersController {
     }),
   )
   async setVoicemail(
-    @LoginUser() user: UserEntity,
     @UploadedFile() voice: any,
+    @LoginUser() user: UserEntity,
   ) {
     if (!voice) {
       throw new BadRequestException('Voice cannot be empty');
@@ -283,7 +284,7 @@ export class UsersController {
   }
 
   @Delete('/voicemail')
-  async deleteVoicemail(@LoginUser() user: UserEntity) {
+  async deleteVoicemail(@GetUser() user: UserEntity) {
     return this.userService.deleteUserVoiceMail(user);
   }
 }

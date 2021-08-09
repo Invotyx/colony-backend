@@ -19,6 +19,7 @@ import { TABLES } from '../../consts/tables.const';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { uniqueId } from '../../shared/random-keygen';
 import { ContactsService } from '../contacts/contacts.service';
+import { KeywordsEntity } from '../keywords/keywords.entity';
 import { BroadcastsEntity } from '../sms/entities/broadcast.entity';
 import { InfluencerLinksEntity } from './entities/influencer-links.entity';
 import { InfluencerLinksTrackingRepository } from './repo/influencer-links-tracking.repo';
@@ -234,7 +235,12 @@ export class InfluencerLinksService {
     }
   }
 
-  async sendLink(url: string, sid: string, broadcast?: BroadcastsEntity) {
+  async sendLink(
+    url: string,
+    sid: string,
+    broadcast?: BroadcastsEntity,
+    keyword?: KeywordsEntity,
+  ) {
     try {
       const parts = url.split(':');
       if (parts.length != 2) {
@@ -259,6 +265,7 @@ export class InfluencerLinksService {
         sent: true,
         smsSid: sid,
         broadcast: broadcast ? broadcast : null,
+        keyword: keyword ? keyword : null,
       });
       console.log('linkSent', linkSent);
       linkSent.contact = linkSent.contact.id as any;

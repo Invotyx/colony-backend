@@ -1,14 +1,19 @@
 import { ApiHideProperty } from '@nestjs/swagger';
 import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  getRepository,
   ManyToOne,
+  MoreThanOrEqual,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { TABLES } from '../../consts/tables.const';
+import { InfluencerLinksTrackingEntity } from '../influencer-links/entities/influencer-links-tracking.entity';
 import { UserEntity } from '../users/entities/user.entity';
 @Entity({ name: TABLES.KEYWORDS.name })
 export class KeywordsEntity {
@@ -28,6 +33,11 @@ export class KeywordsEntity {
   @ManyToOne(() => UserEntity, (user) => user.keywords, { eager: false })
   public user: UserEntity;
 
+  @OneToMany(() => InfluencerLinksTrackingEntity, (track) => track.keyword, {
+    eager: false,
+  })
+  public tracking!: InfluencerLinksTrackingEntity[];
+
   @CreateDateColumn()
   public createdAt: Date;
 
@@ -36,4 +46,30 @@ export class KeywordsEntity {
 
   @DeleteDateColumn()
   public deletedAt: Date;
+
+  public clicks: number;
+  public opens: number;
+  public reopened: number;
+
+  @AfterLoad()
+  async getLinkTrackingByKeyword() {
+    try {
+      const clicks = await getRepository(InfluencerLinksTrackingEntity).find({
+        select: ['clicks'],
+        where: { keywordId: this.id },
+      });
+      if (clicks && clicks.length == 0) {
+        this.clicks = 0;
+      } else this.clicks = clicks.reduce((total, obj) => obj.clicks + total, 0);
+
+      this.opens = await getRepository(InfluencerLinksTrackingEntity).count({
+        where: { isOpened: true },
+      });
+      this.reopened = await getRepository(InfluencerLinksTrackingEntity).count({
+        where: { isOpened: true, clicks: MoreThanOrEqual(2) },
+      });
+    } catch (e) {
+      throw e;
+    }
+  }
 }

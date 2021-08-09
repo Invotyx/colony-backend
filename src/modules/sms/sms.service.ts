@@ -15,6 +15,7 @@ import { tagReplace } from '../../shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
 import { ContactsEntity } from '../contacts/entities/contacts.entity';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
+import { KeywordsEntity } from '../keywords/keywords.entity';
 import { KeywordsService } from '../keywords/keywords.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhonesEntity } from '../phone/entities/phone.entity';
@@ -237,6 +238,7 @@ export class SmsService {
                 influencerNumber,
                 contact,
                 false,
+                checkKeyword
               );
 
               await this.sendSms(
@@ -285,6 +287,7 @@ export class SmsService {
             influencerNumber,
             newContact,
             false,
+            checkKeyword,
           );
 
           await this.sendSms(
@@ -311,6 +314,7 @@ export class SmsService {
     influencerNumber: PhonesEntity,
     newContact: ContactsEntity,
     skipLink: boolean = false,
+    keyword: KeywordsEntity=undefined,
   ) {
     let welcomeBody = message;
     const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
@@ -324,7 +328,12 @@ export class SmsService {
           )
         ).url;
 
-        await this.infLinks.sendLink(shareableUri, newContact.id + ':');
+        await this.infLinks.sendLink(
+          shareableUri,
+          newContact.id + ':',
+          null,
+          keyword,
+        );
         welcomeBody = welcomeBody.replace(
           link,
           env.API_URL + '/api/s/o/' + shareableUri,
@@ -332,8 +341,10 @@ export class SmsService {
       }
     }
     let text_body: string;
-    if (skipLink===false && welcomeBody.includes('${link}')===false) {
-      welcomeBody = welcomeBody + ' Click this link ${link} to add yourself in my contact list.';
+    if (skipLink === false && welcomeBody.includes('${link}') === false) {
+      welcomeBody =
+        welcomeBody +
+        ' Click this link ${link} to add yourself in my contact list.';
     }
     if (skipLink) {
       text_body = tagReplace(welcomeBody, {

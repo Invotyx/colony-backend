@@ -286,7 +286,7 @@ export class SmsService {
             checkKeyword.message,
             influencerNumber,
             newContact,
-            false,
+            true,
             checkKeyword,
           );
 

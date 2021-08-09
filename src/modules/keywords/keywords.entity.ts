@@ -63,11 +63,12 @@ export class KeywordsEntity {
       } else this.clicks = clicks.reduce((total, obj) => obj.clicks + total, 0);
 
       this.opens = await getRepository(InfluencerLinksTrackingEntity).count({
-        where: { isOpened: true, keyword:this },
+        where: { clicks: MoreThanOrEqual(0), keyword: this },
       });
       this.reopened = await getRepository(InfluencerLinksTrackingEntity).count({
-        where: { isOpened: true, clicks: MoreThanOrEqual(2), keyword: this },
+        where: { clicks: MoreThanOrEqual(2), keyword: this },
       });
+      console.log(this)
     } catch (e) {
       throw e;
     }

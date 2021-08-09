@@ -258,6 +258,7 @@ export class InfluencerLinksService {
       const linkUrl = await this.repository.findOne({
         where: { urlMapper: link },
       });
+      console.log(parts, contactUrl, linkUrl);
       let linkSent = await this.trackingRepo.save({
         contact: contactUrl,
         influencerLink: linkUrl,
@@ -267,6 +268,7 @@ export class InfluencerLinksService {
         broadcast: broadcast ? broadcast : null,
         keyword: keyword ? keyword : null,
       });
+      
       console.log('linkSent', linkSent);
       linkSent.contact = linkSent.contact.id as any;
       linkSent.influencerLink = linkSent.influencerLink.id as any;

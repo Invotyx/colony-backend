@@ -237,8 +237,8 @@ export class SmsService {
                 checkKeyword.message,
                 influencerNumber,
                 contact,
-                false,
-                checkKeyword
+                true,
+                checkKeyword,
               );
 
               await this.sendSms(
@@ -250,6 +250,7 @@ export class SmsService {
 
               checkKeyword.usageCount = checkKeyword.usageCount + 1;
               await this.keywordsService.save(checkKeyword);
+              return;
             }
             //console.log(
             //   'saved as regular ' + msgType + ' sms from:',
@@ -286,7 +287,7 @@ export class SmsService {
             checkKeyword.message,
             influencerNumber,
             newContact,
-            true,
+            false,
             checkKeyword,
           );
 
@@ -314,7 +315,7 @@ export class SmsService {
     influencerNumber: PhonesEntity,
     newContact: ContactsEntity,
     skipLink: boolean = false,
-    keyword: KeywordsEntity=undefined,
+    keyword: KeywordsEntity = undefined,
   ) {
     let welcomeBody = message;
     const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
@@ -341,10 +342,11 @@ export class SmsService {
       }
     }
     let text_body: string;
-    if (skipLink === false && welcomeBody.includes('${link}') === false) {
-      welcomeBody =
-        welcomeBody +
-        ' Click this link ${link} to add yourself in my contact list.';
+    if (skipLink === false) {
+      if (welcomeBody.includes('${link}') === false)
+        welcomeBody =
+          welcomeBody +
+          ' Click this link ${link} to add yourself in my contact list.';
     }
     if (skipLink) {
       text_body = tagReplace(welcomeBody, {

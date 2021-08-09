@@ -7,7 +7,7 @@ import {
 export const LoginUser = createParamDecorator(
   (data: string, ctx: ExecutionContext) => {
     const req = ctx.switchToHttp().getRequest();
-    const user = req.user();
+    const user = req.user ? req.user : req.user();
     return data ? user && user[data] : user;
   },
 );

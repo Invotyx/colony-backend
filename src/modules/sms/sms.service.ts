@@ -295,7 +295,7 @@ export class SmsService {
         });
 
         if (checkKeyword) {
-        console.log('Keyword found');
+          console.log('Keyword found');
 
           const text_body: string = await this.replaceTextUtility(
             checkKeyword.message,
@@ -329,7 +329,7 @@ export class SmsService {
     influencerNumber: PhonesEntity,
     newContact: ContactsEntity,
     skipLink: boolean = false,
-    keyword: KeywordsEntity = undefined,
+    keyword?: KeywordsEntity,
   ) {
     let welcomeBody = message;
     const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
@@ -346,12 +346,12 @@ export class SmsService {
           ).url +
           ':' +
           check;
-
+        console.log(shareableUri);
         await this.infLinks.sendLink(
           shareableUri,
           newContact.id + ':',
           null,
-          keyword,
+          keyword ? keyword : null,
         );
         welcomeBody = welcomeBody.replace(
           link,

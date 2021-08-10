@@ -39,6 +39,117 @@ export class PaymentHistoryService {
     }
   }
 
+  public async generateHtmlForInvoice(id:number, model:UserEntity) {
+    const invoice = await this.repository.findOne({where:{id,user:model}});
+    if (invoice) {
+
+      const check = invoice.costType == 'base-plan-purchase' && invoice.meta;
+      const json = check ? JSON.parse(invoice.meta) : null;
+      let invoice_items;
+      let email_body_text;
+      if (check) {
+        let phone_cost = 0;
+        json.phones.forEach((phone) => {
+          phone_cost = phone_cost + phone.cost;
+        });
+        invoice_items = `
+                <tr><td>Base Package</td><td style="text-align: right;">£${json.subscription}</td></tr>
+                <tr><td>Phone Number</td><td style="text-align: right;">£${phone_cost}</td></tr>
+                <tr><td>Fans</td><td style="text-align: right;">£${json.fan}</td></tr>
+          `;
+
+        email_body_text = env.BASE_PHONE_FANS_TEXT;
+      } else if (invoice.costType == 'number-purchase') {
+        invoice_items = `
+                <tr><td>Phone Number Purchase</td><td style="text-align: right;">£${invoice.cost}</td></tr>
+          `;
+        email_body_text = env.NUMBER_PURCHASE_TEXT;
+      } else if (invoice.costType == 'sms-dues') {
+        invoice_items = `
+                <tr><td>SMS Cost</td><td style="text-align: right;">£${invoice.cost}</td></tr>
+          `;
+        email_body_text = env.SMS_THRESHOLD_TEXT;
+      } else {
+        invoice_items = `
+                <tr><td>Base Package Subscription</td><td style="text-align: right;">£${invoice.cost}</td></tr>
+          `;
+        email_body_text = env.BASE_PACKAGE_TEXT;
+      }
+
+      const html = `
+        		<!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="utf-8">
+                <title>Invoice</title>
+                <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/glacial-indifference" type="text/css"/>
+              </head>
+              <body>
+                <table style="width: 100%; margin:auto;">
+                  <tr>
+                    <td style="width: 50%; padding:2% 4%;"><img src="${env.MAIN_LOGO}" width="60"></td>
+                    <td style="width: 50%;text-align: right;  padding:2% 4%;"><p style="font-size:30px;font-style: italic; font-weight: 600; color: #e05d49;">INVOICE</p>
+                      <p style="font-size:12px;margin-top:-20px;">No. ${invoice.chargeId}</p></td>
+                  </tr>
+                  <tr><td colspan="2" style=""><hr style="margin: auto; height: 1px;background:#d6d3ce;border: 1px #d6d3ce ;"></td><td></td></tr>
+                </table>
+                <table style="width: 100%; margin:auto; padding:0% 4%; font-family: GlacialIndifferenceRegular">
+                  <tr>
+                    <td colspan="2"><br><br><br><b>Hi ${model.firstName} ${model.lastName}</b></td><td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="width: 100%; font-family: opensanslight;font-size: 12px; font-family: GlacialIndifferenceRegular; text-align:justify;">
+                      ${email_body_text}
+                    </td> <td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2"><br><br><br><br><br><br>ISSUED ON</td><td></td>
+                  </tr>
+                  <tr style="width:100%">
+                    <td colspan="2"><h3 style="font-style: italic;color:#e05d49;margin-top:-3px ;">${invoice.createdAt}</h3></td><td></td>
+                  </tr>
+                </table>
+                <table style="font-family: GlacialIndifferenceRegular; width: 100%; margin:auto; padding:0 4%;">
+                  <tr style="border-bottom:1px;">
+                    <td style="border-bottom:1px;"><b>Description</b></td><td style="text-align: right;"><b>Subtotal</b></td>
+                  </tr>
+                  <tr><td colspan="2" style="width: 100%;"><hr style=" margin: auto; height: 1px;background:#d6d3ce;border: 1px #d6d3ce ;"></td><td></td></tr>
+                  ${invoice_items}
+                  <tr><td colspan="2" style="width: 100%;"><hr style=" margin: auto; height: 1px;background:#d6d3ce;border: 1px #d6d3ce ;"></td><td></td></tr>
+                  <tr><td></td><td style="text-align: right;"><b>TOTAL:  </b> £${invoice.cost}</td></tr>
+                </table>
+                <table style="font-family: GlacialIndifferenceRegular; width: 100%; margin:auto;">
+                  <tr>
+                    <td colspan="2"; style="text-align: center;"><br><br><br>
+                      <a href="${env.PRIVACY_POLICY}" style="font-size:12px; color: black; padding: 10px;">Privacy and policy</a> 
+                      <a href="${env.TERMS_OF_SERVICE}" style="font-size:12px; color: black; padding: 10px;">Terms & Conditions</a> 
+                      <a href="${env.FAQS}" style="font-size:12px; color: black; padding: 10px;">FAQ</a></td><td></td>
+                  </tr>
+
+                  
+                </table>
+                <table style="font-family: GlacialIndifferenceRegular; width: 100%; margin:auto; background-color: #d6d3ce; padding: 1%;">
+                  <tr>
+                    <td style="width: 50%; padding:2% 4%;"><img src="${env.FOOTER_LOGO}" width="150"></td>
+                    
+                    <td style="width: 50%;text-align: right;"><p style="font-size:12px;">${env.SUPPORT_EMAIL}<br>
+                      ${env.CONTACT_NUMBER}<br>
+                      ${env.PUBLIC_APP_URL}<br>
+                      ${env.MAILING_ADDRESS}</p></td>
+                  </tr>
+                </table>
+
+              </body>
+              </html>
+        `;
+      
+      return html;
+      
+    }
+
+    return null;
+  }
+
   public async setDuesToZero(dues: any) {
     const due = await this.duesRepo.findOne({
       where: { costType: dues.type, user: dues.user },

@@ -316,6 +316,14 @@ export class SmsService {
 
           checkKeyword.usageCount = checkKeyword.usageCount + 1;
           await this.keywordsService.save(checkKeyword);
+
+          const message: string = await this.replaceTextUtility(
+            preset_welcome.body,
+            influencerNumber,
+            newContact,
+            false,
+          );
+          await this.sendSms(newContact, influencerNumber, message, 'outBound');
         }
         return 200;
       } else {
@@ -438,13 +446,6 @@ export class SmsService {
       type: 'contacts',
       user: influencerNumber.user,
     });
-    const text_body: string = await this.replaceTextUtility(
-      preset_welcome.body,
-      influencerNumber,
-      contact,
-      false,
-    );
-    await this.sendSms(contact, influencerNumber, text_body, 'outBound');
     return contact;
   }
 

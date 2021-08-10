@@ -260,5 +260,16 @@ export class ContactsController {
       throw e;
     }
   }
+
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('popularity/country')
+  async popularityBasedOnCountry(@LoginUser() _user: UserEntity) {
+    try {
+      return this.service.popularityBasedOnCountry(_user);
+    } catch (e) {
+      throw e;
+    }
+  }
+
   //#endregion
 }

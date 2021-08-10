@@ -887,4 +887,18 @@ export class ContactsService {
   }
 
   //#endregion
+
+  //#region  popularity
+  async popularityBasedOnCountry(user: UserEntity) {
+    const popularity = this.influencerContactRepo
+      .createQueryBuilder('ic')
+      .select()
+      .leftJoin('ic.contact', 'c')
+      .where('ic.userId= :uid', { uid: user.id })
+      .groupBy('c.cCode')
+      .getManyAndCount();
+    console.log(popularity);
+    return popularity;
+  }
+  //#endregion
 }

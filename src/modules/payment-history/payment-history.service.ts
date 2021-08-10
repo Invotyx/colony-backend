@@ -82,9 +82,16 @@ export class PaymentHistoryService {
               <head>
                 <meta charset="utf-8">
                 <title>Invoice</title>
+                <style>
+                  @media print {
+                    .noprint {
+                        visibility: hidden;
+                    }
+                  }
+              </style>
                 <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/glacial-indifference" type="text/css"/>
               </head>
-              <body>
+              <body onload='window.print()'>
                 <table style="width: 100%; margin:auto;">
                   <tr>
                     <td style="width: 50%; padding:2% 4%;"><img src="${env.MAIN_LOGO}" width="60"></td>
@@ -120,7 +127,7 @@ export class PaymentHistoryService {
                 </table>
                 <table style="font-family: GlacialIndifferenceRegular; width: 100%; margin:auto;">
                   <tr>
-                    <td colspan="2"; style="text-align: center;"><br><br><br>
+                    <td colspan="2"; style="text-align: center;" class="noprint"><br><br><br>
                       <a href="${env.PRIVACY_POLICY}" style="font-size:12px; color: black; padding: 10px;">Privacy and policy</a> 
                       <a href="${env.TERMS_OF_SERVICE}" style="font-size:12px; color: black; padding: 10px;">Terms & Conditions</a> 
                       <a href="${env.FAQS}" style="font-size:12px; color: black; padding: 10px;">FAQ</a></td><td></td>

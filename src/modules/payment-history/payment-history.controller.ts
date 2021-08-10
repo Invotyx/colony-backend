@@ -53,8 +53,7 @@ export class PaymentHistoryController {
     @Param('id') id: number,
   ) {
     try {
-      const history = await this.service.generateHtmlForInvoice(id,user);
-      return history;
+      return this.service.generateHtmlForInvoice(id,user);
     } catch (e) {
       throw e;
     }

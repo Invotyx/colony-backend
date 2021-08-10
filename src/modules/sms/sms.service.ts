@@ -354,8 +354,8 @@ export class SmsService {
         await this.infLinks.sendLink(
           shareableUri,
           newContact.id + ':',
-          null,
-          keyword ? keyword : null,
+          undefined,
+          keyword ? keyword : undefined,
         );
         welcomeBody = welcomeBody.replace(
           link,

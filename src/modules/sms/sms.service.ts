@@ -1138,15 +1138,69 @@ export class SmsService {
           WHERE cm."createdAt"::date BETWEEN (CURRENT_DATE::date - INTERVAL '14 days')and (CURRENT_DATE::date - INTERVAL '7 days') and  c."userId"=${user.id}
       `;
 
+      const _lastWeekContacts = `      
+            SELECT
+              COUNT ( c."id" ) as "total"
+            FROM
+              conversations c
+              WHERE c."createdAt"::date BETWEEN (CURRENT_DATE::date - INTERVAL '7 days')and (CURRENT_DATE::date) and  c."userId"=${user.id}
+      `;
+
+      const _previousWeekContacts = `      
+            SELECT
+              COUNT ( c."id" ) as "total"
+            FROM
+              conversations c
+              WHERE c."createdAt"::date BETWEEN (CURRENT_DATE::date - INTERVAL '14 days')and (CURRENT_DATE::date  - INTERVAL '7 days') and  c."userId"=${user.id}
+      `;
+
+      const _lastMonthMessages = `SELECT
+        sum ( case when cm."type"<>'inBound' then 1 else 0 end ) as "outBound",
+        sum ( case when cm."type"='inBound' then 1 else 0 end ) as "inBound"
+      FROM
+        conversation_messages cm
+        LEFT JOIN conversations C ON cm."conversationsId" = C."id"
+        WHERE cm."createdAt"::date > (CURRENT_DATE::date - INTERVAL '30 days') and  c."userId"=${user.id}
+      `;
+
+      const _previousMonthMessages = `SELECT
+        sum ( case when cm."type"<>'inBound' then 1 else 0 end ) as "outBound",
+        sum ( case when cm."type"='inBound' then 1 else 0 end ) as "inBound"
+      FROM
+        conversation_messages cm
+        LEFT JOIN conversations C ON cm."conversationsId" = C."id"
+        WHERE cm."createdAt"::date BETWEEN (CURRENT_DATE::date - INTERVAL '60 days') and (CURRENT_DATE::date  - INTERVAL '30 days') and  c."userId"=${user.id}
+      `;
+
       const lastWeekStats = await this.conversationsMessagesRepo.query(
         lastWeek,
       );
       const previousWeekStats = await this.conversationsMessagesRepo.query(
         previousWeek,
       );
+      const lastWeekContacts = await this.conversationsMessagesRepo.query(
+        _lastWeekContacts,
+      );
+      const previousWeekContacts = await this.conversationsMessagesRepo.query(
+        _previousWeekContacts,
+      );
+      const lastMonthMessages = await this.conversationsMessagesRepo.query(
+        _lastMonthMessages,
+      );
+      const previousMonthMessages = await this.conversationsMessagesRepo.query(
+        _previousMonthMessages,
+      );
       const activity = await this.conversationsMessagesRepo.query(sql);
 
-      return { activity, lastWeekStats, previousWeekStats };
+      return {
+        activity,
+        lastWeekContacts,
+        previousWeekContacts,
+        lastWeekStats,
+        previousWeekStats,
+        lastMonthMessages,
+        previousMonthMessages,
+      };
     } catch (e) {
       throw e;
     }

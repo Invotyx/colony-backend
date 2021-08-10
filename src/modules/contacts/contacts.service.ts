@@ -911,6 +911,7 @@ export class ContactsService {
     const popularity = this.influencerContactRepo.query(`
       SELECT
         "ct"."name" as city,
+	      "c"."cCode",
         COUNT("c"."id")
       FROM
         "contacts" "c"
@@ -921,7 +922,8 @@ export class ContactsService {
         ( "ic"."userId" = ${user.id} ) 
         AND ( "ic"."deletedAt" IS NULL ) 
       GROUP BY
-        "ct"."name"
+        "ct"."name",
+	      "c"."cCode"
       `);
     return popularity;
   }

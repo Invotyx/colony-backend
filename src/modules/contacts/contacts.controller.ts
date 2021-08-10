@@ -271,5 +271,15 @@ export class ContactsController {
     }
   }
 
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
+  @Get('popularity/city')
+  async popularityBasedOnCity(@LoginUser() _user: UserEntity) {
+    try {
+      return this.service.popularityBasedOnCity(_user);
+    } catch (e) {
+      throw e;
+    }
+  }
+
   //#endregion
 }

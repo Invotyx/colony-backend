@@ -122,8 +122,8 @@ export class ContactsService {
           if (!rel) {
             await this.influencerContactRepo.save({
               contact: con,
-              user:user
-            })
+              user: user,
+            });
             // con.user.push(user);
             // await this.repository.save(con);
           }
@@ -890,15 +890,39 @@ export class ContactsService {
 
   //#region  popularity
   async popularityBasedOnCountry(user: UserEntity) {
-    const popularity = this.influencerContactRepo
-      .createQueryBuilder('ic')
-      .leftJoinAndSelect('ic.contact', 'c')
-      .where('ic.userId= :uid', { uid: user.id })
-      .groupBy('c.cCode')
-      .groupBy('ic.id')
-      .groupBy('ic.userId')
-      .getManyAndCount();
-    console.log(popularity);
+    const popularity = this.influencerContactRepo.query(`
+      SELECT
+        "c"."cCode" as country,
+        COUNT("c"."id")
+      FROM
+        "contacts" "c"
+        LEFT JOIN "influencer_contacts" "ic"
+      ON "c"."id" = "ic"."contactId"
+      WHERE
+        ( "ic"."userId" = ${user.id} ) 
+        AND ( "ic"."deletedAt" IS NULL ) 
+      GROUP BY
+        "c"."cCode"
+      `);
+    return popularity;
+  }
+
+  async popularityBasedOnCity(user: UserEntity) {
+    const popularity = this.influencerContactRepo.query(`
+      SELECT
+        "ct"."name" as city,
+        COUNT("c"."id")
+      FROM
+        "contacts" "c"
+        LEFT JOIN "influencer_contacts" "ic" ON "c"."id" = "ic"."contactId"
+        LEFT JOIN "city" "ct" ON "ct"."id" = "c"."cityId"
+
+      WHERE
+        ( "ic"."userId" = ${user.id} ) 
+        AND ( "ic"."deletedAt" IS NULL ) 
+      GROUP BY
+        "ct"."name"
+      `);
     return popularity;
   }
   //#endregion

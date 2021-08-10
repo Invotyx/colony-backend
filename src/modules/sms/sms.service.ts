@@ -1117,9 +1117,36 @@ export class SmsService {
         LEFT JOIN conversations C ON cm."conversationsId" = C."id"
         WHERE cm."createdAt"::date > (CURRENT_DATE::date - INTERVAL '30 days') and  c."userId"=${user.id}
         GROUP BY cm."createdAt"::date`;
+      const lastWeek = `
+        SELECT
+          COUNT ( cm."id" ) as "total",            
+          sum ( case when cm."type"='inBound' then 1 else 0 end ) as "inBound",
+          sum ( case when cm."type"<>'inBound' then 1 else 0 end ) as "outBound"
+        FROM
+          conversation_messages cm
+          LEFT JOIN conversations C ON cm."conversationsId" = C."id"
+          WHERE cm."createdAt"::date > (CURRENT_DATE::date - INTERVAL '7 days') and  c."userId"=${user.id}
+      `;
+      const previousWeek = ` 
+        SELECT
+          COUNT ( cm."id" ) as "total",            
+          sum ( case when cm."type"='inBound' then 1 else 0 end ) as "inBound",
+          sum ( case when cm."type"<>'inBound' then 1 else 0 end ) as "outBound"
+        FROM
+          conversation_messages cm
+          LEFT JOIN conversations C ON cm."conversationsId" = C."id"
+          WHERE cm."createdAt"::date BETWEEN (CURRENT_DATE::date - INTERVAL '14 days')and (CURRENT_DATE::date - INTERVAL '7 days') and  c."userId"=${user.id}
+      `;
 
-      const act = await this.conversationsMessagesRepo.query(sql);
-      return act ? act : [];
+      const lastWeekStats = await this.conversationsMessagesRepo.query(
+        lastWeek,
+      );
+      const previousWeekStats = await this.conversationsMessagesRepo.query(
+        previousWeek,
+      );
+      const activity = await this.conversationsMessagesRepo.query(sql);
+
+      return { activity, lastWeekStats, previousWeekStats };
     } catch (e) {
       throw e;
     }

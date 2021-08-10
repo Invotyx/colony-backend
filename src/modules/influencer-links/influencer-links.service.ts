@@ -246,7 +246,7 @@ export class InfluencerLinksService {
 
       const parts = url.split(':');
       console.log(parts);
-      if (parts.length < 2) {
+      if (parts.length < 1) {
         throw new HttpException(
           'Invalid format of url string',
           HttpStatus.BAD_GATEWAY,
@@ -285,7 +285,7 @@ export class InfluencerLinksService {
   async linkOpened(url: string) {
     try {
       const parts = url.split(':');
-      if (parts.length < 2) {
+      if (parts.length < 1) {
         throw new HttpException(
           'Invalid format of url string',
           HttpStatus.BAD_GATEWAY,

@@ -232,7 +232,6 @@ export class SmsService {
               );
             }
 
-            
             const checkKeyword = await this.keywordsService.findOne({
               where: {
                 keyword: body,
@@ -240,7 +239,7 @@ export class SmsService {
               },
             });
 
-            console.log('checkKeyword',checkKeyword);
+            console.log('checkKeyword', checkKeyword);
 
             if (checkKeyword) {
               console.log('Keyword Conversation found');
@@ -338,18 +337,24 @@ export class SmsService {
     const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
     if (links && links.length > 0) {
       for (let link of links) {
-        console.log('link',link);
+        console.log('link', link);
         let id = link.replace('${link:', '').replace('}', '');
-        const check = keyword ? keyword.id : '';
-        const shareableUri =
-          (
-            await this.infLinks.getUniqueLinkForContact(
-              parseInt(id),
-              newContact.phoneNumber,
-            )
-          ).url +
-          ':' +
-          check;
+        const check = keyword ? keyword.id : undefined;
+        const shareableUri = check
+          ? (
+              await this.infLinks.getUniqueLinkForContact(
+                parseInt(id),
+                newContact.phoneNumber,
+              )
+            ).url +
+            ':' +
+            check
+          : (
+              await this.infLinks.getUniqueLinkForContact(
+                parseInt(id),
+                newContact.phoneNumber,
+              )
+            ).url;
         console.log(shareableUri);
         await this.infLinks.sendLink(
           shareableUri,
@@ -398,7 +403,7 @@ export class SmsService {
           ':' +
           influencerNumber.id,
       });
-      console.log('text_body',text_body);
+      console.log('text_body', text_body);
     }
 
     return text_body;

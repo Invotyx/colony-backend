@@ -53,7 +53,7 @@ export class InvoiceEmailSender {
                 <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/glacial-indifference" type="text/css"/>
               </head>
               <body>
-                <table style="width: 50%; margin:auto;">
+                <table style="width: 100%; margin:auto;">
                   <tr>
                     <td style="width: 50%; padding:2% 4%;"><img src="${env.MAIN_LOGO}" width="60"></td>
                     <td style="width: 50%;text-align: right;  padding:2% 4%;"><p style="font-size:30px;font-style: italic; font-weight: 600; color: #e05d49;">INVOICE</p>
@@ -61,7 +61,7 @@ export class InvoiceEmailSender {
                   </tr>
                   <tr><td colspan="2" style=""><hr style="margin: auto; height: 1px;background:#d6d3ce;border: 1px #d6d3ce ;"></td><td></td></tr>
                 </table>
-                <table style="width: 50%; margin:auto; padding:0% 4%; font-family: GlacialIndifferenceRegular">
+                <table style="width: 100%; margin:auto; padding:0% 4%; font-family: GlacialIndifferenceRegular">
                   <tr>
                     <td colspan="2"><br><br><br><b>Hi ${model.firstName} ${model.lastName}</b></td><td></td>
                   </tr>
@@ -77,7 +77,7 @@ export class InvoiceEmailSender {
                     <td colspan="2"><h3 style="font-style: italic;color:#e05d49;margin-top:-3px ;">${invoice.createdAt}</h3></td><td></td>
                   </tr>
                 </table>
-                <table style="font-family: GlacialIndifferenceRegular; width: 50%; margin:auto; padding:0 4%;">
+                <table style="font-family: GlacialIndifferenceRegular; width: 100%; margin:auto; padding:0 4%;">
                   <tr style="border-bottom:1px;">
                     <td style="border-bottom:1px;"><b>Description</b></td><td style="text-align: right;"><b>Subtotal</b></td>
                   </tr>
@@ -86,7 +86,7 @@ export class InvoiceEmailSender {
                   <tr><td colspan="2" style="width: 100%;"><hr style=" margin: auto; height: 1px;background:#d6d3ce;border: 1px #d6d3ce ;"></td><td></td></tr>
                   <tr><td></td><td style="text-align: right;"><b>TOTAL:  </b> £${invoice.cost}</td></tr>
                 </table>
-                <table style="font-family: GlacialIndifferenceRegular; width: 50%; margin:auto;">
+                <table style="font-family: GlacialIndifferenceRegular; width: 100%; margin:auto;">
                   <tr>
                     <td colspan="2"; style="text-align: center;"><br><br><br>
                       <a href="${env.PRIVACY_POLICY}" style="font-size:12px; color: black; padding: 10px;">Privacy and policy</a> 
@@ -96,7 +96,7 @@ export class InvoiceEmailSender {
 
                   
                 </table>
-                <table style="font-family: GlacialIndifferenceRegular; width: 50%; margin:auto; background-color: #d6d3ce; padding: 1%;">
+                <table style="font-family: GlacialIndifferenceRegular; width: 100%; margin:auto; background-color: #d6d3ce; padding: 1%;">
                   <tr>
                     <td style="width: 50%; padding:2% 4%;"><img src="${env.FOOTER_LOGO}" width="150"></td>
                     

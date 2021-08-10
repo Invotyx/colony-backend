@@ -242,7 +242,10 @@ export class InfluencerLinksService {
     keyword?: KeywordsEntity,
   ) {
     try {
+      console.log(url, sid, broadcast, keyword);
+
       const parts = url.split(':');
+      console.log(parts);
       if (parts.length != 2) {
         throw new HttpException(
           'Invalid format of url string',
@@ -268,12 +271,13 @@ export class InfluencerLinksService {
         broadcast: broadcast ? broadcast : null,
         keyword: keyword ? keyword : null,
       });
-      
+
       console.log('linkSent', linkSent);
       linkSent.contact = linkSent.contact.id as any;
       linkSent.influencerLink = linkSent.influencerLink.id as any;
       return linkSent;
     } catch (e) {
+      console.log(e);
       throw e;
     }
   }

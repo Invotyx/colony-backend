@@ -14,7 +14,7 @@ import {
   PaginatorError,
   PaginatorErrorHandler,
 } from 'src/shared/paginator';
-import { Like } from 'typeorm';
+import { getRepository, Like } from 'typeorm';
 import { TABLES } from '../../consts/tables.const';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { uniqueId } from '../../shared/random-keygen';
@@ -293,7 +293,7 @@ export class InfluencerLinksService {
       }
       const link = parts[0];
       const contact = parts[1];
-      const keyword = parts[2] ? +parts[2] : undefined;
+      const keywordId = parts[2] ? +parts[2] : undefined;
       const contactUrl = await this.contactService.findOne({
         where: { urlMapper: contact },
       });
@@ -309,17 +309,22 @@ export class InfluencerLinksService {
       }
       console.log('linkUrl', linkUrl);
 
+      let keyword = undefined;
+      if (keywordId) {
+        keyword =await getRepository(KeywordsEntity).findOne(keywordId);
+      }
+
       const linkSent = keyword
         ? await this.trackingRepo.findOne({
-            where: { influencerLink: linkUrl, contact: contactUrl },
-          })
-        : await this.trackingRepo.findOne({
-            where: {
-              influencerLink: linkUrl,
-              contact: contactUrl,
-              keyword: keyword,
-            },
-          });
+          where: {
+            influencerLink: linkUrl,
+            contact: contactUrl,
+            keyword: keyword,
+          },
+        }) : await this.trackingRepo.findOne({
+          where: { influencerLink: linkUrl, contact: contactUrl },
+        });
+      
       console.log('linkSent', linkSent);
       if (linkSent) {
         linkSent.isOpened = true;

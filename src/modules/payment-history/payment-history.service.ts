@@ -39,10 +39,11 @@ export class PaymentHistoryService {
     }
   }
 
-  public async generateHtmlForInvoice(id:number, model:UserEntity) {
-    const invoice = await this.repository.findOne({where:{id,user:model}});
+  public async generateHtmlForInvoice(id: number, model: UserEntity) {
+    const invoice = await this.repository.findOne({
+      where: { id, user: model },
+    });
     if (invoice) {
-
       const check = invoice.costType == 'base-plan-purchase' && invoice.meta;
       const json = check ? JSON.parse(invoice.meta) : null;
       let invoice_items;
@@ -89,7 +90,7 @@ export class PaymentHistoryService {
                     }
                   }
               </style>
-                <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/glacial-indifference" type="text/css"/>
+                <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/glacial-indifference" type="text/css"  media="print" />
               </head>
               <body onload='window.print()'>
                 <table style="width: 100%; margin:auto;">
@@ -149,9 +150,8 @@ export class PaymentHistoryService {
               </body>
               </html>
         `;
-      
+
       return html;
-      
     }
 
     return null;

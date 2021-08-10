@@ -896,6 +896,7 @@ export class ContactsService {
       .leftJoin('ic.contact', 'c')
       .where('ic.userId= :uid', { uid: user.id })
       .groupBy('c.cCode')
+      .groupBy('ic.id')
       .getManyAndCount();
     console.log(popularity);
     return popularity;

@@ -49,7 +49,7 @@ export class ForgotPasswordTokenSender {
                                       <a href="${
                                         env.PUBLIC_APP_URL
                                       }" title="logo" target="_blank">
-                                        <img width="180" src="https://dev.colony.ga/_next/image?url=%2Fimages%2Findex-logo.svg&w=256&q=75" title="logo" alt="Colony">
+                                        <img width="180" src="http://res.cloudinary.com/dybyigvz5/image/upload/v1628575698/email/qeefvw7vdaxncdoe99pb.svg" title="logo" alt="Colony">
                                       </a>
                                     </td>
                                 </tr>

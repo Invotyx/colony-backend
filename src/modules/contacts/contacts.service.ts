@@ -892,11 +892,11 @@ export class ContactsService {
   async popularityBasedOnCountry(user: UserEntity) {
     const popularity = this.influencerContactRepo
       .createQueryBuilder('ic')
-      .select()
-      .leftJoin('ic.contact', 'c')
+      .leftJoinAndSelect('ic.contact', 'c')
       .where('ic.userId= :uid', { uid: user.id })
       .groupBy('c.cCode')
       .groupBy('ic.id')
+      .groupBy('ic.userId')
       .getManyAndCount();
     console.log(popularity);
     return popularity;

@@ -20,6 +20,7 @@ export class InvoiceEmailSender {
         const check = invoice.costType == 'base-plan-purchase' && invoice.meta;
         const json = check ? JSON.parse(invoice.meta) : null;
         let invoice_items;
+        let email_body_text;
         if (check) {
           let phone_cost = 0;
           json.phones.forEach((phone) => {
@@ -30,18 +31,23 @@ export class InvoiceEmailSender {
                 <tr><td>Phone Number</td><td style="text-align: right;">£${phone_cost}</td></tr>
                 <tr><td>Fans</td><td style="text-align: right;">£${json.fan}</td></tr>
           `;
+
+          email_body_text = env.BASE_PHONE_FANS_TEXT;
         } else if (invoice.costType == 'number-purchase') {
           invoice_items = `
                 <tr><td>Phone Number Purchase</td><td style="text-align: right;">£${invoice.cost}</td></tr>
           `;
+          email_body_text = env.NUMBER_PURCHASE_TEXT;
         } else if (invoice.costType == 'sms-dues') {
           invoice_items = `
                 <tr><td>SMS Cost</td><td style="text-align: right;">£${invoice.cost}</td></tr>
           `;
+          email_body_text = env.SMS_THRESHOLD_TEXT;
         } else {
           invoice_items = `
                 <tr><td>Base Package Subscription</td><td style="text-align: right;">£${invoice.cost}</td></tr>
           `;
+          email_body_text = env.BASE_PACKAGE_TEXT;
         }
 
         const html = `
@@ -67,7 +73,7 @@ export class InvoiceEmailSender {
                   </tr>
                   <tr>
                     <td colspan="2" style="width: 100%; font-family: opensanslight;font-size: 12px; font-family: GlacialIndifferenceRegular; text-align:justify;">
-                      You have received this email because you have subscribed to our Package in Colony Messaging and you have been charged for due payments(see details below). 
+                      ${email_body_text}
                     </td> <td></td>
                   </tr>
                   <tr>

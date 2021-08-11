@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Queue } from 'bull';
 import { env } from 'process';
+import { GlobalLinksRepository } from 'src/repos/gloabl-links.repo';
 import { tagReplace } from 'src/shared/tag-replace';
 import Stripe from 'stripe';
 import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
@@ -37,6 +38,7 @@ export class TasksService {
     @InjectQueue('broadcast_q_dev') private readonly queue_dev: Queue,
     @InjectQueue('sms_q_dev') private readonly sms_q_dev: Queue,
     private readonly invoiceEmail: InvoiceEmailSender,
+    private readonly globalLinks: GlobalLinksRepository,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
@@ -151,9 +153,13 @@ export class TasksService {
                   contact.phoneNumber,
                 )
               ).url;
+              //do action here
+              const _publicLink = await this.globalLinks.createLink(
+                shareableUri,
+              );
               messageBody = messageBody.replace(
                 link,
-                env.API_URL + '/api/s/o/' + shareableUri,
+                env.API_URL + '/api/s/o/' + _publicLink.shareableId,
               );
               await this.infLinks.sendLink(
                 shareableUri,
@@ -362,7 +368,9 @@ export class TasksService {
             trigger: 'noResponse',
             user: influencer,
           });
-
+          const _publicLink = await this.globalLinks.createLink(
+            influencer.id + ':' + contact.urlMapper + ':' + influencer.id,
+          );
           if (noResponseMessage && noResponseMessage.enabled) {
             const text_body: string = tagReplace(noResponseMessage.body, {
               first_name: contact.firstName ? contact.firstName : '',
@@ -374,11 +382,7 @@ export class TasksService {
               link:
                 env.PUBLIC_APP_URL +
                 '/contacts/enroll/' +
-                influencer.id +
-                ':' +
-                contact.urlMapper +
-                ':' +
-                influencer.id,
+                _publicLink.shareableId,
             });
             await this.smsService.sendSms(
               contact,

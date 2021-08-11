@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { env } from 'process';
 import Pusher from 'pusher';
+import { GlobalLinksRepository } from 'src/repos/gloabl-links.repo';
 import { error } from 'src/shared/error.dto';
 import { CityCountryService } from '../../services/city-country/city-country.service';
 import { smsCount } from '../../shared/sms-segment-counter';
@@ -52,6 +53,7 @@ export class SmsService {
     private readonly infLinks: InfluencerLinksService,
     private readonly keywordsService: KeywordsService,
     private readonly broadcastRepo: BroadcastsRepository,
+    private readonly globalLinks: GlobalLinksRepository,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -364,6 +366,8 @@ export class SmsService {
               )
             ).url;
         console.log(shareableUri);
+        //do action here
+        const _publicLink = await this.globalLinks.createLink(shareableUri);
         await this.infLinks.sendLink(
           shareableUri,
           newContact.id + ':',
@@ -372,7 +376,7 @@ export class SmsService {
         );
         welcomeBody = welcomeBody.replace(
           link,
-          env.API_URL + '/api/s/o/' + shareableUri,
+          env.API_URL + '/api/s/o/' + _publicLink.shareableId,
         );
       }
     }
@@ -395,6 +399,13 @@ export class SmsService {
 
       console.log('text_body', text_body);
     } else {
+      const _publicLink = await this.globalLinks.createLink(
+        influencerNumber.user.id +
+          ':' +
+          newContact.urlMapper +
+          ':' +
+          influencerNumber.id,
+      );
       text_body = tagReplace(welcomeBody, {
         first_name: newContact.firstName ? newContact.firstName : '',
         last_name: newContact.lastName ? newContact.lastName : '',
@@ -403,13 +414,7 @@ export class SmsService {
         country: newContact.country ? newContact.country.name : '',
         city: newContact.city ? newContact.city.name : '',
         link:
-          env.PUBLIC_APP_URL +
-          '/contacts/enroll/' +
-          influencerNumber.user.id +
-          ':' +
-          newContact.urlMapper +
-          ':' +
-          influencerNumber.id,
+          env.PUBLIC_APP_URL + '/contacts/enroll/' + _publicLink.shareableId,
       });
       console.log('text_body', text_body);
     }

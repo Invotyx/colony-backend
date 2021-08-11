@@ -27,6 +27,7 @@ import { SMSTemplatesRepository } from '../modules/sms/repo/sms-templates.repo';
 import { ForgotPasswordRepository } from '../modules/users/repos/forgotpassword.repo';
 import { UserRepository } from '../modules/users/repos/user.repo';
 import { EmailVerificationsRepository } from '../modules/users/repos/verifyemail.repo';
+import { GlobalLinksRepository } from '../repos/gloabl-links.repo';
 import { PermissionRepository } from '../repos/permission.repo';
 import { RoleRepository } from '../repos/roles.repo';
 import { CityRepository } from '../services/city-country/repos/city.repo';
@@ -68,4 +69,5 @@ export const REPOS = [
   FavoriteContactRepository,
   BlockedContactRepository,
   KeywordsRepository,
+  GlobalLinksRepository,
 ];

@@ -6,6 +6,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { GlobalLinksRepository } from 'src/repos/gloabl-links.repo';
 import { error } from 'src/shared/error.dto';
 import {
   dataViewer,
@@ -31,6 +32,7 @@ export class InfluencerLinksService {
     private readonly repository: InfluencerLinksRepository,
     private readonly trackingRepo: InfluencerLinksTrackingRepository,
     private readonly contactService: ContactsService,
+    private readonly globalLinks: GlobalLinksRepository,
   ) {}
 
   public async findCountInLinks(condition?: any) {
@@ -284,55 +286,59 @@ export class InfluencerLinksService {
 
   async linkOpened(url: string) {
     try {
-      const parts = url.split(':');
-      if (parts.length < 1) {
-        throw new HttpException(
-          'Invalid format of url string',
-          HttpStatus.BAD_GATEWAY,
-        );
-      }
-      const link = parts[0];
-      const contact = parts[1];
-      const keywordId = parts[2] ? +parts[2] : undefined;
-      const contactUrl = await this.contactService.findOne({
-        where: { urlMapper: contact },
-      });
-      if (!contactUrl) {
-        throw new BadRequestException('contact does not exist.');
-      }
-      //console.log(contactUrl);
-      let linkUrl = await this.repository.findOne({
-        where: { urlMapper: link },
-      });
-      if (!linkUrl) {
-        throw new BadRequestException("link doesn't exist.");
-      }
-      console.log('linkUrl', linkUrl);
-
-      let keyword = undefined;
-      if (keywordId) {
-        keyword =await getRepository(KeywordsEntity).findOne(keywordId);
-      }
-
-      const linkSent = keyword
-        ? await this.trackingRepo.findOne({
-          where: {
-            influencerLink: linkUrl,
-            contact: contactUrl,
-            keyword: keyword,
-          },
-        }) : await this.trackingRepo.findOne({
-          where: { influencerLink: linkUrl, contact: contactUrl },
+      const glink = await this.globalLinks.getLink(url);
+      if (glink) {
+        const parts = glink.link.split(':');
+        if (parts.length < 1) {
+          throw new HttpException(
+            'Invalid format of url string',
+            HttpStatus.BAD_GATEWAY,
+          );
+        }
+        const link = parts[0];
+        const contact = parts[1];
+        const keywordId = parts[2] ? +parts[2] : undefined;
+        const contactUrl = await this.contactService.findOne({
+          where: { urlMapper: contact },
         });
-      
-      console.log('linkSent', linkSent);
-      if (linkSent) {
-        linkSent.isOpened = true;
-        linkSent.clicks = linkSent.clicks ? linkSent.clicks + 1 : 1;
-        await this.trackingRepo.update(linkSent.id, linkSent);
+        if (!contactUrl) {
+          throw new BadRequestException('contact does not exist.');
+        }
+        //console.log(contactUrl);
+        let linkUrl = await this.repository.findOne({
+          where: { urlMapper: link },
+        });
+        if (!linkUrl) {
+          throw new BadRequestException("link doesn't exist.");
+        }
+        console.log('linkUrl', linkUrl);
+
+        let keyword = undefined;
+        if (keywordId) {
+          keyword = await getRepository(KeywordsEntity).findOne(keywordId);
+        }
+
+        const linkSent = keyword
+          ? await this.trackingRepo.findOne({
+            where: {
+              influencerLink: linkUrl,
+              contact: contactUrl,
+              keyword: keyword,
+            },
+          })
+          : await this.trackingRepo.findOne({
+            where: { influencerLink: linkUrl, contact: contactUrl },
+          });
+
+        console.log('linkSent', linkSent);
+        if (linkSent) {
+          linkSent.isOpened = true;
+          linkSent.clicks = linkSent.clicks ? linkSent.clicks + 1 : 1;
+          await this.trackingRepo.update(linkSent.id, linkSent);
+        }
+        console.log('linkSent updated', linkSent);
+        return linkUrl;
       }
-      console.log('linkSent updated', linkSent);
-      return linkUrl;
     } catch (e) {
       throw e;
     }

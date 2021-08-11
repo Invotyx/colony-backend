@@ -11,6 +11,7 @@ import { join } from 'path';
 import { env } from 'process';
 import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
+import { GlobalLinksRepository } from 'src/repos/gloabl-links.repo';
 import { uniqueId } from 'src/shared/random-keygen';
 import { tagReplace } from 'src/shared/tag-replace';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
@@ -48,6 +49,7 @@ export class ContactsService {
     private readonly subService: SubscriptionsService,
     @Inject(forwardRef(() => InfluencerLinksService))
     private readonly infLinks: InfluencerLinksService,
+    private readonly globalLinks: GlobalLinksRepository,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -575,10 +577,12 @@ export class ContactsService {
             )
           ).url;
 
+          //do action here
+          const _publicLink = await this.globalLinks.createLink(shareableUri);
           await this.infLinks.sendLink(shareableUri, savedContact.id + ':');
           onboardBody = onboardBody.replace(
             link,
-            env.API_URL + '/api/s/o/' + shareableUri,
+            env.API_URL + '/api/s/o/' + _publicLink.shareableId,
           );
         }
       }
@@ -636,28 +640,33 @@ export class ContactsService {
 
   async checkContact(urlId: string) {
     try {
-      const consolidatedIds = urlId.split(':');
-      const userId = consolidatedIds[0];
-      const contactUniqueMapper = consolidatedIds[1];
-      const contact = await this.repository.findOne({
-        where: { urlMapper: contactUniqueMapper },
-      });
-
-      if (contact) {
-        const user = await this.users.findOne({ where: { id: userId } });
-        const conversation = await this.smsService.findOneConversations({
-          where: {
-            user: user,
-            contact: contact,
-          },
-          relations: ['phone'],
+      const glink = await this.globalLinks.getLink(urlId);
+      if (glink) {
+        const consolidatedIds = glink.link.split(':');
+        const userId = consolidatedIds[0];
+        const contactUniqueMapper = consolidatedIds[1];
+        const contact = await this.repository.findOne({
+          where: { urlMapper: contactUniqueMapper },
         });
-        user.subscription = null;
-        user.paymentMethod = null;
-        user.customerId = null;
-        return { influencer: user, contact, phone: conversation.phone };
-      } else {
-        throw new BadRequestException('Contact does not exist in our system.');
+
+        if (contact) {
+          const user = await this.users.findOne({ where: { id: userId } });
+          const conversation = await this.smsService.findOneConversations({
+            where: {
+              user: user,
+              contact: contact,
+            },
+            relations: ['phone'],
+          });
+          user.subscription = null;
+          user.paymentMethod = null;
+          user.customerId = null;
+          return { influencer: user, contact, phone: conversation.phone };
+        } else {
+          throw new BadRequestException(
+            'Contact does not exist in our system.',
+          );
+        }
       }
     } catch (e) {
       console.error(e);

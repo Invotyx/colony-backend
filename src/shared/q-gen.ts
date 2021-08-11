@@ -2,7 +2,7 @@ export const qGen = (() => {
   const Utils = {
     escapeChars: { '\0': '\\0', '\n': '\\n', '\r': '\\r', '\b': '\\b' },
     error(...v: any) {
-      //console.log(v);
+      ////console.log(v);
     },
     fmt(str: any, ...args: any) {
       return str.replace(/{([0-9]+)}/g, (m: any, i: any) => args[i]);

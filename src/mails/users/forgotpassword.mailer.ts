@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { env } from 'process';
+import { AppConfig } from '../../configs/app.config';
 import { ForgotPassword } from '../../modules/users/entities/forgottenpassword.entity';
 import { ForgotPasswordRepository } from '../../modules/users/repos/forgotpassword.repo';
-import { AppConfig } from '../../configs/app.config';
 import { MailBuilder, MailClient } from '../../services/mail/mail.service';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class ForgotPasswordTokenSender {
 
   async sendEmail(model: ForgotPassword): Promise<boolean> {
     try {
-      //console.log('model: ', model);
+      ////console.log('model: ', model);
       if (model && model.newPasswordToken) {
         const appConfig = await AppConfig();
 
@@ -49,7 +49,7 @@ export class ForgotPasswordTokenSender {
                                       <a href="${
                                         env.PUBLIC_APP_URL
                                       }" title="logo" target="_blank">
-                                        <img width="180" src="https://dev.colony.ga/_next/image?url=%2Fimages%2Findex-logo.svg&w=256&q=75" title="logo" alt="Colony">
+                                        <img width="180" src="http://res.cloudinary.com/dybyigvz5/image/upload/v1628575698/email/qeefvw7vdaxncdoe99pb.svg" title="logo" alt="Colony">
                                       </a>
                                     </td>
                                 </tr>
@@ -124,7 +124,7 @@ export class ForgotPasswordTokenSender {
         return mail;
       }
     } catch (ex) {
-      //console.log(ex);
+      ////console.log(ex);
       throw new HttpException(
         'Mail server down, unable to send reset password email!',
         HttpStatus.SERVICE_UNAVAILABLE,

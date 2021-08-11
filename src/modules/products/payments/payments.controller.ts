@@ -6,7 +6,7 @@ import {
   Get,
   Injectable,
   Param,
-  Post,
+  Post
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { env } from 'process';
@@ -55,7 +55,7 @@ export class PaymentsController {
         throw new BadRequestException('Incomplete data provided.');
       }
     } catch (e) {
-      //console.log(e, 'exp === 1');
+      ////console.log(e, 'exp === 1');
       throw new BadRequestException(e, 'An Exception Occurred');
     }
   }

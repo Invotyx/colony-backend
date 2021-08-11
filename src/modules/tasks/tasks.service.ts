@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Queue } from 'bull';
 import { env } from 'process';
+import { GlobalLinksRepository } from 'src/repos/gloabl-links.repo';
 import { tagReplace } from 'src/shared/tag-replace';
 import Stripe from 'stripe';
 import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
@@ -37,6 +38,7 @@ export class TasksService {
     @InjectQueue('broadcast_q_dev') private readonly queue_dev: Queue,
     @InjectQueue('sms_q_dev') private readonly sms_q_dev: Queue,
     private readonly invoiceEmail: InvoiceEmailSender,
+    private readonly globalLinks: GlobalLinksRepository,
   ) {
     this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
@@ -89,7 +91,7 @@ export class TasksService {
         attempts: 1,
       });
     }
-    ////console.log(q_obj, 'Added to queue');
+    //////console.log(q_obj, 'Added to queue');
   }
   @Cron('10 * * * * *')
   async checkForBroadcasts() {
@@ -104,11 +106,11 @@ export class TasksService {
       relations: ['user'],
     });
 
-    ////console.log(broadcasts);
+    //////console.log(broadcasts);
 
     for (let broadcast of broadcasts) {
       let contacts;
-      ////console.log(JSON.parse(broadcast.filters));
+      //////console.log(JSON.parse(broadcast.filters));
       if (!JSON.parse(broadcast.filters).successorId) {
         contacts = await this.contactService.filterContacts(
           broadcast.user.id,
@@ -139,7 +141,7 @@ export class TasksService {
         });
         if (phone) {
           this.logger.log('phone');
-          ////console.log(phone);
+          //////console.log(phone);
           let messageBody = broadcast.body;
           const links = messageBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
           if (links && links.length > 0) {
@@ -151,9 +153,13 @@ export class TasksService {
                   contact.phoneNumber,
                 )
               ).url;
+              //do action here
+              const _publicLink = await this.globalLinks.createLink(
+                shareableUri,
+              );
               messageBody = messageBody.replace(
                 link,
-                env.API_URL + '/api/s/o/' + shareableUri,
+                env.API_URL + '/api/s/o/' + _publicLink.shareableId,
               );
               await this.infLinks.sendLink(
                 shareableUri,
@@ -177,7 +183,7 @@ export class TasksService {
           };
 
           this.logger.log('message enqueued');
-          ////console.log(q_obj);
+          //////console.log(q_obj);
           if (env.NODE_ENV.toLowerCase() == 'production') {
             await this.queue.add('broadcast_message', q_obj, {
               removeOnComplete: true,
@@ -198,8 +204,8 @@ export class TasksService {
           this.logger.log(
             'Influencer does not have number to send sms to this contact',
           );
-          ////console.log(phone);
-          ////console.log(contact);
+          //////console.log(phone);
+          //////console.log(contact);
         }
       }
     }
@@ -294,12 +300,12 @@ export class TasksService {
             await this.invoiceEmail.sendEmail(subscription.user, record);
           } else {
             this.logger.log('payment charge failed with details:');
-            ////console.log(charge);
+            //////console.log(charge);
           }
         }
       }
     } catch (e) {
-      console.log(e);
+      //console.log(e);
     }
   }
 
@@ -308,7 +314,7 @@ export class TasksService {
   async checkForSmsThreshold() {
     try {
       const plan = await this.planService.findOne();
-      ////console.log(plan);
+      //////console.log(plan);
       const due_payments = await this.paymentHistoryService.find({
         where: {
           cost: MoreThanOrEqual(+plan.threshold - 1),
@@ -318,11 +324,11 @@ export class TasksService {
       });
 
       for (let payment of due_payments) {
-        ////console.log('payment', payment);
+        //////console.log('payment', payment);
         await this.paymentHistoryService.chargeOnThreshold(payment.user);
       }
     } catch (e) {
-      ////console.log(e);
+      //////console.log(e);
     }
   }
 
@@ -333,51 +339,60 @@ export class TasksService {
       where: { isComplete: false },
       relations: ['user', 'city', 'country'],
     });
-
     for (let contact of contacts) {
       for (let influencer of contact.user) {
-        const conversation = await this.smsService.findOneConversations({
-          where: {
-            contact: contact,
-            user: influencer,
-          },
-          relations: ['user', 'phone', 'contact'],
-        });
+        const createDate = contact.createdAt;
+        createDate.setHours(0, 0, 0, 0);
+        const checkDate = new Date();
+        checkDate.setDate(
+          createDate.getDate() - Number(env.SEND_REMINDER_TEXT_FOR_DAYS),
+        );
+        checkDate.setHours(0, 0, 0, 0);
 
-        if (!conversation) {
-          continue;
-        }
-
-        conversation.phone.user = conversation.user;
-
-        const noResponseMessage = await this.smsService.findOneInPreSets({
-          trigger: 'noResponse',
-          user: influencer,
-        });
-
-        if (noResponseMessage && noResponseMessage.enabled) {
-          const text_body: string = tagReplace(noResponseMessage.body, {
-            first_name: contact.firstName ? contact.firstName : '',
-            last_name: contact.lastName ? contact.lastName : '',
-            inf_first_name: influencer.firstName,
-            inf_last_name: influencer.lastName,
-            country: contact.country ? contact.country.name : '',
-            city: contact.city ? contact.city.name : '',
-            link:
-              env.PUBLIC_APP_URL +
-              '/contacts/enroll/' +
-              influencer.id +
-              ':' +
-              contact.urlMapper +
-              ':' +
-              influencer.id,
+        if (checkDate.getTime() <= createDate.getTime()) {
+          const conversation = await this.smsService.findOneConversations({
+            where: {
+              contact: contact,
+              user: influencer,
+            },
+            relations: ['user', 'phone', 'contact'],
           });
-          await this.smsService.sendSms(
-            contact,
-            conversation.phone,
-            text_body,
-            'outBound',
+
+          if (!conversation) {
+            continue;
+          }
+
+          conversation.phone.user = conversation.user;
+
+          const noResponseMessage = await this.smsService.findOneInPreSets({
+            trigger: 'noResponse',
+            user: influencer,
+          });
+          const _publicLink = await this.globalLinks.createLink(
+            influencer.id + ':' + contact.urlMapper + ':' + influencer.id,
           );
+          if (noResponseMessage && noResponseMessage.enabled) {
+            const text_body: string = tagReplace(noResponseMessage.body, {
+              first_name: contact.firstName ? contact.firstName : '',
+              last_name: contact.lastName ? contact.lastName : '',
+              inf_first_name: influencer.firstName,
+              inf_last_name: influencer.lastName,
+              country: contact.country ? contact.country.name : '',
+              city: contact.city ? contact.city.name : '',
+              link:
+                env.PUBLIC_APP_URL +
+                '/contacts/enroll/' +
+                _publicLink.shareableId,
+            });
+            await this.smsService.sendSms(
+              contact,
+              conversation.phone,
+              text_body,
+              'outBound',
+            );
+          }
+        } else {
+          await this.contactService.removeFromList(influencer, contact.id);
         }
       }
     }

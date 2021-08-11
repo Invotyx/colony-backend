@@ -10,7 +10,7 @@ import { env } from 'process';
 import { CityCountryService } from 'src/services/city-country/city-country.service';
 import { error } from 'src/shared/error.dto';
 import { tagReplace } from 'src/shared/tag-replace';
-import { MoreThan, Not } from 'typeorm';
+import { Not } from 'typeorm';
 import { ContactFilter } from '../contacts/contact.dto';
 import { ContactsService } from '../contacts/contacts.service';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
@@ -114,7 +114,7 @@ export class BroadcastService {
         status: 'scheduled',
       });
     } catch (e) {
-      //console.log('createBroadcast', e);
+      ////console.log('createBroadcast', e);
       throw new BadRequestException(e.message);
     }
   }
@@ -230,7 +230,7 @@ export class BroadcastService {
       }
       return b;
     } catch (e) {
-      //console.log(e);
+      ////console.log(e);
       throw new BadRequestException(e.message);
     }
   }
@@ -240,7 +240,7 @@ export class BroadcastService {
       const bc = await this.bcRepo.findOne({ where: { smsSid: sid } });
 
       if (!bc) {
-        //console.log('single sms');
+        ////console.log('single sms');
         return;
       }
       const influencerNumber = await this.phoneService.findOne({
@@ -296,13 +296,7 @@ export class BroadcastService {
         },
       });
 
-      const reopened = await this.infLinks.findCountInLinks({
-        where: {
-          broadcast: broadcast,
-          isOpened: true,
-          clicks: MoreThan(0),
-        },
-      });
+      const reopened = await this.infLinks.linksReopen(user, broadcast.id);
 
       const link_clicks = await this.infLinks.sumTotalLinksSent(
         user,
@@ -374,13 +368,7 @@ export class BroadcastService {
         },
       });
 
-      const reopened = await this.infLinks.findCountInLinks({
-        where: {
-          broadcast: broadcast,
-          isOpened: true,
-          clicks: MoreThan(0),
-        },
-      });
+      const reopened = await this.infLinks.linksReopen(user, broadcast.id);
 
       const link_clicks = await this.infLinks.sumTotalLinksSent(
         user,

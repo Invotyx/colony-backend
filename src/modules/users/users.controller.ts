@@ -230,7 +230,7 @@ export class UsersController {
     }),
   )
   async uploadFile(@UploadedFile() image: any, @LoginUser() _user: UserEntity) {
-    // //console.log(pic);
+    // ////console.log(pic);
     const user = await this.userService.findOne(_user.id);
 
     //upload pic
@@ -273,8 +273,8 @@ export class UsersController {
     }),
   )
   async setVoicemail(
-    @LoginUser() user: UserEntity,
     @UploadedFile() voice: any,
+    @LoginUser() user: UserEntity,
   ) {
     if (!voice) {
       throw new BadRequestException('Voice cannot be empty');
@@ -282,6 +282,7 @@ export class UsersController {
     return this.userService.setVoicemail(user, voice);
   }
 
+  @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Delete('/voicemail')
   async deleteVoicemail(@LoginUser() user: UserEntity) {
     return this.userService.deleteUserVoiceMail(user);

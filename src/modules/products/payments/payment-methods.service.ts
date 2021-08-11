@@ -82,7 +82,7 @@ export class PaymentMethodsService {
         throw new BadRequestException('Invalid Data entered');
       }
     } catch (e) {
-      //console.log(e, 'exp === inner ');
+      ////console.log(e, 'exp === inner ');
       throw e;
     }
   }
@@ -95,7 +95,7 @@ export class PaymentMethodsService {
       const exist = await this.repository.findOne({
         where: { id: paymentId, user: customer },
       });
-      //console.log(exist, '=== === ===');
+      ////console.log(exist, '=== === ===');
       if (exist) {
         const exDef = await this.repository.findOne({
           where: { default: true, user: customer },

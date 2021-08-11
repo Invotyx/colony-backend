@@ -11,7 +11,7 @@ export class ShareableLinkHandlerController {
   public async linkOpened(@Param('id') id: string, @Res() res: Response) {
     try {
       let link = await this.service.linkOpened(id);
-      console.log('link', link);
+      //console.log('link', link);
       if (!link.includes('http')) {
         link = 'https://' + link;
       }

@@ -6,6 +6,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { GlobalLinksRepository } from 'src/repos/gloabl-links.repo';
 import { error } from 'src/shared/error.dto';
 import {
   dataViewer,
@@ -14,11 +15,12 @@ import {
   PaginatorError,
   PaginatorErrorHandler,
 } from 'src/shared/paginator';
-import { Like } from 'typeorm';
+import { getRepository, Like } from 'typeorm';
 import { TABLES } from '../../consts/tables.const';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { uniqueId } from '../../shared/random-keygen';
 import { ContactsService } from '../contacts/contacts.service';
+import { KeywordsEntity } from '../keywords/keywords.entity';
 import { BroadcastsEntity } from '../sms/entities/broadcast.entity';
 import { InfluencerLinksEntity } from './entities/influencer-links.entity';
 import { InfluencerLinksTrackingRepository } from './repo/influencer-links-tracking.repo';
@@ -30,11 +32,19 @@ export class InfluencerLinksService {
     private readonly repository: InfluencerLinksRepository,
     private readonly trackingRepo: InfluencerLinksTrackingRepository,
     private readonly contactService: ContactsService,
+    private readonly globalLinks: GlobalLinksRepository,
   ) {}
 
   public async findCountInLinks(condition?: any) {
     if (condition) return this.trackingRepo.count(condition);
     else return this.trackingRepo.count();
+  }
+
+  public async linksReopen(user: UserEntity, bid: number): Promise<number> {
+    const data = await this.trackingRepo.query(
+      `select count("id") from influencer_links_tracking where "broadcastId"=${bid} and "clicks">1`,
+    );
+    return data[0].count;
   }
 
   public async sumTotalLinksSent(
@@ -43,6 +53,26 @@ export class InfluencerLinksService {
   ): Promise<number> {
     const data = await this.trackingRepo.query(
       `select SUM("clicks") from influencer_links_tracking where "broadcastId"=${bid}`,
+    );
+    return data[0].sum;
+  }
+
+  public async allLinksReopen(
+    user: UserEntity,
+    linkID: number,
+  ): Promise<number> {
+    const data = await this.trackingRepo.query(
+      `select count("id") from influencer_links_tracking where "influencerLinkId"=${linkID} and "clicks">1`,
+    );
+    return data[0].count;
+  }
+
+  public async sumTotalLinksSentLumpSum(
+    user: UserEntity,
+    linkId: number,
+  ): Promise<number> {
+    const data = await this.trackingRepo.query(
+      `select SUM("clicks") from influencer_links_tracking where "influencerLinkId"=${linkId}`,
     );
     return data[0].sum;
   }
@@ -93,7 +123,7 @@ export class InfluencerLinksService {
   async deleteLink(id: number, user: UserEntity) {
     try {
       const link = await this.repository.findOne({ id: id, user: user });
-      //console.log(link);
+      ////console.log(link);
       if (!link) {
         throw new BadRequestException('You cannot delete this link.');
       }
@@ -143,24 +173,26 @@ export class InfluencerLinksService {
       }
       return link;
     } catch (e) {
-      //console.log(e);
+      ////console.log(e);
       throw new BadRequestException(e.message);
     }
   }
 
   async getLinkStats(id: number, user: UserEntity) {
     try {
-      //console.log('Logged In User: ', user);
+      ////console.log('Logged In User: ', user);
       const statsOpened = await this.trackingRepo.count({
         where: { influencerLink: id, isOpened: true },
       });
       const statsSent = await this.trackingRepo.count({
         where: { influencerLink: id, sent: true },
       });
-
+      const clicks = await this.sumTotalLinksSentLumpSum(user, id);
+      const reopen = await this.allLinksReopen(user, id);
       return {
-        clicks: statsOpened,
+        clicks: clicks,
         opened: statsOpened,
+        reopen: reopen,
         sent: statsSent,
         notOpened: statsSent - statsOpened,
       };
@@ -205,10 +237,18 @@ export class InfluencerLinksService {
     }
   }
 
-  async sendLink(url: string, sid: string, broadcast?: BroadcastsEntity) {
+  async sendLink(
+    url: string,
+    sid: string,
+    broadcast?: BroadcastsEntity,
+    keyword?: KeywordsEntity,
+  ) {
     try {
+      //console.log(url, sid, broadcast, keyword);
+
       const parts = url.split(':');
-      if (parts.length != 2) {
+      //console.log(parts);
+      if (parts.length < 1) {
         throw new HttpException(
           'Invalid format of url string',
           HttpStatus.BAD_GATEWAY,
@@ -216,12 +256,14 @@ export class InfluencerLinksService {
       }
       const link = parts[0];
       const contact = parts[1];
+
       const contactUrl = await this.contactService.findOne({
         where: { urlMapper: contact },
       });
       const linkUrl = await this.repository.findOne({
         where: { urlMapper: link },
       });
+      //console.log(parts, contactUrl, linkUrl);
       let linkSent = await this.trackingRepo.save({
         contact: contactUrl,
         influencerLink: linkUrl,
@@ -229,52 +271,74 @@ export class InfluencerLinksService {
         sent: true,
         smsSid: sid,
         broadcast: broadcast ? broadcast : null,
+        keyword: keyword ? keyword : null,
       });
-      console.log('linkSent', linkSent);
+
+      //console.log('linkSent', linkSent);
       linkSent.contact = linkSent.contact.id as any;
       linkSent.influencerLink = linkSent.influencerLink.id as any;
       return linkSent;
     } catch (e) {
+      //console.log(e);
       throw e;
     }
   }
 
   async linkOpened(url: string) {
     try {
-      const parts = url.split(':');
-      if (parts.length != 2) {
-        throw new HttpException(
-          'Invalid format of url string',
-          HttpStatus.BAD_GATEWAY,
-        );
-      }
-      const link = parts[0];
-      const contact = parts[1];
-      const contactUrl = await this.contactService.findOne({
-        where: { urlMapper: contact },
-      });
-      if (!contactUrl) {
-        throw new BadRequestException('contact does not exist.');
-      }
-      //console.log(contactUrl);
-      const linkUrl = await this.repository.findOne({
-        where: { urlMapper: link },
-      });
-      if (!linkUrl) {
-        throw new BadRequestException("link doesn't exist.");
-      }
-      console.log('linkUrl', linkUrl);
+      const glink = await this.globalLinks.getLink(url);
+      if (glink) {
+        const parts = glink.link.split(':');
+        if (parts.length < 1) {
+          throw new HttpException(
+            'Invalid format of url string',
+            HttpStatus.BAD_GATEWAY,
+          );
+        }
+        const link = parts[0];
+        const contact = parts[1];
+        const keywordId = parts[2] ? +parts[2] : undefined;
+        const contactUrl = await this.contactService.findOne({
+          where: { urlMapper: contact },
+        });
+        if (!contactUrl) {
+          throw new BadRequestException('contact does not exist.');
+        }
+        ////console.log(contactUrl);
+        let linkUrl = await this.repository.findOne({
+          where: { urlMapper: link },
+        });
+        if (!linkUrl) {
+          throw new BadRequestException("link doesn't exist.");
+        }
+        //console.log('linkUrl', linkUrl);
 
-      const linkSent = await this.trackingRepo.findOne({
-        where: { influencerLink: linkUrl, contact: contactUrl },
-      });
-      console.log('linkSent', linkSent);
-      if (linkSent) {
-        linkSent.isOpened = true;
-        linkSent.clicks = linkSent.clicks ? linkSent.clicks + 1 : 1;
-        await this.trackingRepo.update(linkSent.id, linkSent);
+        let keyword = undefined;
+        if (keywordId) {
+          keyword = await getRepository(KeywordsEntity).findOne(keywordId);
+        }
+
+        const linkSent = keyword
+          ? await this.trackingRepo.findOne({
+              where: {
+                influencerLink: linkUrl,
+                contact: contactUrl,
+                keyword: keyword,
+              },
+            })
+          : await this.trackingRepo.findOne({
+              where: { influencerLink: linkUrl, contact: contactUrl },
+            });
+
+        //console.log('linkSent', linkSent);
+        if (linkSent) {
+          linkSent.isOpened = true;
+          linkSent.clicks = linkSent.clicks ? linkSent.clicks + 1 : 1;
+          await this.trackingRepo.update(linkSent.id, linkSent);
+        }
+        //console.log('linkSent updated', linkSent);
+        return linkUrl;
       }
-      return linkUrl;
     } catch (e) {
       throw e;
     }

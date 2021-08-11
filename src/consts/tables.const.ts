@@ -45,6 +45,8 @@ const TablesList: any = {
   FAVORITE_CONTACTS: new TableData(),
   BLOCKED_CONTACTS: new TableData(),
   KEYWORDS: new TableData(),
+
+  GLOBAL_LINKS: new TableData(),
 };
 
 const numHash = (t: string) =>

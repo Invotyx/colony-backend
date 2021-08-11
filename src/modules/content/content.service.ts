@@ -103,7 +103,7 @@ export class ContentService {
 
   async deletePage(id: number) {
     const sections = (await this.getSectionByPageId(id)).sections;
-    //console.log(sections);
+    ////console.log(sections);
     if (sections) {
       sections.forEach(async (section) => {
         await this.deleteSection(id, section.id);
@@ -370,7 +370,7 @@ export class ContentService {
   //#endregion
 
   async addFaq(faq: FaqsDto) {
-    //console.log(faq);
+    ////console.log(faq);
 
     return this.faqsRepo.save(faq);
   }

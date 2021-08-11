@@ -1,3 +1,4 @@
+import { KeywordsEntity } from 'src/modules/keywords/keywords.entity';
 import { BroadcastsEntity } from 'src/modules/sms/entities/broadcast.entity';
 import {
   Column,
@@ -38,6 +39,12 @@ export class InfluencerLinksTrackingEntity {
     nullable: true,
   })
   public broadcast: BroadcastsEntity;
+
+  @ManyToOne(() => KeywordsEntity, (con) => con.tracking, {
+    eager: false,
+    nullable: true,
+  })
+  public keyword: KeywordsEntity;
 
   @Column({ length: 100 })
   public smsSid: string;

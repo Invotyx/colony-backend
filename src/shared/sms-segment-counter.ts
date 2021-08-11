@@ -82,7 +82,7 @@ export const smsCount = (message = '') => {
     text = message,
     isUnicode = false;
 
-  // //console.log('length', text.length);
+  // ////console.log('length', text.length);
 
   const breakdown = [];
 

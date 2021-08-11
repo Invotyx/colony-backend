@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { env } from 'process';
 import Pusher from 'pusher';
+import { GlobalLinksRepository } from 'src/repos/gloabl-links.repo';
 import { error } from 'src/shared/error.dto';
 import { CityCountryService } from '../../services/city-country/city-country.service';
 import { smsCount } from '../../shared/sms-segment-counter';
@@ -15,6 +16,7 @@ import { tagReplace } from '../../shared/tag-replace';
 import { ContactsService } from '../contacts/contacts.service';
 import { ContactsEntity } from '../contacts/entities/contacts.entity';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
+import { KeywordsEntity } from '../keywords/keywords.entity';
 import { KeywordsService } from '../keywords/keywords.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhonesEntity } from '../phone/entities/phone.entity';
@@ -51,6 +53,7 @@ export class SmsService {
     private readonly infLinks: InfluencerLinksService,
     private readonly keywordsService: KeywordsService,
     private readonly broadcastRepo: BroadcastsRepository,
+    private readonly globalLinks: GlobalLinksRepository,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -129,6 +132,7 @@ export class SmsService {
       });
 
       if (influencerNumber) {
+        //console.log('Phone found');
         const contact = await this.contactService.findOne({
           where: { phoneNumber: sender },
         });
@@ -144,6 +148,8 @@ export class SmsService {
         }
 
         if (contact) {
+          //console.log('Contact found');
+
           const check = await this.contactService.checkBlockList(
             influencerNumber.user,
             contact.id,
@@ -161,7 +167,11 @@ export class SmsService {
             relations: ['contact', 'phone'],
           });
 
+          //console.log('Conversation found');
+
           if (rel && conversation) {
+            //console.log('Relation and Conversation found');
+
             const lastConversationMessage = await this.conversationsMessagesRepo.findOne(
               {
                 where: {
@@ -192,7 +202,7 @@ export class SmsService {
               }
             }
 
-            //console.log('conversation found');
+            ////console.log('conversation found');
             const message = await this.saveSms(
               contact,
               influencerNumber,
@@ -231,15 +241,31 @@ export class SmsService {
               },
             });
 
+            //console.log('checkKeyword', checkKeyword);
+
             if (checkKeyword) {
+              //console.log('Keyword Conversation found');
+
+              const text_body: string = await this.replaceTextUtility(
+                checkKeyword.message,
+                influencerNumber,
+                contact,
+                true,
+                checkKeyword,
+              );
+
               await this.sendSms(
                 contact,
                 influencerNumber,
-                checkKeyword.message,
+                text_body,
                 'outBound',
               );
+
+              checkKeyword.usageCount = checkKeyword.usageCount + 1;
+              await this.keywordsService.save(checkKeyword);
+              return;
             }
-            //console.log(
+            ////console.log(
             //   'saved as regular ' + msgType + ' sms from:',
             //   contact.phoneNumber,
             //   ' to ',
@@ -251,7 +277,10 @@ export class SmsService {
             return 200;
           }
         }
-        await this.contactOnboarding(
+
+        //console.log('Onboarding start');
+
+        const newContact = await this.contactOnboarding(
           sender,
           influencerNumber,
           body,
@@ -260,19 +289,140 @@ export class SmsService {
           preset_welcome,
           fromCountry,
         );
+        //console.log('Onboarding end');
+
+        const checkKeyword = await this.keywordsService.findOne({
+          where: {
+            keyword: body,
+            user: influencerNumber.user,
+          },
+        });
+
+        if (checkKeyword) {
+          //console.log('Keyword found');
+
+          const text_body: string = await this.replaceTextUtility(
+            checkKeyword.message,
+            influencerNumber,
+            newContact,
+            true,
+            checkKeyword,
+          );
+
+          await this.sendSms(
+            newContact,
+            influencerNumber,
+            text_body,
+            'outBound',
+          );
+
+          checkKeyword.usageCount = checkKeyword.usageCount + 1;
+          await this.keywordsService.save(checkKeyword);
+        }
+
+        if (!newContact.isComplete) {
+          const message: string = await this.replaceTextUtility(
+            preset_welcome.body,
+            influencerNumber,
+            newContact,
+            false,
+          );
+          await this.sendSms(newContact, influencerNumber, message, 'outBound');
+        }
         return 200;
       } else {
-        //console.log(
-        //   'Influencer not found. Error generated. Returned 200 to twillio hook.',
-        // );
-        return 200;
       }
     } catch (e) {
-      //console.log('Receive SMS', e);
+      ////console.log('Receive SMS', e);
       throw e;
     }
   }
 
+  private async replaceTextUtility(
+    message: string,
+    influencerNumber: PhonesEntity,
+    newContact: ContactsEntity,
+    skipLink: boolean = false,
+    keyword?: KeywordsEntity,
+  ) {
+    let welcomeBody = message;
+    const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
+    if (links && links.length > 0) {
+      for (let link of links) {
+        //console.log('link', link);
+        let id = link.replace('${link:', '').replace('}', '');
+        const check = keyword ? keyword.id : undefined;
+        const shareableUri = check
+          ? (
+              await this.infLinks.getUniqueLinkForContact(
+                parseInt(id),
+                newContact.phoneNumber,
+              )
+            ).url +
+            ':' +
+            check
+          : (
+              await this.infLinks.getUniqueLinkForContact(
+                parseInt(id),
+                newContact.phoneNumber,
+              )
+            ).url;
+        //console.log(shareableUri);
+        //do action here
+        const _publicLink = await this.globalLinks.createLink(shareableUri);
+        await this.infLinks.sendLink(
+          shareableUri,
+          newContact.id + ':',
+          undefined,
+          keyword ? keyword : undefined,
+        );
+        welcomeBody = welcomeBody.replace(
+          link,
+          env.API_URL + '/api/s/o/' + _publicLink.shareableId,
+        );
+      }
+    }
+    let text_body: string;
+    if (skipLink === false) {
+      if (welcomeBody.includes('${link}') === false)
+        welcomeBody =
+          welcomeBody +
+          ' Click this link ${link} to add yourself in my contact list.';
+    }
+    if (skipLink) {
+      text_body = tagReplace(welcomeBody, {
+        first_name: newContact.firstName ? newContact.firstName : '',
+        last_name: newContact.lastName ? newContact.lastName : '',
+        inf_first_name: influencerNumber.user.firstName,
+        inf_last_name: influencerNumber.user.lastName,
+        country: newContact.country ? newContact.country.name : '',
+        city: newContact.city ? newContact.city.name : '',
+      });
+
+      //console.log('text_body', text_body);
+    } else {
+      const _publicLink = await this.globalLinks.createLink(
+        influencerNumber.user.id +
+          ':' +
+          newContact.urlMapper +
+          ':' +
+          influencerNumber.id,
+      );
+      text_body = tagReplace(welcomeBody, {
+        first_name: newContact.firstName ? newContact.firstName : '',
+        last_name: newContact.lastName ? newContact.lastName : '',
+        inf_first_name: influencerNumber.user.firstName,
+        inf_last_name: influencerNumber.user.lastName,
+        country: newContact.country ? newContact.country.name : '',
+        city: newContact.city ? newContact.city.name : '',
+        link:
+          env.PUBLIC_APP_URL + '/contacts/enroll/' + _publicLink.shareableId,
+      });
+      //console.log('text_body', text_body);
+    }
+
+    return text_body;
+  }
   private async contactOnboarding(
     sender,
     influencerNumber,
@@ -303,50 +453,7 @@ export class SmsService {
       type: 'contacts',
       user: influencerNumber.user,
     });
-    let welcomeBody = preset_welcome.body;
-    const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
-    if (links && links.length > 0) {
-      for (let link of links) {
-        let id = link.replace('${link:', '').replace('}', '');
-        const shareableUri = (
-          await this.infLinks.getUniqueLinkForContact(
-            parseInt(id),
-            contact.phoneNumber,
-          )
-        ).url;
-
-        await this.infLinks.sendLink(shareableUri, contact.id + ':');
-        welcomeBody = welcomeBody.replace(
-          link,
-          env.API_URL + '/api/s/o/' + shareableUri,
-        );
-      }
-    }
-    const text_body: string = tagReplace(welcomeBody, {
-      first_name: contact.firstName ? contact.firstName : '',
-      last_name: contact.lastName ? contact.lastName : '',
-      inf_first_name: influencerNumber.user.firstName,
-      inf_last_name: influencerNumber.user.lastName,
-      country: contact.country ? contact.country.name : '',
-      city: contact.city ? contact.city.name : '',
-      link:
-        env.PUBLIC_APP_URL +
-        '/contacts/enroll/' +
-        influencerNumber.user.id +
-        ':' +
-        contact.urlMapper +
-        ':' +
-        influencerNumber.id,
-    });
-    await this.sendSms(contact, influencerNumber, text_body, 'outBound');
-    //console.log(
-    //   'outbound sms sent to:',
-    //   contact.phoneNumber,
-    //   ' from ',
-    //   influencerNumber.number,
-    //   ' body ',
-    //   text_body,
-    // );
+    return contact;
   }
 
   async saveSms(
@@ -402,7 +509,7 @@ export class SmsService {
       });
     }
 
-    //console.log('message saved', message);
+    ////console.log('message saved', message);
 
     const country = await this.countryService.countryRepo.findOne({
       where: { code: conversation.phone.country },
@@ -426,7 +533,7 @@ export class SmsService {
     message: string,
     scheduled?: any,
   ) {
-    //console.log(message);
+    ////console.log(message);
     try {
       if (String(message).length < 1) {
         throw new HttpException(
@@ -449,7 +556,7 @@ export class SmsService {
         where: { phoneNumber: contact },
         relations: ['country', 'city'],
       });
-      console.log('*****************', _contact, '*****************');
+      //console.log('*****************', _contact, '*****************');
       if (_contact && _contact.isComplete == true) {
         const conversation = await this.conversationsRepo.findOne({
           where: { contact: _contact, user: inf },
@@ -472,27 +579,14 @@ export class SmsService {
           }
         }
 
-        let welcomeBody = message;
-        const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
-        if (links && links.length > 0) {
-          for (let link of links) {
-            let id = link.replace('${link:', '').replace('}', '');
-            const shareableUri = (
-              await this.infLinks.getUniqueLinkForContact(
-                parseInt(id),
-                _contact.phoneNumber,
-              )
-            ).url;
-            await this.infLinks.sendLink(shareableUri, _contact.id + ':');
+        const text_body: string = await this.replaceTextUtility(
+          message,
+          _inf_phone,
+          _contact,
+          true,
+        );
 
-            welcomeBody = welcomeBody.replace(
-              link,
-              env.API_URL + '/api/s/o/' + shareableUri,
-            );
-          }
-        }
-
-        //console.log(welcomeBody);
+        ////console.log(welcomeBody);
         if (scheduled != null) {
           //handle schedule here
           scheduled = new Date(new Date().getTime() + 3 * 60000);
@@ -500,14 +594,7 @@ export class SmsService {
           this.saveSms(
             _contact,
             _inf_phone,
-            tagReplace(welcomeBody, {
-              first_name: _contact.firstName ? _contact.firstName : '',
-              last_name: _contact.lastName ? _contact.lastName : '',
-              inf_first_name: _inf_phone.user.firstName,
-              inf_last_name: _inf_phone.user.lastName,
-              country: _contact.country ? _contact.country.name : '',
-              city: _contact.city ? _contact.city.name : '',
-            }),
+            text_body,
             null,
             'outBound',
             '',
@@ -516,19 +603,7 @@ export class SmsService {
           );
           return { message: 'Sms scheduled' };
         }
-        await this.sendSms(
-          _contact,
-          _inf_phone,
-          tagReplace(welcomeBody, {
-            first_name: _contact.firstName ? _contact.firstName : '',
-            last_name: _contact.lastName ? _contact.lastName : '',
-            inf_first_name: _inf_phone.user.firstName,
-            inf_last_name: _inf_phone.user.lastName,
-            country: _contact.country ? _contact.country.name : '',
-            city: _contact.city ? _contact.city.name : '',
-          }),
-          'outBound',
-        );
+        await this.sendSms(_contact, _inf_phone, text_body, 'outBound');
         return { message: 'Sms sent' };
       } else {
         throw new HttpException(
@@ -646,21 +721,21 @@ export class SmsService {
 
   public async updateStatus(sid: string, status: string, from: string) {
     try {
-      //console.log(sid, status, from);
+      ////console.log(sid, status, from);
       const bc = await this.conversationsMessagesRepo.findOne({
         where: { sid: sid },
       });
-      //console.log('message:', bc);
+      ////console.log('message:', bc);
       const influencerNumber = await this.phoneService.findOne({
         where: { number: from },
         relations: ['user'],
       });
-      //console.log('influencerNumber:', influencerNumber);
+      ////console.log('influencerNumber:', influencerNumber);
 
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },
       });
-      //console.log('country:', country);
+      ////console.log('country:', country);
 
       if (status == 'failed') {
         await this.paymentHistory.updateDues({
@@ -670,7 +745,7 @@ export class SmsService {
         });
       }
       bc.status = status;
-      //console.log('sms: ', bc);
+      ////console.log('sms: ', bc);
       return this.conversationsMessagesRepo.save(bc);
     } catch (e) {
       throw e;
@@ -714,9 +789,9 @@ export class SmsService {
       const conversation = await this.conversationsRepo.findOne({
         where: { user: inf, id: conversationId },
       });
-      //console.log('count', count);
-      //console.log('page', page);
-      //console.log('skip', count * page - count);
+      ////console.log('count', count);
+      ////console.log('page', page);
+      ////console.log('skip', count * page - count);
 
       const conversationMessage = await this.conversationsMessagesRepo.find({
         where: {
@@ -1049,9 +1124,92 @@ export class SmsService {
         LEFT JOIN conversations C ON cm."conversationsId" = C."id"
         WHERE cm."createdAt"::date > (CURRENT_DATE::date - INTERVAL '30 days') and  c."userId"=${user.id}
         GROUP BY cm."createdAt"::date`;
+      const lastWeek = `
+        SELECT
+          COUNT ( cm."id" ) as "total",            
+          sum ( case when cm."type"='inBound' then 1 else 0 end ) as "inBound",
+          sum ( case when cm."type"<>'inBound' then 1 else 0 end ) as "outBound"
+        FROM
+          conversation_messages cm
+          LEFT JOIN conversations C ON cm."conversationsId" = C."id"
+          WHERE cm."createdAt"::date > (CURRENT_DATE::date - INTERVAL '7 days') and  c."userId"=${user.id}
+      `;
+      const previousWeek = ` 
+        SELECT
+          COUNT ( cm."id" ) as "total",            
+          sum ( case when cm."type"='inBound' then 1 else 0 end ) as "inBound",
+          sum ( case when cm."type"<>'inBound' then 1 else 0 end ) as "outBound"
+        FROM
+          conversation_messages cm
+          LEFT JOIN conversations C ON cm."conversationsId" = C."id"
+          WHERE cm."createdAt"::date BETWEEN (CURRENT_DATE::date - INTERVAL '14 days')and (CURRENT_DATE::date - INTERVAL '7 days') and  c."userId"=${user.id}
+      `;
 
-      const act = await this.conversationsMessagesRepo.query(sql);
-      return act ? act : [];
+      const _lastWeekContacts = `      
+            SELECT
+              COUNT ( c."id" ) as "total"
+            FROM
+              conversations c
+              WHERE c."createdAt"::date BETWEEN (CURRENT_DATE::date - INTERVAL '7 days')and (CURRENT_DATE::date) and  c."userId"=${user.id}
+      `;
+
+      const _previousWeekContacts = `      
+            SELECT
+              COUNT ( c."id" ) as "total"
+            FROM
+              conversations c
+              WHERE c."createdAt"::date BETWEEN (CURRENT_DATE::date - INTERVAL '14 days')and (CURRENT_DATE::date  - INTERVAL '7 days') and  c."userId"=${user.id}
+      `;
+
+      const _lastMonthMessages = `SELECT
+      COUNT ( cm."id" ) as "total",     
+        sum ( case when cm."type"<>'inBound' then 1 else 0 end ) as "outBound",
+        sum ( case when cm."type"='inBound' then 1 else 0 end ) as "inBound"
+      FROM
+        conversation_messages cm
+        LEFT JOIN conversations C ON cm."conversationsId" = C."id"
+        WHERE cm."createdAt"::date > (CURRENT_DATE::date - INTERVAL '30 days') and  c."userId"=${user.id}
+      `;
+
+      const _previousMonthMessages = `SELECT
+      COUNT ( cm."id" ) as "total",     
+        sum ( case when cm."type"<>'inBound' then 1 else 0 end ) as "outBound",
+        sum ( case when cm."type"='inBound' then 1 else 0 end ) as "inBound"
+      FROM
+        conversation_messages cm
+        LEFT JOIN conversations C ON cm."conversationsId" = C."id"
+        WHERE cm."createdAt"::date BETWEEN (CURRENT_DATE::date - INTERVAL '60 days') and (CURRENT_DATE::date  - INTERVAL '30 days') and  c."userId"=${user.id}
+      `;
+
+      const currentWeekStats = await this.conversationsMessagesRepo.query(
+        lastWeek,
+      );
+      const previousWeekStats = await this.conversationsMessagesRepo.query(
+        previousWeek,
+      );
+      const currentWeekContacts = await this.conversationsMessagesRepo.query(
+        _lastWeekContacts,
+      );
+      const previousWeekContacts = await this.conversationsMessagesRepo.query(
+        _previousWeekContacts,
+      );
+      const currentMonthMessages = await this.conversationsMessagesRepo.query(
+        _lastMonthMessages,
+      );
+      const previousMonthMessages = await this.conversationsMessagesRepo.query(
+        _previousMonthMessages,
+      );
+      const activity = await this.conversationsMessagesRepo.query(sql);
+
+      return {
+        activity,
+        currentWeekContacts: currentWeekContacts[0],
+        previousWeekContacts: previousWeekContacts[0],
+        currentWeekStats: currentWeekStats[0],
+        previousWeekStats: previousWeekStats[0],
+        currentMonthMessages: currentMonthMessages[0],
+        previousMonthMessages: previousMonthMessages[0],
+      };
     } catch (e) {
       throw e;
     }
@@ -1074,7 +1232,7 @@ export class SmsService {
             left join phones p on p.id = c."phoneId"
             where cm."type"='broadcastInbound' and p."userId"=${user.id}
       `);
-      //console.log('popularity', popularity);
+      ////console.log('popularity', popularity);
       let data = {};
 
       popularity.forEach((number) => {

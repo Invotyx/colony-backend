@@ -4,13 +4,14 @@ import {
   HttpException,
   HttpStatus,
   Inject,
-  Injectable,
+  Injectable
 } from '@nestjs/common';
 import * as fs from 'fs';
 import { join } from 'path';
 import { env } from 'process';
 import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
+import { GlobalLinksRepository } from 'src/repos/gloabl-links.repo';
 import { uniqueId } from 'src/shared/random-keygen';
 import { tagReplace } from 'src/shared/tag-replace';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
@@ -25,7 +26,7 @@ import {
   contacted,
   ContactFilter,
   dob,
-  newContacts,
+  newContacts
 } from './contact.dto';
 import { BlockedContactRepository } from './repo/blocked-contact.repo';
 import { ContactsRepository } from './repo/contact.repo';
@@ -48,6 +49,7 @@ export class ContactsService {
     private readonly subService: SubscriptionsService,
     @Inject(forwardRef(() => InfluencerLinksService))
     private readonly infLinks: InfluencerLinksService,
+    private readonly globalLinks: GlobalLinksRepository,
   ) {
     this.client = require('twilio')(
       process.env.TWILIO_ACCOUNT_SID,
@@ -120,8 +122,12 @@ export class ContactsService {
             where: { contactId: con.id, userId: user.id },
           });
           if (!rel) {
-            con.user.push(user);
-            await this.repository.save(con);
+            await this.influencerContactRepo.save({
+              contact: con,
+              user: user,
+            });
+            // con.user.push(user);
+            // await this.repository.save(con);
           }
           con.user = null;
           return con;
@@ -455,7 +461,7 @@ export class ContactsService {
 
   async updateContact(urlId: string, data: ContactDto, image?: any) {
     const consolidatedIds = urlId.split(':');
-    console.log(consolidatedIds);
+    //console.log(consolidatedIds);
     const userId = consolidatedIds[0];
     const contactUniqueMapper = consolidatedIds[1];
     const number = consolidatedIds[2];
@@ -571,10 +577,12 @@ export class ContactsService {
             )
           ).url;
 
+          //do action here
+          const _publicLink = await this.globalLinks.createLink(shareableUri);
           await this.infLinks.sendLink(shareableUri, savedContact.id + ':');
           onboardBody = onboardBody.replace(
             link,
-            env.API_URL + '/api/s/o/' + shareableUri,
+            env.API_URL + '/api/s/o/' + _publicLink.shareableId,
           );
         }
       }
@@ -632,28 +640,33 @@ export class ContactsService {
 
   async checkContact(urlId: string) {
     try {
-      const consolidatedIds = urlId.split(':');
-      const userId = consolidatedIds[0];
-      const contactUniqueMapper = consolidatedIds[1];
-      const contact = await this.repository.findOne({
-        where: { urlMapper: contactUniqueMapper },
-      });
-
-      if (contact) {
-        const user = await this.users.findOne({ where: { id: userId } });
-        const conversation = await this.smsService.findOneConversations({
-          where: {
-            user: user,
-            contact: contact,
-          },
-          relations: ['phone'],
+      const glink = await this.globalLinks.getLink(urlId);
+      if (glink) {
+        const consolidatedIds = glink.link.split(':');
+        const userId = consolidatedIds[0];
+        const contactUniqueMapper = consolidatedIds[1];
+        const contact = await this.repository.findOne({
+          where: { urlMapper: contactUniqueMapper },
         });
-        user.subscription = null;
-        user.paymentMethod = null;
-        user.customerId = null;
-        return { influencer: user, contact, phone: conversation.phone };
-      } else {
-        throw new BadRequestException('Contact does not exist in our system.');
+
+        if (contact) {
+          const user = await this.users.findOne({ where: { id: userId } });
+          const conversation = await this.smsService.findOneConversations({
+            where: {
+              user: user,
+              contact: contact,
+            },
+            relations: ['phone'],
+          });
+          user.subscription = null;
+          user.paymentMethod = null;
+          user.customerId = null;
+          return { influencer: user, contact, phone: conversation.phone };
+        } else {
+          throw new BadRequestException(
+            'Contact does not exist in our system.',
+          );
+        }
       }
     } catch (e) {
       console.error(e);
@@ -882,5 +895,46 @@ export class ContactsService {
     }
   }
 
+  //#endregion
+
+  //#region  popularity
+  async popularityBasedOnCountry(user: UserEntity) {
+    const popularity = this.influencerContactRepo.query(`
+      SELECT
+        "c"."cCode" as country,
+        COUNT("c"."id")
+      FROM
+        "contacts" "c"
+        LEFT JOIN "influencer_contacts" "ic"
+      ON "c"."id" = "ic"."contactId"
+      WHERE
+        ( "ic"."userId" = ${user.id} ) 
+        AND ( "ic"."deletedAt" IS NULL ) 
+      GROUP BY
+        "c"."cCode"
+      `);
+    return popularity;
+  }
+
+  async popularityBasedOnCity(user: UserEntity) {
+    const popularity = this.influencerContactRepo.query(`
+      SELECT
+        "ct"."name" as city,
+	      "c"."cCode",
+        COUNT("c"."id")
+      FROM
+        "contacts" "c"
+        LEFT JOIN "influencer_contacts" "ic" ON "c"."id" = "ic"."contactId"
+        LEFT JOIN "city" "ct" ON "ct"."id" = "c"."cityId"
+
+      WHERE
+        ( "ic"."userId" = ${user.id} ) 
+        AND ( "ic"."deletedAt" IS NULL ) 
+      GROUP BY
+        "ct"."name",
+	      "c"."cCode"
+      `);
+    return popularity;
+  }
   //#endregion
 }

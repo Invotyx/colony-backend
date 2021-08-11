@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { UserEntity } from '../../modules/users/entities/user.entity';
@@ -41,6 +41,19 @@ export class PaymentHistoryController {
     try {
       const history = await this.service.history(user);
       return history;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Auth({ roles: [ROLES.INFLUENCER, ROLES.ADMIN] })
+  @Get('html/:id')
+  async generateHtmlForInvoice(
+    @LoginUser() user: UserEntity,
+    @Param('id') id: number,
+  ) {
+    try {
+      return this.service.generateHtmlForInvoice(id,user);
     } catch (e) {
       throw e;
     }

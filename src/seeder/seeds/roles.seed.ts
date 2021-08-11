@@ -17,7 +17,7 @@ export class RolesSeed implements ISeed {
           await this.rolesService.createRole(role);
         }
       } catch (e) {
-        //console.log(e, '===here====');
+        ////console.log(e, '===here====');
       }
     });
   }

@@ -3,7 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import * as fs from 'fs';
 import { nanoid } from 'nanoid';
@@ -14,6 +14,7 @@ import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer
 import { presetTrigger } from 'src/modules/sms/entities/preset-message.entity';
 import { PresetMessagesRepository } from 'src/modules/sms/repo/sms-presets.repo';
 import { ForgotPassword } from 'src/modules/users/entities/forgottenpassword.entity';
+import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { CityRepository } from 'src/services/city-country/repos/city.repo';
 import { CountryRepository } from 'src/services/city-country/repos/country.repo';
 import { error } from 'src/shared/error.dto';
@@ -23,7 +24,7 @@ import {
   mapColumns,
   paginateQuery,
   PaginatorError,
-  PaginatorErrorHandler,
+  PaginatorErrorHandler
 } from 'src/shared/paginator';
 import { Not } from 'typeorm';
 import { EmailTokenSender } from '../../../mails/users/emailtoken.mailer';
@@ -35,7 +36,7 @@ import { EmailVerifications } from '../entities/verifyemail.entity';
 import {
   EmailAlreadyExistError,
   PhoneAlreadyExistError,
-  UserNameAlreadyExistError,
+  UserNameAlreadyExistError
 } from '../errors/users.error';
 import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
 import { UserRepository } from '../repos/user.repo';
@@ -44,7 +45,7 @@ import {
   CreateUserDto,
   UpdateProfileDto,
   UpdateProfilePasswordDto,
-  UpdateRole,
+  UpdateRole
 } from '../users.dto';
 
 @Injectable()
@@ -205,9 +206,14 @@ export class UsersService {
         user.urlId = nanoid(10);
         user.username = user.username.toLowerCase();
         const newUser: UserEntity = await this.repository.save(user);
-        await this.updateRoles(newUser.id, { userId: newUser.id, roleId: [2] });
-        /* await this.createEmailToken(user.email);
-        await this.emailTokenSend.sendEmailVerification(user.email); */
+        const roles = await this.roleRepository.findOne({
+          where: { role: ROLES.INFLUENCER },
+        });
+        await this.updateRoles(newUser.id, {
+          userId: newUser.id,
+          roleId: [roles.id],
+        });
+
         Promise.all([
           this.presetRepo.save({
             body:
@@ -271,7 +277,7 @@ export class UsersService {
       const forget = await this.createForgottenPasswordToken(email);
       return this.sendForgotPassword.sendEmail(forget);
     } catch (e) {
-      //console.log(e);
+      ////console.log(e);
       throw e;
     }
   }
@@ -444,8 +450,8 @@ export class UsersService {
         updateData.lastName = user.lastName;
       }
       updateData.timezone = user.timezone;
-      //console.log('updateData: ', updateData);
-      //console.log('user: ', user);
+      ////console.log('updateData: ', updateData);
+      ////console.log('user: ', user);
 
       await this.repository.save(updateData);
       return { message: 'User details updated.' };
@@ -568,14 +574,14 @@ export class UsersService {
     const users = await this.repository.findOne(id, {
       relations: ['roles'],
     });
-    //console.log(users);
+    ////console.log(users);
 
     // await this.repository.save(users);
     const allRoles = await this.roleRepository
       .createQueryBuilder('s')
       .where(' s.id IN (:...RoleId)', { RoleId })
       .getMany();
-    //console.log(allRoles);
+    ////console.log(allRoles);
     users.roles = allRoles;
     await this.repository.save(users);
   }
@@ -585,11 +591,12 @@ export class UsersService {
     return dbRes;
   }
   async deleteUserVoiceMail(user: UserEntity) {
-    if (user.voiceUrl) {
-      const filePath = join(__dirname, '../../../..', 'uploads', user.voiceUrl);
+    const _user = await this.repository.findOne(user.id);
+    if (_user.voiceUrl) {
+      const filePath = join(__dirname, '../../../..', 'uploads', _user.voiceUrl);
       fs.unlinkSync(filePath);
     }
-    const dbRes = await this.repository.update(user.id, { voiceUrl: null });
+    const dbRes = await this.repository.update(_user.id, { voiceUrl: null });
     return dbRes;
   }
 

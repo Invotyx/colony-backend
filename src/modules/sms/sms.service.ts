@@ -1155,6 +1155,7 @@ export class SmsService {
       `;
 
       const _lastMonthMessages = `SELECT
+      COUNT ( cm."id" ) as "total",     
         sum ( case when cm."type"<>'inBound' then 1 else 0 end ) as "outBound",
         sum ( case when cm."type"='inBound' then 1 else 0 end ) as "inBound"
       FROM
@@ -1164,6 +1165,7 @@ export class SmsService {
       `;
 
       const _previousMonthMessages = `SELECT
+      COUNT ( cm."id" ) as "total",     
         sum ( case when cm."type"<>'inBound' then 1 else 0 end ) as "outBound",
         sum ( case when cm."type"='inBound' then 1 else 0 end ) as "inBound"
       FROM

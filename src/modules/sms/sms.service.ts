@@ -1172,19 +1172,19 @@ export class SmsService {
         WHERE cm."createdAt"::date BETWEEN (CURRENT_DATE::date - INTERVAL '60 days') and (CURRENT_DATE::date  - INTERVAL '30 days') and  c."userId"=${user.id}
       `;
 
-      const lastWeekStats = await this.conversationsMessagesRepo.query(
+      const currentWeekStats = await this.conversationsMessagesRepo.query(
         lastWeek,
       );
       const previousWeekStats = await this.conversationsMessagesRepo.query(
         previousWeek,
       );
-      const lastWeekContacts = await this.conversationsMessagesRepo.query(
+      const currentWeekContacts = await this.conversationsMessagesRepo.query(
         _lastWeekContacts,
       );
       const previousWeekContacts = await this.conversationsMessagesRepo.query(
         _previousWeekContacts,
       );
-      const lastMonthMessages = await this.conversationsMessagesRepo.query(
+      const currentMonthMessages = await this.conversationsMessagesRepo.query(
         _lastMonthMessages,
       );
       const previousMonthMessages = await this.conversationsMessagesRepo.query(
@@ -1194,12 +1194,12 @@ export class SmsService {
 
       return {
         activity,
-        lastWeekContacts,
-        previousWeekContacts,
-        lastWeekStats,
-        previousWeekStats,
-        lastMonthMessages,
-        previousMonthMessages,
+        currentWeekContacts: currentWeekContacts[0],
+        previousWeekContacts: previousWeekContacts[0],
+        currentWeekStats: currentWeekStats[0],
+        previousWeekStats: previousWeekStats[0],
+        currentMonthMessages: currentMonthMessages[0],
+        previousMonthMessages: previousMonthMessages[0],
       };
     } catch (e) {
       throw e;

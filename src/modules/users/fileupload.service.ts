@@ -17,7 +17,9 @@ export const imageFileFilter = (req: any, file: any, callback: any) => {
 
 export const audioFileFilter = (req: any, file: any, callback: any) => {
   if (
-    !file.originalname.match(/\.(mp3|wav|mpeg|wave|x-wav|aiff|x-aifc|x-aiff|gsm|ulaw)$/)
+    !file.originalname.match(
+      /\.(mp3|wav|mpeg|wave|x-wav|aiff|x-aifc|x-aiff|gsm|ulaw)$/,
+    )
   ) {
     return callback(
       new HttpException('Only mp3 files are allowed!', HttpStatus.BAD_REQUEST),
@@ -31,5 +33,5 @@ export const editFileName = (req: any, file: any, callback: any) => {
   const name = file.originalname.split('.')[0];
   const fileExtName = extname(file.originalname);
   const randomName = uniqueId(6);
-  callback(null, `audio-${randomName}${fileExtName}`);
+  callback(null, `file-${randomName}${fileExtName}`);
 };

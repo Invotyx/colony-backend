@@ -320,13 +320,15 @@ export class SmsService {
           await this.keywordsService.save(checkKeyword);
         }
 
-        const message: string = await this.replaceTextUtility(
-          preset_welcome.body,
-          influencerNumber,
-          newContact,
-          false,
-        );
-        await this.sendSms(newContact, influencerNumber, message, 'outBound');
+        if (!newContact.isComplete) {
+          const message: string = await this.replaceTextUtility(
+            preset_welcome.body,
+            influencerNumber,
+            newContact,
+            false,
+          );
+          await this.sendSms(newContact, influencerNumber, message, 'outBound');
+        }
         return 200;
       } else {
       }

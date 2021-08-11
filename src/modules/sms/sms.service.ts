@@ -318,15 +318,15 @@ export class SmsService {
 
           checkKeyword.usageCount = checkKeyword.usageCount + 1;
           await this.keywordsService.save(checkKeyword);
-
-          const message: string = await this.replaceTextUtility(
-            preset_welcome.body,
-            influencerNumber,
-            newContact,
-            false,
-          );
-          await this.sendSms(newContact, influencerNumber, message, 'outBound');
         }
+
+        const message: string = await this.replaceTextUtility(
+          preset_welcome.body,
+          influencerNumber,
+          newContact,
+          false,
+        );
+        await this.sendSms(newContact, influencerNumber, message, 'outBound');
         return 200;
       } else {
       }

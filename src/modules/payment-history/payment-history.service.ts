@@ -234,7 +234,7 @@ export class PaymentHistoryService {
         description: 'Sms Dues payed automatically on reaching threshold.',
         payment_method: default_pm.id,
       });
-      console.log('charge :', charge);
+      //console.log('charge :', charge);
       if (charge.status == 'succeeded') {
         await this.setDuesToZero({
           type: 'sms',
@@ -252,8 +252,8 @@ export class PaymentHistoryService {
         return true;
         //send email here
       } else {
-        console.log('payment charge failed with details:');
-        console.log(charge);
+        //console.log('payment charge failed with details:');
+        //console.log(charge);
         return false;
       }
     }

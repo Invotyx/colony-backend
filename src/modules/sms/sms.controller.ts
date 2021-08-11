@@ -64,7 +64,7 @@ export class SmsController {
       }
       return '<Response></Response>';
     } catch (e) {
-      //console.log('receiveSms/webhook', e);
+      ////console.log('receiveSms/webhook', e);
       return '<Response></Response>';
     }
   }
@@ -90,7 +90,7 @@ export class SmsController {
       }
       return '<Response></Response>';
     } catch (e) {
-      //console.log('-callback/webhook', e);
+      ////console.log('-callback/webhook', e);
       return '<Response></Response>';
     }
   }
@@ -166,11 +166,11 @@ export class SmsController {
     @Body('scheduled') scheduled?: any,
   ) {
     try {
-      //console.log('SendSms start controller ****************** ');
-      //console.log('to: ', contact);
-      //console.log('message: ', message);
-      //console.log('scheduled: ', scheduled);
-      //console.log('Initiate SendSms Start *********************');
+      ////console.log('SendSms start controller ****************** ');
+      ////console.log('to: ', contact);
+      ////console.log('message: ', message);
+      ////console.log('scheduled: ', scheduled);
+      ////console.log('Initiate SendSms Start *********************');
 
       if (contact.length == 0) {
         throw new BadRequestException('Contact list cannot be empty');

@@ -41,12 +41,12 @@ export class CityCountryService {
         try {
           await this.countryRepo.save(_country);
         } catch (e) {
-          //console.log(e);
+          ////console.log(e);
           throw e;
         }
       });
     } catch (e) {
-      //console.log(e);
+      ////console.log(e);
       throw e;
     }
   }

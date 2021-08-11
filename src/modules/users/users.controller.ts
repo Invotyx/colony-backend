@@ -34,7 +34,6 @@ import {
   editFileName,
   imageFileFilter,
 } from './fileupload.service';
-import { GetUser } from './get-user.decorator';
 import { RolesService } from './services/roles.service';
 import { UsersService } from './services/users.service';
 import { PasswordChange, UpdateProfileDto, UpdateRole } from './users.dto';
@@ -231,7 +230,7 @@ export class UsersController {
     }),
   )
   async uploadFile(@UploadedFile() image: any, @LoginUser() _user: UserEntity) {
-    // //console.log(pic);
+    // ////console.log(pic);
     const user = await this.userService.findOne(_user.id);
 
     //upload pic

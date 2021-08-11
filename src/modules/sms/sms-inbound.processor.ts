@@ -19,7 +19,7 @@ export class InboundSmsProcessor {
     const body = job.data;
 
     const tones = JSON.parse(body.AddOns);
-    console.log('tones', tones);
+    //console.log('tones', tones);
     let emotions =
       tones.results.message_tone.result.document_tone.tone_categories;
 
@@ -31,7 +31,7 @@ export class InboundSmsProcessor {
       }
     });
 
-    console.log('_emotion', _emotion);
+    //console.log('_emotion', _emotion);
 
     await this.service.receiveSms(
       body.From,

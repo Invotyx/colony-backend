@@ -4,7 +4,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
-  Injectable,
+  Injectable
 } from '@nestjs/common';
 import e from 'express';
 import { env } from 'process';
@@ -162,7 +162,7 @@ export class PhoneService {
         }, [])
         .join('&');
 
-    //console.log(str);
+    ////console.log(str);
     return str;
   }
 
@@ -289,7 +289,7 @@ export class PhoneService {
             const country = await this.cityCountry.countryRepo.findOne({
               where: { code: cc.toUpperCase() },
             });
-            //console.log(country);
+            ////console.log(country);
             if (country) {
               const existingNumbers = await this.repo.findOne({
                 where: { user: user, type: 'default' },
@@ -478,7 +478,7 @@ export class PhoneService {
           throw ex;
         }
       } else {
-        //console.log('=== dummy ===');
+        ////console.log('=== dummy ===');
         const dummy = {
           number: num,
           country: cc.toUpperCase(),

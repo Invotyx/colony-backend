@@ -52,8 +52,8 @@ export class AppController {
     @Headers() headers: any,
   ): Promise<any> {
     try {
-      console.log(file);
-      console.log(headers);
+      //console.log(file);
+      //console.log(headers);
 
       if (file) {
         return this.cloudinary.uploadImage(file, 'email');

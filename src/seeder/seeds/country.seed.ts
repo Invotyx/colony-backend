@@ -15,7 +15,7 @@ export class CountrySeed implements ISeed {
       fs.readFileSync(path.resolve(__dirname, 'geo_location.json'), 'utf8'),
     );
 
-    //console.log(obj);
+    ////console.log(obj);
     obj.Continents.forEach(async (c) => {
       c.Countries.forEach(async (item) => {
         const id = item.Id;

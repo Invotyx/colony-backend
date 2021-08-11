@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { env } from 'process';
+import { AppConfig } from '../../configs/app.config';
 import { ForgotPassword } from '../../modules/users/entities/forgottenpassword.entity';
 import { ForgotPasswordRepository } from '../../modules/users/repos/forgotpassword.repo';
-import { AppConfig } from '../../configs/app.config';
 import { MailBuilder, MailClient } from '../../services/mail/mail.service';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class ForgotPasswordTokenSender {
 
   async sendEmail(model: ForgotPassword): Promise<boolean> {
     try {
-      //console.log('model: ', model);
+      ////console.log('model: ', model);
       if (model && model.newPasswordToken) {
         const appConfig = await AppConfig();
 
@@ -124,7 +124,7 @@ export class ForgotPasswordTokenSender {
         return mail;
       }
     } catch (ex) {
-      //console.log(ex);
+      ////console.log(ex);
       throw new HttpException(
         'Mail server down, unable to send reset password email!',
         HttpStatus.SERVICE_UNAVAILABLE,

@@ -29,13 +29,13 @@ export const tagReplace = function template(literal, params) {
     HttpStatus.UNPROCESSABLE_ENTITY,
   );
   try {
-    console.log({literal, params})
+    //console.log({literal, params})
     return new Function(
       Object.keys(params) as any,
       'return `' + literal + '`;',
     )(...Object.values(params));
   } catch (e) {
-    //console.log(literal);
+    ////console.log(literal);
     if (literal == 'link' || literal == '${link}' || literal == '{link}') {
       throw new HttpException(
         error(

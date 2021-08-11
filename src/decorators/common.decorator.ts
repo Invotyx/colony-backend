@@ -50,7 +50,7 @@ export const JSONQuery = createParamDecorator(
       }
       return JSON.parse(query);
     } catch (error) {
-      //console.log(error);
+      ////console.log(error);
       return {};
     }
   },

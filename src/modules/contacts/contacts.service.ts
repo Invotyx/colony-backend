@@ -4,7 +4,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
-  Injectable,
+  Injectable
 } from '@nestjs/common';
 import * as fs from 'fs';
 import { join } from 'path';
@@ -26,7 +26,7 @@ import {
   contacted,
   ContactFilter,
   dob,
-  newContacts,
+  newContacts
 } from './contact.dto';
 import { BlockedContactRepository } from './repo/blocked-contact.repo';
 import { ContactsRepository } from './repo/contact.repo';
@@ -461,7 +461,7 @@ export class ContactsService {
 
   async updateContact(urlId: string, data: ContactDto, image?: any) {
     const consolidatedIds = urlId.split(':');
-    console.log(consolidatedIds);
+    //console.log(consolidatedIds);
     const userId = consolidatedIds[0];
     const contactUniqueMapper = consolidatedIds[1];
     const number = consolidatedIds[2];

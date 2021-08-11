@@ -8,7 +8,7 @@ import {
   Post,
   Query,
   Req,
-  Res,
+  Res
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
@@ -40,18 +40,18 @@ export class PhoneController {
 
   @Post('voice')
   async voicemail(@Req() req: Request, @Res() res: Response) {
-    console.log('call started');
+    //console.log('call started');
     const VoiceResponse = require('twilio').twiml.VoiceResponse;
     const twiml = new VoiceResponse();
     try {
-      console.log('******** call ********', req.body, '******** call ********');
+      //console.log('******** call ********', req.body, '******** call ********');
       const number = await this.service.findOne({
         where: {
           number: req.body.To,
         },
         relations: ['user'],
       });
-      console.log('number: ', number);
+      //console.log('number: ', number);
       if (number.user.voiceUrl)
         twiml.play({}, env.API_URL + '/' + number.user.voiceUrl);
       else
@@ -63,7 +63,7 @@ export class PhoneController {
       res.type('text/xml');
       res.send(twiml.toString());
     } catch (e) {
-      console.log('call error log>:', e);
+      //console.log('call error log>:', e);
 
       twiml.say(
         { voice: 'alice' },

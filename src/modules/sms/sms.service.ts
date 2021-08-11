@@ -132,7 +132,7 @@ export class SmsService {
       });
 
       if (influencerNumber) {
-        console.log('Phone found');
+        //console.log('Phone found');
         const contact = await this.contactService.findOne({
           where: { phoneNumber: sender },
         });
@@ -148,7 +148,7 @@ export class SmsService {
         }
 
         if (contact) {
-          console.log('Contact found');
+          //console.log('Contact found');
 
           const check = await this.contactService.checkBlockList(
             influencerNumber.user,
@@ -167,10 +167,10 @@ export class SmsService {
             relations: ['contact', 'phone'],
           });
 
-          console.log('Conversation found');
+          //console.log('Conversation found');
 
           if (rel && conversation) {
-            console.log('Relation and Conversation found');
+            //console.log('Relation and Conversation found');
 
             const lastConversationMessage = await this.conversationsMessagesRepo.findOne(
               {
@@ -202,7 +202,7 @@ export class SmsService {
               }
             }
 
-            //console.log('conversation found');
+            ////console.log('conversation found');
             const message = await this.saveSms(
               contact,
               influencerNumber,
@@ -241,10 +241,10 @@ export class SmsService {
               },
             });
 
-            console.log('checkKeyword', checkKeyword);
+            //console.log('checkKeyword', checkKeyword);
 
             if (checkKeyword) {
-              console.log('Keyword Conversation found');
+              //console.log('Keyword Conversation found');
 
               const text_body: string = await this.replaceTextUtility(
                 checkKeyword.message,
@@ -265,7 +265,7 @@ export class SmsService {
               await this.keywordsService.save(checkKeyword);
               return;
             }
-            //console.log(
+            ////console.log(
             //   'saved as regular ' + msgType + ' sms from:',
             //   contact.phoneNumber,
             //   ' to ',
@@ -278,7 +278,7 @@ export class SmsService {
           }
         }
 
-        console.log('Onboarding start');
+        //console.log('Onboarding start');
 
         const newContact = await this.contactOnboarding(
           sender,
@@ -289,7 +289,7 @@ export class SmsService {
           preset_welcome,
           fromCountry,
         );
-        console.log('Onboarding end');
+        //console.log('Onboarding end');
 
         const checkKeyword = await this.keywordsService.findOne({
           where: {
@@ -299,7 +299,7 @@ export class SmsService {
         });
 
         if (checkKeyword) {
-          console.log('Keyword found');
+          //console.log('Keyword found');
 
           const text_body: string = await this.replaceTextUtility(
             checkKeyword.message,
@@ -331,7 +331,7 @@ export class SmsService {
       } else {
       }
     } catch (e) {
-      //console.log('Receive SMS', e);
+      ////console.log('Receive SMS', e);
       throw e;
     }
   }
@@ -347,7 +347,7 @@ export class SmsService {
     const links = welcomeBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
     if (links && links.length > 0) {
       for (let link of links) {
-        console.log('link', link);
+        //console.log('link', link);
         let id = link.replace('${link:', '').replace('}', '');
         const check = keyword ? keyword.id : undefined;
         const shareableUri = check
@@ -365,7 +365,7 @@ export class SmsService {
                 newContact.phoneNumber,
               )
             ).url;
-        console.log(shareableUri);
+        //console.log(shareableUri);
         //do action here
         const _publicLink = await this.globalLinks.createLink(shareableUri);
         await this.infLinks.sendLink(
@@ -397,7 +397,7 @@ export class SmsService {
         city: newContact.city ? newContact.city.name : '',
       });
 
-      console.log('text_body', text_body);
+      //console.log('text_body', text_body);
     } else {
       const _publicLink = await this.globalLinks.createLink(
         influencerNumber.user.id +
@@ -416,7 +416,7 @@ export class SmsService {
         link:
           env.PUBLIC_APP_URL + '/contacts/enroll/' + _publicLink.shareableId,
       });
-      console.log('text_body', text_body);
+      //console.log('text_body', text_body);
     }
 
     return text_body;
@@ -507,7 +507,7 @@ export class SmsService {
       });
     }
 
-    //console.log('message saved', message);
+    ////console.log('message saved', message);
 
     const country = await this.countryService.countryRepo.findOne({
       where: { code: conversation.phone.country },
@@ -531,7 +531,7 @@ export class SmsService {
     message: string,
     scheduled?: any,
   ) {
-    //console.log(message);
+    ////console.log(message);
     try {
       if (String(message).length < 1) {
         throw new HttpException(
@@ -554,7 +554,7 @@ export class SmsService {
         where: { phoneNumber: contact },
         relations: ['country', 'city'],
       });
-      console.log('*****************', _contact, '*****************');
+      //console.log('*****************', _contact, '*****************');
       if (_contact && _contact.isComplete == true) {
         const conversation = await this.conversationsRepo.findOne({
           where: { contact: _contact, user: inf },
@@ -584,7 +584,7 @@ export class SmsService {
           true,
         );
 
-        //console.log(welcomeBody);
+        ////console.log(welcomeBody);
         if (scheduled != null) {
           //handle schedule here
           scheduled = new Date(new Date().getTime() + 3 * 60000);
@@ -719,21 +719,21 @@ export class SmsService {
 
   public async updateStatus(sid: string, status: string, from: string) {
     try {
-      //console.log(sid, status, from);
+      ////console.log(sid, status, from);
       const bc = await this.conversationsMessagesRepo.findOne({
         where: { sid: sid },
       });
-      //console.log('message:', bc);
+      ////console.log('message:', bc);
       const influencerNumber = await this.phoneService.findOne({
         where: { number: from },
         relations: ['user'],
       });
-      //console.log('influencerNumber:', influencerNumber);
+      ////console.log('influencerNumber:', influencerNumber);
 
       const country = await this.countryService.countryRepo.findOne({
         where: { code: influencerNumber.country },
       });
-      //console.log('country:', country);
+      ////console.log('country:', country);
 
       if (status == 'failed') {
         await this.paymentHistory.updateDues({
@@ -743,7 +743,7 @@ export class SmsService {
         });
       }
       bc.status = status;
-      //console.log('sms: ', bc);
+      ////console.log('sms: ', bc);
       return this.conversationsMessagesRepo.save(bc);
     } catch (e) {
       throw e;
@@ -787,9 +787,9 @@ export class SmsService {
       const conversation = await this.conversationsRepo.findOne({
         where: { user: inf, id: conversationId },
       });
-      //console.log('count', count);
-      //console.log('page', page);
-      //console.log('skip', count * page - count);
+      ////console.log('count', count);
+      ////console.log('page', page);
+      ////console.log('skip', count * page - count);
 
       const conversationMessage = await this.conversationsMessagesRepo.find({
         where: {
@@ -1230,7 +1230,7 @@ export class SmsService {
             left join phones p on p.id = c."phoneId"
             where cm."type"='broadcastInbound' and p."userId"=${user.id}
       `);
-      //console.log('popularity', popularity);
+      ////console.log('popularity', popularity);
       let data = {};
 
       popularity.forEach((number) => {

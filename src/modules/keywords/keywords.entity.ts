@@ -10,7 +10,7 @@ import {
   MoreThanOrEqual,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  UpdateDateColumn
 } from 'typeorm';
 import { TABLES } from '../../consts/tables.const';
 import { InfluencerLinksTrackingEntity } from '../influencer-links/entities/influencer-links-tracking.entity';
@@ -68,7 +68,7 @@ export class KeywordsEntity {
       this.reopened = await getRepository(InfluencerLinksTrackingEntity).count({
         where: { clicks: MoreThanOrEqual(2), keyword: this },
       });
-      console.log(this)
+      //console.log(this)
     } catch (e) {
       throw e;
     }

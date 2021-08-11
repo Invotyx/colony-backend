@@ -14,7 +14,7 @@ export class InvoiceEmailSender {
     invoice: PaymentHistoryEntity,
   ): Promise<boolean> {
     try {
-      //console.log('model: ', model);
+      ////console.log('model: ', model);
       if (model && invoice) {
         const appConfig = await AppConfig();
         const check = invoice.costType == 'base-plan-purchase' && invoice.meta;
@@ -130,7 +130,7 @@ export class InvoiceEmailSender {
         return mail;
       }
     } catch (ex) {
-      //console.log(ex);
+      ////console.log(ex);
       throw new HttpException(
         'Mail server down, unable to send reset password email!',
         HttpStatus.SERVICE_UNAVAILABLE,

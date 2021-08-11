@@ -3,7 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import * as fs from 'fs';
 import { nanoid } from 'nanoid';
@@ -24,7 +24,7 @@ import {
   mapColumns,
   paginateQuery,
   PaginatorError,
-  PaginatorErrorHandler,
+  PaginatorErrorHandler
 } from 'src/shared/paginator';
 import { Not } from 'typeorm';
 import { EmailTokenSender } from '../../../mails/users/emailtoken.mailer';
@@ -36,7 +36,7 @@ import { EmailVerifications } from '../entities/verifyemail.entity';
 import {
   EmailAlreadyExistError,
   PhoneAlreadyExistError,
-  UserNameAlreadyExistError,
+  UserNameAlreadyExistError
 } from '../errors/users.error';
 import { ForgotPasswordRepository } from '../repos/forgotpassword.repo';
 import { UserRepository } from '../repos/user.repo';
@@ -45,7 +45,7 @@ import {
   CreateUserDto,
   UpdateProfileDto,
   UpdateProfilePasswordDto,
-  UpdateRole,
+  UpdateRole
 } from '../users.dto';
 
 @Injectable()
@@ -277,7 +277,7 @@ export class UsersService {
       const forget = await this.createForgottenPasswordToken(email);
       return this.sendForgotPassword.sendEmail(forget);
     } catch (e) {
-      //console.log(e);
+      ////console.log(e);
       throw e;
     }
   }
@@ -450,8 +450,8 @@ export class UsersService {
         updateData.lastName = user.lastName;
       }
       updateData.timezone = user.timezone;
-      //console.log('updateData: ', updateData);
-      //console.log('user: ', user);
+      ////console.log('updateData: ', updateData);
+      ////console.log('user: ', user);
 
       await this.repository.save(updateData);
       return { message: 'User details updated.' };
@@ -574,14 +574,14 @@ export class UsersService {
     const users = await this.repository.findOne(id, {
       relations: ['roles'],
     });
-    //console.log(users);
+    ////console.log(users);
 
     // await this.repository.save(users);
     const allRoles = await this.roleRepository
       .createQueryBuilder('s')
       .where(' s.id IN (:...RoleId)', { RoleId })
       .getMany();
-    //console.log(allRoles);
+    ////console.log(allRoles);
     users.roles = allRoles;
     await this.repository.save(users);
   }

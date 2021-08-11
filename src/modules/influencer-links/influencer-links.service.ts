@@ -123,7 +123,7 @@ export class InfluencerLinksService {
   async deleteLink(id: number, user: UserEntity) {
     try {
       const link = await this.repository.findOne({ id: id, user: user });
-      //console.log(link);
+      ////console.log(link);
       if (!link) {
         throw new BadRequestException('You cannot delete this link.');
       }
@@ -173,14 +173,14 @@ export class InfluencerLinksService {
       }
       return link;
     } catch (e) {
-      //console.log(e);
+      ////console.log(e);
       throw new BadRequestException(e.message);
     }
   }
 
   async getLinkStats(id: number, user: UserEntity) {
     try {
-      //console.log('Logged In User: ', user);
+      ////console.log('Logged In User: ', user);
       const statsOpened = await this.trackingRepo.count({
         where: { influencerLink: id, isOpened: true },
       });
@@ -244,10 +244,10 @@ export class InfluencerLinksService {
     keyword?: KeywordsEntity,
   ) {
     try {
-      console.log(url, sid, broadcast, keyword);
+      //console.log(url, sid, broadcast, keyword);
 
       const parts = url.split(':');
-      console.log(parts);
+      //console.log(parts);
       if (parts.length < 1) {
         throw new HttpException(
           'Invalid format of url string',
@@ -263,7 +263,7 @@ export class InfluencerLinksService {
       const linkUrl = await this.repository.findOne({
         where: { urlMapper: link },
       });
-      console.log(parts, contactUrl, linkUrl);
+      //console.log(parts, contactUrl, linkUrl);
       let linkSent = await this.trackingRepo.save({
         contact: contactUrl,
         influencerLink: linkUrl,
@@ -274,12 +274,12 @@ export class InfluencerLinksService {
         keyword: keyword ? keyword : null,
       });
 
-      console.log('linkSent', linkSent);
+      //console.log('linkSent', linkSent);
       linkSent.contact = linkSent.contact.id as any;
       linkSent.influencerLink = linkSent.influencerLink.id as any;
       return linkSent;
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       throw e;
     }
   }
@@ -304,14 +304,14 @@ export class InfluencerLinksService {
         if (!contactUrl) {
           throw new BadRequestException('contact does not exist.');
         }
-        //console.log(contactUrl);
+        ////console.log(contactUrl);
         let linkUrl = await this.repository.findOne({
           where: { urlMapper: link },
         });
         if (!linkUrl) {
           throw new BadRequestException("link doesn't exist.");
         }
-        console.log('linkUrl', linkUrl);
+        //console.log('linkUrl', linkUrl);
 
         let keyword = undefined;
         if (keywordId) {
@@ -320,23 +320,23 @@ export class InfluencerLinksService {
 
         const linkSent = keyword
           ? await this.trackingRepo.findOne({
-            where: {
-              influencerLink: linkUrl,
-              contact: contactUrl,
-              keyword: keyword,
-            },
-          })
+              where: {
+                influencerLink: linkUrl,
+                contact: contactUrl,
+                keyword: keyword,
+              },
+            })
           : await this.trackingRepo.findOne({
-            where: { influencerLink: linkUrl, contact: contactUrl },
-          });
+              where: { influencerLink: linkUrl, contact: contactUrl },
+            });
 
-        console.log('linkSent', linkSent);
+        //console.log('linkSent', linkSent);
         if (linkSent) {
           linkSent.isOpened = true;
           linkSent.clicks = linkSent.clicks ? linkSent.clicks + 1 : 1;
           await this.trackingRepo.update(linkSent.id, linkSent);
         }
-        console.log('linkSent updated', linkSent);
+        //console.log('linkSent updated', linkSent);
         return linkUrl;
       }
     } catch (e) {

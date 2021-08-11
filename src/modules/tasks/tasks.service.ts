@@ -333,51 +333,62 @@ export class TasksService {
       where: { isComplete: false },
       relations: ['user', 'city', 'country'],
     });
-
     for (let contact of contacts) {
       for (let influencer of contact.user) {
-        const conversation = await this.smsService.findOneConversations({
-          where: {
-            contact: contact,
-            user: influencer,
-          },
-          relations: ['user', 'phone', 'contact'],
-        });
+        const createDate = contact.createdAt;
+        createDate.setHours(0, 0, 0, 0);
+        const checkDate = new Date();
+        checkDate.setDate(
+          createDate.getDate() - Number(env.SEND_REMINDER_TEXT_FOR_DAYS),
+        );
+        checkDate.setHours(0, 0, 0, 0);
 
-        if (!conversation) {
-          continue;
-        }
-
-        conversation.phone.user = conversation.user;
-
-        const noResponseMessage = await this.smsService.findOneInPreSets({
-          trigger: 'noResponse',
-          user: influencer,
-        });
-
-        if (noResponseMessage && noResponseMessage.enabled) {
-          const text_body: string = tagReplace(noResponseMessage.body, {
-            first_name: contact.firstName ? contact.firstName : '',
-            last_name: contact.lastName ? contact.lastName : '',
-            inf_first_name: influencer.firstName,
-            inf_last_name: influencer.lastName,
-            country: contact.country ? contact.country.name : '',
-            city: contact.city ? contact.city.name : '',
-            link:
-              env.PUBLIC_APP_URL +
-              '/contacts/enroll/' +
-              influencer.id +
-              ':' +
-              contact.urlMapper +
-              ':' +
-              influencer.id,
+        if (checkDate.getTime() <= createDate.getTime()) {
+          const conversation = await this.smsService.findOneConversations({
+            where: {
+              contact: contact,
+              user: influencer,
+            },
+            relations: ['user', 'phone', 'contact'],
           });
-          await this.smsService.sendSms(
-            contact,
-            conversation.phone,
-            text_body,
-            'outBound',
-          );
+
+          if (!conversation) {
+            continue;
+          }
+
+          conversation.phone.user = conversation.user;
+
+          const noResponseMessage = await this.smsService.findOneInPreSets({
+            trigger: 'noResponse',
+            user: influencer,
+          });
+
+          if (noResponseMessage && noResponseMessage.enabled) {
+            const text_body: string = tagReplace(noResponseMessage.body, {
+              first_name: contact.firstName ? contact.firstName : '',
+              last_name: contact.lastName ? contact.lastName : '',
+              inf_first_name: influencer.firstName,
+              inf_last_name: influencer.lastName,
+              country: contact.country ? contact.country.name : '',
+              city: contact.city ? contact.city.name : '',
+              link:
+                env.PUBLIC_APP_URL +
+                '/contacts/enroll/' +
+                influencer.id +
+                ':' +
+                contact.urlMapper +
+                ':' +
+                influencer.id,
+            });
+            await this.smsService.sendSms(
+              contact,
+              conversation.phone,
+              text_body,
+              'outBound',
+            );
+          }
+        } else {
+          await this.contactService.removeFromList(influencer, contact.id);
         }
       }
     }

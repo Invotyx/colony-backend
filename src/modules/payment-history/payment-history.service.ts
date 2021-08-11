@@ -92,7 +92,7 @@ export class PaymentHistoryService {
               </style>
                 <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/glacial-indifference" type="text/css"  media="print" />
               </head>
-              <body onload='window.print()'>
+              <body>
                 <table style="width: 100%; margin:auto;">
                   <tr>
                     <td style="width: 50%; padding:2% 4%;"><img src="${env.MAIN_LOGO}" width="60"></td>
@@ -146,6 +146,9 @@ export class PaymentHistoryService {
                       ${env.MAILING_ADDRESS}</p></td>
                   </tr>
                 </table>
+                <script>
+                    setTimeout(function(){ window.print(); }, 3000);
+                </script>
 
               </body>
               </html>

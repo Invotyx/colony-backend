@@ -52,45 +52,44 @@ export class TasksService {
       },
     );
   }
-  @Cron('10 * * * * *')
+  @Cron('*/30 * * * * *')
   async checkForScheduledSms() {
-    const scheduledSms = await this.smsService.findOneConversationsMessages({
+    const scheduledSms = await this.smsService.findConversationsMessages({
       where: {
         scheduled: LessThanOrEqual(this.getCurrentDatetime()),
         status: 'scheduled',
       },
       relations: ['conversations'],
     });
-    if (!scheduledSms) {
-      return;
-    }
-    const conversation = await this.smsService.findOneConversations({
-      where: {
-        id: scheduledSms.conversations.id,
-      },
-      relations: ['contact', 'phone'],
+    scheduledSms.forEach(async (schedule) => {
+      const conversation = await this.smsService.findOneConversations({
+        where: {
+          id: schedule.conversations.id,
+        },
+        relations: ['contact', 'phone'],
+      });
+
+      const q_obj = {
+        contact: conversation.contact,
+        inf_phone: conversation.phone,
+        id: schedule.id,
+        type: 'outBound',
+      };
+
+      if (env.NODE_ENV.toLowerCase() == 'production') {
+        await this.sms_q.add('scheduled_message', q_obj, {
+          removeOnComplete: true,
+          removeOnFail: false,
+          attempts: 1,
+        });
+      } else {
+        await this.sms_q_dev.add('scheduled_message', q_obj, {
+          removeOnComplete: true,
+          removeOnFail: false,
+          attempts: 1,
+        });
+      }
     });
-
-    const q_obj = {
-      contact: conversation.contact,
-      inf_phone: conversation.phone,
-      id: scheduledSms.id,
-      type: 'outBound',
-    };
-
-    if (env.NODE_ENV.toLowerCase() == 'production') {
-      await this.sms_q.add('scheduled_message', q_obj, {
-        removeOnComplete: true,
-        removeOnFail: false,
-        attempts: 1,
-      });
-    } else {
-      await this.sms_q_dev.add('scheduled_message', q_obj, {
-        removeOnComplete: true,
-        removeOnFail: false,
-        attempts: 1,
-      });
-    }
     //////console.log(q_obj, 'Added to queue');
   }
   @Cron('10 * * * * *')

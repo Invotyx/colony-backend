@@ -689,6 +689,7 @@ export class SmsService {
           statusCallback:
             env.API_URL + '/api/sms/receive-sms-status-callback/webhook',
         });
+        sms.scheduled = null;
         sms.sid = msg.sid;
         sms.status = msg.status;
         sms.receivedAt = msg.dateUpdated;

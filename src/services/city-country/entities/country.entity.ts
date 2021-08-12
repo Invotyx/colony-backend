@@ -26,6 +26,9 @@ export class CountryEntity {
   @Column({ type: 'decimal', nullable: true })
   public phoneCost: number;
 
+  @Column({ default: 1 })
+  public sortOrder: number;
+
   @OneToMany(() => CityEntity, (c) => c.country, {
     eager: false,
     cascade: true,

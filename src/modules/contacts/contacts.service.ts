@@ -460,153 +460,159 @@ export class ContactsService {
   }
 
   async updateContact(urlId: string, data: ContactDto, image?: any) {
-    const consolidatedIds = urlId.split(':');
-    //console.log(consolidatedIds);
-    const userId = consolidatedIds[0];
-    const contactUniqueMapper = consolidatedIds[1];
-    const number = consolidatedIds[2];
-    let contactDetails = await this.repository.findOne({
-      where: { urlMapper: contactUniqueMapper },
-      relations: ['country', 'city'],
-    });
-    let flag = 0;
-    if (data.firstName) {
-      contactDetails.firstName = data.firstName;
-      flag++;
-    }
-    if (data.lastName) {
-      contactDetails.lastName = data.lastName;
-      flag++;
-    }
-    if (data.gender) {
-      contactDetails.gender = data.gender;
-      flag++;
-    }
-    if (data.dob) {
-      contactDetails.dob = data.dob;
-      flag++;
-    }
-    if (data.state) {
-      contactDetails.state = data.state;
-      flag++;
-    }
-    if (data.timezone) {
-      contactDetails.timezone = data.timezone;
-      flag++;
-    }
-    if (data.country) {
-      contactDetails.country = data.country;
-      flag++;
-    }
-    if (data.city) {
-      contactDetails.city = data.city;
-      flag++;
-    }
-    if (data.facebook) {
-      contactDetails.facebook = data.facebook;
-      flag++;
-    }
-
-    if (data.instagram) {
-      contactDetails.instagram = data.instagram;
-      flag++;
-    }
-
-    if (data.twitter) {
-      contactDetails.twitter = data.twitter;
-      flag++;
-    }
-    if (data.email) {
-      contactDetails.email = data.email;
-      flag++;
-    }
-
-    if (data.linkedin) {
-      contactDetails.linkedin = data.linkedin;
-      flag++;
-    }
-
-    if (image) {
-      const file = await this.setProfileImage(contactDetails, image);
-      contactDetails.profileImage = file;
-      flag++;
-    }
-
-    if (flag >= 7) {
-      contactDetails.isComplete = true;
-    } else {
-      contactDetails.isComplete = false;
-    }
-
-    try {
-      const user = await this.users.findOne({
-        where: {
-          id: userId,
-        },
+    const glink = await this.globalLinks.getLink(urlId);
+    if (glink) {
+      const consolidatedIds = glink.link.split(':');
+      //console.log(consolidatedIds);
+      const userId = consolidatedIds[0];
+      const contactUniqueMapper = consolidatedIds[1];
+      const number = consolidatedIds[2];
+      let contactDetails = await this.repository.findOne({
+        where: { urlMapper: contactUniqueMapper },
+        relations: ['country', 'city'],
       });
-
-      let preset_onboard: any = await this.smsService.findOneInPreSets({
-        where: { trigger: 'onBoard', user: user },
-      });
-
-      if (!preset_onboard) {
-        preset_onboard = {
-          body: 'Welcome onboard ${name}.',
-        };
+      let flag = 0;
+      if (data.firstName) {
+        contactDetails.firstName = data.firstName;
+        flag++;
+      }
+      if (data.lastName) {
+        contactDetails.lastName = data.lastName;
+        flag++;
+      }
+      if (data.gender) {
+        contactDetails.gender = data.gender;
+        flag++;
+      }
+      if (data.dob) {
+        contactDetails.dob = data.dob;
+        flag++;
+      }
+      if (data.state) {
+        contactDetails.state = data.state;
+        flag++;
+      }
+      if (data.timezone) {
+        contactDetails.timezone = data.timezone;
+        flag++;
+      }
+      if (data.country) {
+        contactDetails.country = data.country;
+        flag++;
+      }
+      if (data.city) {
+        contactDetails.city = data.city;
+        flag++;
+      }
+      if (data.facebook) {
+        contactDetails.facebook = data.facebook;
+        flag++;
       }
 
-      const conv = await this.smsService.findOneConversations({
-        where: {
-          user: user,
-          contact: contactDetails,
-        },
-        relations: ['phone'],
-      });
+      if (data.instagram) {
+        contactDetails.instagram = data.instagram;
+        flag++;
+      }
 
-      const savedContact = await this.repository.save(contactDetails);
+      if (data.twitter) {
+        contactDetails.twitter = data.twitter;
+        flag++;
+      }
+      if (data.email) {
+        contactDetails.email = data.email;
+        flag++;
+      }
 
-      let onboardBody = preset_onboard.body;
-      const links = onboardBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
-      if (links && links.length > 0) {
-        for (let link of links) {
-          let id = link.replace('${link:', '').replace('}', '');
-          const shareableUri = (
-            await this.infLinks.getUniqueLinkForContact(
-              parseInt(id),
-              savedContact.phoneNumber,
-            )
-          ).url;
+      if (data.linkedin) {
+        contactDetails.linkedin = data.linkedin;
+        flag++;
+      }
 
-          //do action here
-          const _publicLink = await this.globalLinks.createLink(shareableUri);
-          await this.infLinks.sendLink(shareableUri, savedContact.id + ':');
-          onboardBody = onboardBody.replace(
-            link,
-            env.API_URL + '/api/s/o/' + _publicLink.shareableId,
-          );
+      if (image) {
+        const file = await this.setProfileImage(contactDetails, image);
+        contactDetails.profileImage = file;
+        flag++;
+      }
+
+      if (flag >= 7) {
+        contactDetails.isComplete = true;
+      } else {
+        contactDetails.isComplete = false;
+      }
+
+      try {
+        const user = await this.users.findOne({
+          where: {
+            id: userId,
+          },
+        });
+
+        let preset_onboard: any = await this.smsService.findOneInPreSets({
+          where: { trigger: 'onBoard', user: user },
+        });
+
+        if (!preset_onboard) {
+          preset_onboard = {
+            body: 'Welcome onboard ${name}.',
+          };
         }
-      }
 
-      await this.smsService.sendSms(
-        contactDetails,
-        conv.phone,
-        tagReplace(onboardBody, {
-          first_name: contactDetails.firstName ? contactDetails.firstName : '',
-          last_name: contactDetails.lastName ? contactDetails.lastName : '',
-          inf_first_name: user.firstName,
-          inf_last_name: user.lastName,
-          country: savedContact.country ? savedContact.country.name : '',
-          city: savedContact.city ? savedContact.city.name : '',
-        }) +
+        const conv = await this.smsService.findOneConversations({
+          where: {
+            user: user,
+            contact: contactDetails,
+          },
+          relations: ['phone'],
+        });
+
+        const savedContact = await this.repository.save(contactDetails);
+
+        let onboardBody = preset_onboard.body;
+        const links = onboardBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
+        if (links && links.length > 0) {
+          for (let link of links) {
+            let id = link.replace('${link:', '').replace('}', '');
+            const shareableUri = (
+              await this.infLinks.getUniqueLinkForContact(
+                parseInt(id),
+                savedContact.phoneNumber,
+              )
+            ).url;
+
+            //do action here
+            const _publicLink = await this.globalLinks.createLink(shareableUri);
+            await this.infLinks.sendLink(shareableUri, savedContact.id + ':');
+            onboardBody = onboardBody.replace(
+              link,
+              env.API_URL + '/api/s/o/' + _publicLink.shareableId,
+            );
+          }
+        }
+
+        await this.smsService.sendSms(
+          contactDetails,
+          conv.phone,
+          tagReplace(onboardBody, {
+            first_name: contactDetails.firstName ? contactDetails.firstName : '',
+            last_name: contactDetails.lastName ? contactDetails.lastName : '',
+            inf_first_name: user.firstName,
+            inf_last_name: user.lastName,
+            country: savedContact.country ? savedContact.country.name : '',
+            city: savedContact.city ? savedContact.city.name : '',
+          }) +
           ' ' +
           preset_onboard.fixedText,
-        'outBound',
-      );
+          'outBound',
+        );
 
-      return { message: 'Contact details updated.', data: contactDetails };
-    } catch (e) {
-      console.error(e);
-      throw new BadRequestException(e.message);
+        return { message: 'Contact details updated.', data: contactDetails };
+      
+      } catch (e) {
+        console.error(e);
+        throw new BadRequestException(e.message);
+      }
+    } else {
+      throw new BadRequestException('No contact found');
     }
   }
 

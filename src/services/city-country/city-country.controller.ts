@@ -46,7 +46,7 @@ export class CityCountryController {
   async getCountries() {
     try {
       const countries = await this.countryRepo.find({
-        order: { name: 'ASC' },
+        order: { sortOrder:'ASC', name: 'ASC' },
       });
       return { countries: countries };
     } catch (e) {

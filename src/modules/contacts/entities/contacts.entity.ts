@@ -122,10 +122,10 @@ export class ContactsEntity {
   @ManyToMany(() => UserEntity, (u) => u.blocked)
   public blockers!: UserEntity[];
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'decimal' })
   public lat: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'decimal' })
   public long: number;
 
   @CreateDateColumn()

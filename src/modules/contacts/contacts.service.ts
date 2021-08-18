@@ -4,7 +4,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
-  Injectable
+  Injectable,
 } from '@nestjs/common';
 import * as fs from 'fs';
 import { join } from 'path';
@@ -28,7 +28,7 @@ import {
   contacted,
   ContactFilter,
   dob,
-  newContacts
+  newContacts,
 } from './contact.dto';
 import { BlockedContactRepository } from './repo/blocked-contact.repo';
 import { ContactsRepository } from './repo/contact.repo';
@@ -208,16 +208,39 @@ export class ContactsService {
     }
 
     if (data.radius && data.lat && data.long) {
-      query =
-        query +
-        `
-        left join ${TABLES.CITY.name} ci on ("ci"."id"="c"."cityId" and
-          acos(sin("ci"."lat" * 0.0175) * sin(${data.lat} * 0.0175) 
-               + cos("ci"."lat" * 0.0175) * cos(${data.lat} * 0.0175) *    
-                 cos((${data.long} * 0.0175) - ("ci"."long" * 0.0175))
-              ) * 3959 <= ${data.radius}
-          )
+      if (!query.includes('WHERE')) {
+        query =
+          query +
+          `
+        (
+          2 * atan2(
+            SQRT (
+              sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) * sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) + cos( "c"."lat" * 0.0175 ) * cos( ${data.lat} * 0.0175 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) 
+            ),
+            SQRT (
+              1- (
+                sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) * sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) + cos( "c"."lat" * 0.0175 ) * cos( ${data.lat} * 0.0175 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) 
+              ) 
+            ) 
+          ) *  ${data.radius} ) <= ${data.radius}
       `;
+      } else {
+        query =
+          query +
+          `
+        and (
+          2 * atan2(
+            SQRT (
+              sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) * sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) + cos( "c"."lat" * 0.0175 ) * cos( ${data.lat} * 0.0175 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) 
+            ),
+            SQRT (
+              1- (
+                sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) * sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) + cos( "c"."lat" * 0.0175 ) * cos( ${data.lat} * 0.0175 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) 
+              ) 
+            ) 
+          ) *  ${data.radius} ) <= ${data.radius}
+      `;
+      }
     }
 
     if (data.hasFb) {
@@ -505,7 +528,7 @@ export class ContactsService {
       if (data.city) {
         contactDetails.city = data.city;
         const city = await getRepository(CityEntity).findOne(data.city);
-        if (city) {     
+        if (city) {
           contactDetails.lat = city.lat ? city.lat : null;
           contactDetails.long = city.long ? city.long : null;
         }
@@ -600,20 +623,21 @@ export class ContactsService {
           contactDetails,
           conv.phone,
           tagReplace(onboardBody, {
-            first_name: contactDetails.firstName ? contactDetails.firstName : '',
+            first_name: contactDetails.firstName
+              ? contactDetails.firstName
+              : '',
             last_name: contactDetails.lastName ? contactDetails.lastName : '',
             inf_first_name: user.firstName,
             inf_last_name: user.lastName,
             country: savedContact.country ? savedContact.country.name : '',
             city: savedContact.city ? savedContact.city.name : '',
           }) +
-          ' ' +
-          preset_onboard.fixedText,
+            ' ' +
+            preset_onboard.fixedText,
           'outBound',
         );
 
         return { message: 'Contact details updated.', data: contactDetails };
-      
       } catch (e) {
         console.error(e);
         throw new BadRequestException(e.message);

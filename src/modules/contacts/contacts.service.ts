@@ -12,8 +12,10 @@ import { env } from 'process';
 import { TABLES } from 'src/consts/tables.const';
 import { ContactsEntity } from 'src/modules/contacts/entities/contacts.entity';
 import { GlobalLinksRepository } from 'src/repos/gloabl-links.repo';
+import { CityEntity } from 'src/services/city-country/entities/city.entity';
 import { uniqueId } from 'src/shared/random-keygen';
 import { tagReplace } from 'src/shared/tag-replace';
+import { getRepository } from 'typeorm';
 import { InfluencerLinksService } from '../influencer-links/influencer-links.service';
 import { PaymentHistoryService } from '../payment-history/payment-history.service';
 import { PhoneService } from '../phone/phone.service';
@@ -502,6 +504,11 @@ export class ContactsService {
       }
       if (data.city) {
         contactDetails.city = data.city;
+        const city = await getRepository(CityEntity).findOne(data.city);
+        if (city) {     
+          contactDetails.lat = city.lat ? city.lat : null;
+          contactDetails.long = city.long ? city.long : null;
+        }
         flag++;
       }
       if (data.facebook) {

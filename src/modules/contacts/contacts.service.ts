@@ -212,66 +212,62 @@ export class ContactsService {
         query =
           query +
           `
-        (
-          2 * atan2(
-            SQRT (
-              sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) * sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) + cos( "c"."lat" * 0.0175 ) * cos( ${data.lat} * 0.0175 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) 
-            ),
-            SQRT (
-              1- (
-                sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) * sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) + cos( "c"."lat" * 0.0175 ) * cos( ${data.lat} * 0.0175 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) 
-              ) 
-            ) 
-          ) *  ${data.radius} ) <= ${data.radius}
+        WHERE (
+          6371 * acos (
+          cos ( radians(${data.lat}) )
+          * cos ( radians( lat ) )
+          * cos ( radians( long ) - radians(${data.long}) )
+          + sin ( radians(${data.lat}) )
+          * sin ( radians( lat ) )
+        )
+      ) < ${data.radius / 1000}
       `;
       } else {
         query =
           query +
           `
-        and (
-          2 * atan2(
-            SQRT (
-              sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) * sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) + cos( "c"."lat" * 0.0175 ) * cos( ${data.lat} * 0.0175 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) 
-            ),
-            SQRT (
-              1- (
-                sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) * sin( ( ( "c"."lat" - ${data.lat} ) * 0.0175 ) / 2 ) + cos( "c"."lat" * 0.0175 ) * cos( ${data.lat} * 0.0175 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) * sin( ( ( ${data.long}- "c"."long" ) * 0.0175 ) / 2 ) 
-              ) 
-            ) 
-          ) *  ${data.radius} ) <= ${data.radius}
+        AND (
+          6371 * acos (
+          cos ( radians(${data.lat}) )
+          * cos ( radians( lat ) )
+          * cos ( radians( long ) - radians(${data.long}) )
+          + sin ( radians(${data.lat}) )
+          * sin ( radians( lat ) )
+        )
+      ) < ${data.radius / 1000}
       `;
       }
     }
 
     if (data.hasFb) {
       if (!query.includes('WHERE')) {
-        query = query + `WHERE "c"."facebook"<>null`;
+        query = query + `WHERE "c"."facebook" IS NOT NULL`;
       } else {
-        query = query + ` and  "c"."facebook"<>null`;
+        query = query + ` and  "c"."facebook" IS NOT NULL`;
       }
     }
     //has twitter
     if (data.hasIg) {
       if (!query.includes('WHERE')) {
-        query = query + ` WHERE  "c"."instagram"<>null`;
+        query = query + ` WHERE  "c"."instagram" IS NOT NULL`;
       } else {
-        query = query + ` and "c"."instagram"<>null`;
+        query = query + ` and "c"."instagram" IS NOT NULL`;
       }
     }
     //has LinkedIn
     if (data.hasLi) {
       if (!query.includes('WHERE')) {
-        query = query + ` WHERE "c"."linkedin"<>null`;
+        query = query + ` WHERE "c"."linkedin" IS NOT NULL`;
       } else {
-        query = query + ` and "c"."linkedin"<>null`;
+        query = query + ` and "c"."linkedin" IS NOT NULL`;
       }
     }
     //has Instagram
     if (data.hasTw) {
       if (!query.includes('WHERE')) {
-        query = query + ` WHERE "c"."twitter"<>null`;
+        query = query + ` WHERE "c"."twitter" IS NOT NULL`;
       } else {
-        query = query + ` and "c"."twitter"<>null`;
+        query = query + ` and "c"."twitter" IS NOT NULL`;
       }
     }
 
@@ -432,18 +428,15 @@ export class ContactsService {
     if (!query.includes('WHERE')) {
       query = query + ` WHERE c."isComplete" = true`;
     } else {
-      query = query + ` and c."isComplete" = true`;
+      query = query + ` AND c."isComplete" = true`;
     }
 
+    console.log('query', query);
     const contacts = await this.repository.query(query);
     return { contacts: contacts, count: contacts.length };
   }
 
-  async getAllContacts(
-    user: UserEntity,
-    count: number = 100,
-    page: number = 1,
-  ) {
+  async getAllContacts(user: UserEntity, count = 100, page = 1) {
     try {
       const contacts = await this.influencerContactRepo.find({
         where: { userId: user.id },
@@ -451,8 +444,8 @@ export class ContactsService {
         take: count,
         skip: page == 1 ? 0 : count * page - count,
       });
-      let _contact = [];
-      for (let contact of contacts) {
+      const _contact = [];
+      for (const contact of contacts) {
         if (contact.contact.isComplete) _contact.push(contact.contact);
       }
       return _contact;
@@ -492,7 +485,7 @@ export class ContactsService {
       const userId = consolidatedIds[0];
       const contactUniqueMapper = consolidatedIds[1];
       const number = consolidatedIds[2];
-      let contactDetails = await this.repository.findOne({
+      const contactDetails = await this.repository.findOne({
         where: { urlMapper: contactUniqueMapper },
         relations: ['country', 'city'],
       });
@@ -600,8 +593,8 @@ export class ContactsService {
         let onboardBody = preset_onboard.body;
         const links = onboardBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
         if (links && links.length > 0) {
-          for (let link of links) {
-            let id = link.replace('${link:', '').replace('}', '');
+          for (const link of links) {
+            const id = link.replace('${link:', '').replace('}', '');
             const shareableUri = (
               await this.infLinks.getUniqueLinkForContact(
                 parseInt(id),

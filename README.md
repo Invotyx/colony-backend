@@ -1,3 +1,33 @@
+# Colony Backend APIs
+
+## Requirements
+
+1. NodeJS 14+
+1. Redis
+1. PostgreSQP
+
+## Setup
+
+```bash
+# clone repository
+git clone <url>
+
+# copy .env.example and adjust environment variables
+cp .env.example .env
+
+# Install Dependencies
+npm install
+
+# Build
+npm run build
+
+# start
+npm run start
+
+# To run in dev mode and hot reload
+npm run start:dev
+```
+
 ## APIs
 
 ```sh

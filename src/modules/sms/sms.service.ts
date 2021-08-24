@@ -474,6 +474,7 @@ export class SmsService {
       relations: ['contact', 'phone', 'user'],
     });
     let message: ConversationMessagesEntity;
+    
     if (conversation) {
       message = await this.conversationsMessagesRepo.save({
         conversations: conversation,
@@ -487,14 +488,14 @@ export class SmsService {
       });
 
       conversation.removedFromList = false;
-      conversation.isActive = true;
+      conversation.isActive = conversation.contact.isComplete;
       conversation.updatedAt = new Date();
       await this.conversationsRepo.save(conversation);
     } else {
       conversation = await this.conversationsRepo.save({
         contact: contact,
         phone: influencerPhone,
-        isActive: false,
+        isActive: conversation.contact.isComplete,
         user: influencerPhone.user,
         removedFromList: false,
       });

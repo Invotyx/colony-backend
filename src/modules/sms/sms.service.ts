@@ -163,7 +163,7 @@ export class SmsService {
           );
 
           const conversation = await this.conversationsRepo.findOne({
-            where: { contact: contact, phone: influencerNumber },
+            where: { contact: contact, user:influencerNumber.user.id },
             relations: ['contact', 'phone'],
           });
 

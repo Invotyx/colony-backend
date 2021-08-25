@@ -642,7 +642,6 @@ export class SmsService {
       const infNum = await this.phoneService.findOne({
         where: {
           number: influencerNumber.number,
-          status: 'in-use',
         },
         relations: ['user'],
       });

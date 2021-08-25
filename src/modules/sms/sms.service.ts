@@ -638,6 +638,7 @@ export class SmsService {
     broadcast?: BroadcastsEntity,
   ) {
     try {
+      console.log(influencerNumber);
       const infNum = await this.phoneService.findOne({
         where: {
           number: influencerNumber.number,
@@ -645,11 +646,13 @@ export class SmsService {
         },
         relations: ['user'],
       });
-      if (!infNum) {
-        throw new BadRequestException(
-          'Influencer number is already cancelled.',
-        );
-      }
+      console.log(infNum);
+
+      // if (!infNum) {
+      //   throw new BadRequestException(
+      //     'Influencer number is already cancelled.',
+      //   );
+      // }
       const checkThreshold = await this.paymentHistory.getDues(
         'sms',
         infNum.user,

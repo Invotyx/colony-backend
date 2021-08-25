@@ -289,7 +289,7 @@ export class SmsService {
           preset_welcome,
           fromCountry,
         );
-        //console.log('Onboarding end');
+        console.log('Onboarding end');
 
         const checkKeyword = await this.keywordsService.findOne({
           where: {
@@ -320,7 +320,7 @@ export class SmsService {
           await this.keywordsService.save(checkKeyword);
         }
 
-        if (!newContact.isComplete) {
+        //if (!newContact.isComplete) {
           const message: string = await this.replaceTextUtility(
             preset_welcome.body,
             influencerNumber,
@@ -328,7 +328,7 @@ export class SmsService {
             false,
           );
           await this.sendSms(newContact, influencerNumber, message, 'outBound');
-        }
+        //}
         return 200;
       } else {
       }

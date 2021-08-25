@@ -132,7 +132,7 @@ export class SmsService {
       });
       console.log("Log 1",influencerNumber);
       if (influencerNumber) {
-        //console.log('Phone found');
+        console.log("Log 2",'Phone found');
         const contact = await this.contactService.findOne({
           where: { phoneNumber: sender },
         });
@@ -148,7 +148,7 @@ export class SmsService {
         }
 
         if (contact) {
-          //console.log('Contact found');
+          console.log("Log 3",'Contact found');
 
           const check = await this.contactService.checkBlockList(
             influencerNumber.user,
@@ -167,10 +167,10 @@ export class SmsService {
             relations: ['contact', 'phone'],
           });
 
-          //console.log('Conversation found');
+          console.log('Conversation found');
 
           if (rel && conversation) {
-            //console.log('Relation and Conversation found');
+            console.log("Log 4",'Relation and Conversation found');
 
             const lastConversationMessage = await this.conversationsMessagesRepo.findOne(
               {
@@ -202,7 +202,7 @@ export class SmsService {
               }
             }
 
-            ////console.log('conversation found');
+            console.log("Log 5",'conversation found');
             const message = await this.saveSms(
               contact,
               influencerNumber,
@@ -278,7 +278,7 @@ export class SmsService {
           }
         }
 
-        //console.log('Onboarding start');
+        console.log("Log 3",'Onboarding start');
 
         const newContact = await this.contactOnboarding(
           sender,
@@ -638,7 +638,7 @@ export class SmsService {
     broadcast?: BroadcastsEntity,
   ) {
     try {
-      console.log("Log 2 - sendSms",influencerNumber);
+      console.log("Log 1 - sendSms",influencerNumber);
       const infNum = await this.phoneService.findOne({
         where: {
           number: influencerNumber.number,

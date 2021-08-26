@@ -132,7 +132,7 @@ export class SmsService {
       });
       console.log("Log 1",influencerNumber);
       if (influencerNumber) {
-        console.log("Log 2",'Phone found');
+        console.log("Log 2", 'Phone found');
         const contact = await this.contactService.findOne({
           where: { phoneNumber: sender },
         });
@@ -148,7 +148,7 @@ export class SmsService {
         }
 
         if (contact) {
-          console.log("Log 3",'Contact found');
+          console.log("Log 3", 'Contact found');
 
           const check = await this.contactService.checkBlockList(
             influencerNumber.user,
@@ -163,14 +163,14 @@ export class SmsService {
           );
 
           const conversation = await this.conversationsRepo.findOne({
-            where: { contact: contact, user:influencerNumber.user.id },
+            where: { contact: contact, user: influencerNumber.user.id },
             relations: ['contact', 'phone'],
           });
 
           console.log('Conversation found');
 
           if (rel && conversation) {
-            console.log("Log 4",'Relation and Conversation found');
+            console.log("Log 4", 'Relation and Conversation found');
 
             const lastConversationMessage = await this.conversationsMessagesRepo.findOne(
               {
@@ -186,7 +186,7 @@ export class SmsService {
 
             const msgType =
               lastConversationMessage &&
-              lastConversationMessage.type == 'broadcastOutbound'
+                lastConversationMessage.type == 'broadcastOutbound'
                 ? 'broadcastInbound'
                 : 'inBound';
 
@@ -202,7 +202,7 @@ export class SmsService {
               }
             }
 
-            console.log("Log 5",'conversation found');
+            console.log("Log 5", 'conversation found');
             const message = await this.saveSms(
               contact,
               influencerNumber,
@@ -278,19 +278,26 @@ export class SmsService {
           }
         }
 
-        console.log("Log 3",'Onboarding start');
+        console.log("Log 3", 'Onboarding start');
 
         const newContact = await this.contactOnboarding(
           sender,
           influencerNumber,
-          body,
-          receivedAt,
-          sid,
-          preset_welcome,
           fromCountry,
         );
         console.log('Onboarding end');
+        await this.saveSms(
+          contact,
+          influencerNumber,
+          body,
+          receivedAt,
+          'inBound',
+          sid,
+          'received',
+        );
+        console.log("incoming sms saved");
 
+        console.log("checking for keyword match")
         const checkKeyword = await this.keywordsService.findOne({
           where: {
             keyword: body,
@@ -299,7 +306,7 @@ export class SmsService {
         });
 
         if (checkKeyword) {
-          //console.log('Keyword found');
+          console.log('Keyword found');
 
           const text_body: string = await this.replaceTextUtility(
             checkKeyword.message,
@@ -315,22 +322,25 @@ export class SmsService {
             text_body,
             'outBound',
           );
+          console.log("keyword response sent")
 
           checkKeyword.usageCount = checkKeyword.usageCount + 1;
           await this.keywordsService.save(checkKeyword);
         }
 
         //if (!newContact.isComplete) {
-          const message: string = await this.replaceTextUtility(
-            preset_welcome.body,
-            influencerNumber,
-            newContact,
-            false,
-          );
-          await this.sendSms(newContact, influencerNumber, message, 'outBound');
+        const message: string = await this.replaceTextUtility(
+          preset_welcome.body,
+          influencerNumber,
+          newContact,
+          false,
+        );
+        console.log("sending welcome message")
+        await this.sendSms(newContact, influencerNumber, message, 'outBound');
+        console.log("welcome message sent")
+        
         //}
         return 200;
-      } else {
       }
     } catch (e) {
       ////console.log('Receive SMS', e);
@@ -426,10 +436,6 @@ export class SmsService {
   private async contactOnboarding(
     sender,
     influencerNumber,
-    body,
-    receivedAt,
-    sid,
-    preset_welcome,
     fromCountry,
   ) {
     let contact = await this.contactService.addContact(
@@ -437,15 +443,8 @@ export class SmsService {
       influencerNumber.user.id,
       fromCountry,
     );
-    await this.saveSms(
-      contact,
-      influencerNumber,
-      body,
-      receivedAt,
-      'inBound',
-      sid,
-      'received',
-    );
+    console.log("contact onboarded", 'contact', contact);
+    
 
     const plan = await this.subService.planService.findOne();
     await this.paymentHistory.updateDues({

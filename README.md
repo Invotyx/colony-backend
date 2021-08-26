@@ -28,6 +28,16 @@ npm run start
 npm run start:dev
 ```
 
+## Run in Docker
+
+```bash
+# To build docker image
+docker build -t colony-backend
+
+# To run docker container
+docker run -it --rm -p <port>:<port> --env-file $PWD/.env colony-backend
+```
+
 ## APIs
 
 ```sh

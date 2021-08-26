@@ -130,9 +130,9 @@ export class SmsService {
         where: { number: receiver, status: 'in-use', country: fromCountry },
         relations: ['user'],
       });
-
+      console.log("Log 1",influencerNumber);
       if (influencerNumber) {
-        //console.log('Phone found');
+        console.log("Log 2",'Phone found');
         const contact = await this.contactService.findOne({
           where: { phoneNumber: sender },
         });
@@ -148,7 +148,7 @@ export class SmsService {
         }
 
         if (contact) {
-          //console.log('Contact found');
+          console.log("Log 3",'Contact found');
 
           const check = await this.contactService.checkBlockList(
             influencerNumber.user,
@@ -163,14 +163,14 @@ export class SmsService {
           );
 
           const conversation = await this.conversationsRepo.findOne({
-            where: { contact: contact, phone: influencerNumber },
+            where: { contact: contact, user:influencerNumber.user.id },
             relations: ['contact', 'phone'],
           });
 
-          //console.log('Conversation found');
+          console.log('Conversation found');
 
           if (rel && conversation) {
-            //console.log('Relation and Conversation found');
+            console.log("Log 4",'Relation and Conversation found');
 
             const lastConversationMessage = await this.conversationsMessagesRepo.findOne(
               {
@@ -202,7 +202,7 @@ export class SmsService {
               }
             }
 
-            ////console.log('conversation found');
+            console.log("Log 5",'conversation found');
             const message = await this.saveSms(
               contact,
               influencerNumber,
@@ -278,7 +278,7 @@ export class SmsService {
           }
         }
 
-        //console.log('Onboarding start');
+        console.log("Log 3",'Onboarding start');
 
         const newContact = await this.contactOnboarding(
           sender,
@@ -289,7 +289,7 @@ export class SmsService {
           preset_welcome,
           fromCountry,
         );
-        //console.log('Onboarding end');
+        console.log('Onboarding end');
 
         const checkKeyword = await this.keywordsService.findOne({
           where: {
@@ -320,7 +320,7 @@ export class SmsService {
           await this.keywordsService.save(checkKeyword);
         }
 
-        if (!newContact.isComplete) {
+        //if (!newContact.isComplete) {
           const message: string = await this.replaceTextUtility(
             preset_welcome.body,
             influencerNumber,
@@ -328,7 +328,7 @@ export class SmsService {
             false,
           );
           await this.sendSms(newContact, influencerNumber, message, 'outBound');
-        }
+        //}
         return 200;
       } else {
       }
@@ -474,6 +474,7 @@ export class SmsService {
       relations: ['contact', 'phone', 'user'],
     });
     let message: ConversationMessagesEntity;
+    
     if (conversation) {
       message = await this.conversationsMessagesRepo.save({
         conversations: conversation,
@@ -487,14 +488,14 @@ export class SmsService {
       });
 
       conversation.removedFromList = false;
-      conversation.isActive = true;
+      conversation.isActive = conversation.contact.isComplete;
       conversation.updatedAt = new Date();
       await this.conversationsRepo.save(conversation);
     } else {
       conversation = await this.conversationsRepo.save({
         contact: contact,
         phone: influencerPhone,
-        isActive: false,
+        isActive: conversation.contact.isComplete,
         user: influencerPhone.user,
         removedFromList: false,
       });
@@ -637,13 +638,15 @@ export class SmsService {
     broadcast?: BroadcastsEntity,
   ) {
     try {
+      console.log("Log 1 - sendSms",influencerNumber);
       const infNum = await this.phoneService.findOne({
         where: {
           number: influencerNumber.number,
-          status: 'in-use',
         },
         relations: ['user'],
       });
+      console.log(infNum);
+
       if (!infNum) {
         throw new BadRequestException(
           'Influencer number is already cancelled.',

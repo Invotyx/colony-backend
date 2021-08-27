@@ -343,7 +343,7 @@ export class SmsService {
         return 200;
       }
     } catch (e) {
-      ////console.log('Receive SMS', e);
+      console.error('Receive SMS', e);
       throw e;
     }
   }
@@ -494,7 +494,7 @@ export class SmsService {
       conversation = await this.conversationsRepo.save({
         contact: contact,
         phone: influencerPhone,
-        isActive: conversation.contact.isComplete,
+        isActive: false,
         user: influencerPhone.user,
         removedFromList: false,
       });

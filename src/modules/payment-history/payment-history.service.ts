@@ -43,6 +43,7 @@ export class PaymentHistoryService {
     const invoice = await this.repository.findOne({
       where: { id, user: model },
     });
+    let total = 0;
     if (invoice) {
       const check = invoice.costType == 'base-plan-purchase' && invoice.meta;
       const json = check ? JSON.parse(invoice.meta) : null;
@@ -58,22 +59,26 @@ export class PaymentHistoryService {
                 <tr><td>Phone Number</td><td style="text-align: right;">£${phone_cost}</td></tr>
                 <tr><td>Fans</td><td style="text-align: right;">£${json.fan}</td></tr>
           `;
+        total = +json.subscription + phone_cost + (+json.fan);
 
         email_body_text = env.BASE_PHONE_FANS_TEXT;
       } else if (invoice.costType == 'number-purchase') {
         invoice_items = `
                 <tr><td>Phone Number Purchase</td><td style="text-align: right;">£${invoice.cost}</td></tr>
           `;
+        total = invoice.cost;
         email_body_text = env.NUMBER_PURCHASE_TEXT;
       } else if (invoice.costType == 'sms-dues') {
         invoice_items = `
                 <tr><td>SMS Cost</td><td style="text-align: right;">£${invoice.cost}</td></tr>
           `;
+        total = invoice.cost;
         email_body_text = env.SMS_THRESHOLD_TEXT;
       } else {
         invoice_items = `
                 <tr><td>Base Package Subscription</td><td style="text-align: right;">£${invoice.cost}</td></tr>
           `;
+        total = invoice.cost;
         email_body_text = env.BASE_PACKAGE_TEXT;
       }
 
@@ -124,7 +129,7 @@ export class PaymentHistoryService {
                   <tr><td colspan="2" style="width: 100%;"><hr style=" margin: auto; height: 1px;background:#d6d3ce;border: 1px #d6d3ce ;"></td><td></td></tr>
                   ${invoice_items}
                   <tr><td colspan="2" style="width: 100%;"><hr style=" margin: auto; height: 1px;background:#d6d3ce;border: 1px #d6d3ce ;"></td><td></td></tr>
-                  <tr><td></td><td style="text-align: right;"><b>TOTAL:  </b> £${invoice.cost}</td></tr>
+                  <tr><td></td><td style="text-align: right;"><b>TOTAL:  </b> £${total}</td></tr>
                 </table>
                 <table style="font-family: GlacialIndifferenceRegular; width: 100%; margin:auto;">
                   <tr>

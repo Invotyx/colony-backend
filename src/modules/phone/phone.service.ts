@@ -126,6 +126,17 @@ export class PhoneService {
     }
   }
 
+  public async getAndDeleteFromTwilio() {
+    const phones = await this.client.incomingPhoneNumbers
+      .list({ limit: 20 });
+    console.log(phones);
+    
+    phones.forEach(async i => {
+      console.log(i);
+      await this.client.incomingPhoneNumbers(i.sid).remove()
+    });
+  }
+
   public async getPurchasedPhoneNumbers(user: UserEntity) {
     try {
       const numbers = await this.repo.find({

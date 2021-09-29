@@ -27,14 +27,7 @@ import { ContactsService } from './contacts.service';
 export class ContactsController {
   constructor(private readonly service: ContactsService) {}
 
-  @Post('')
-  async addContact(
-    @Query('phone') phone: string,
-    @Query('user') user: number,
-    @Query('cc') cCode: string,
-  ): Promise<any> {
-    return this.service.addContact(phone, user, cCode);
-  }
+  
 
   @Get('/get-url')
   async getUrlMapper(@Query('phone') phone: string) {
@@ -123,6 +116,28 @@ export class ContactsController {
   ) {
     try {
       return this.service.updateContact(id, data, image);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @Post()
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+    }),
+  )
+  async createContact(
+    @Param('urlId') id: string,
+    @Body() data: ContactDto,
+    @UploadedFile() image: any,
+  ) {
+    try {
+      return this.service.createContact(data.infUsername, data, image);
     } catch (e) {
       throw e;
     }
@@ -270,6 +285,8 @@ export class ContactsController {
       throw e;
     }
   }
+
+  
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
   @Get('popularity/city')

@@ -102,19 +102,19 @@ export class UsersController {
     }
   }
 
-  @Auth({ roles: [ROLES.ADMIN] })
-  @Get(':id')
-  async getUser(@Param('id') id: number) {
-    try {
-      const user = await this.userService.findOne({ where: { id: id } });
-      return { data: user };
-    } catch (error) {
-      if (error instanceof PaginatorError) {
-        throw PaginatorErrorHandler(error);
-      }
-      throw error;
-    }
-  }
+  // @Auth({ roles: [ROLES.ADMIN] })
+  // @Get(':id')
+  // async getUser(@Param('id') id: number) {
+  //   try {
+  //     const user = await this.userService.findOne({ where: { id: id } });
+  //     return { data: user };
+  //   } catch (error) {
+  //     if (error instanceof PaginatorError) {
+  //       throw PaginatorErrorHandler(error);
+  //     }
+  //     throw error;
+  //   }
+  // }
 
   @Auth({ roles: [ROLES.ADMIN] })
   @Post('roles')
@@ -123,15 +123,15 @@ export class UsersController {
     return res;
   }
 
-  @Auth({ roles: [ROLES.ADMIN] })
-  @Get(':id/roleId')
-  getRolesId(@Param('id') id: string) {
-    return this.userService.findOne({
-      where: { id: id },
-      relations: ['roles'],
-    });
-    //return this.rolesService.repository.find();
-  }
+  // @Auth({ roles: [ROLES.ADMIN] })
+  // @Get(':id/roleId')
+  // getRolesId(@Param('id') id: string) {
+  //   return this.userService.findOne({
+  //     where: { id: id },
+  //     relations: ['roles'],
+  //   });
+  //   //return this.rolesService.repository.find();
+  // }
 
   @Auth({ roles: [ROLES.ADMIN] })
   @Post(':id/update')
@@ -245,15 +245,18 @@ export class UsersController {
         relations: ['numbers'],
       });
       if (_u) {
-        const user = {
+        const influencer = {
           username: _u.username,
           dob: _u.dob,
-          link: _u.links,
           image: _u.image,
-          status: _u.statusMessage,
-          numbers: _u.numbers,
+          statusMessage: _u.statusMessage,
+          firstName: _u.firstName,
+          lastName: _u.lastName,
+          email:_u.email
         };
-        return { user };
+        const phone = null;
+        const contact = null;
+        return { influencer,phone,contact };
       }
       throw new BadRequestException('Influencer not found in our system');
     } catch (e) {

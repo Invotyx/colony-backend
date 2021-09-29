@@ -90,7 +90,7 @@ export class AuthController {
 
     const validate = await this.authService.validateUser(req.body);
     try{
-      if (validate.require2fa) {
+      if (true) {
         res.status(HttpStatus.ACCEPTED);
         //await this.authService.sendOtp(validate.mobile);
         return  {

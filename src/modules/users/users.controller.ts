@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   UnprocessableEntityException,
   UploadedFile,
   UseGuards,
@@ -27,6 +28,7 @@ import { CompressJSON } from '../../services/common/compression/compression.inte
 import { PasswordHashEngine } from '../../shared/hash.service';
 import { PaginatorError, PaginatorErrorHandler } from '../../shared/paginator';
 import { inValidDataRes } from '../../shared/res.fun';
+import { PaginationDto } from '../contacts/contact.dto';
 import { UserEntity } from './entities/user.entity';
 import { InValidDataError, UserNotExistError } from './errors/users.error';
 import {
@@ -52,8 +54,7 @@ export class UsersController {
 
   @Auth({ roles: [ROLES.ADMIN] })
   @Get('')
-  @CompressJSON()
-  async getAllUsers(@Body('jData') data: any) {
+  async getAllUsers(@Query() data: PaginationDto) {
     return this.userService.getAllUsers(data);
   }
 

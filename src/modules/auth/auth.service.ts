@@ -1,7 +1,8 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserEntity } from '../../modules/users/entities/user.entity';
 import { PasswordHashEngine } from '../../shared/hash.service';
+import { TwilioService } from '../twilio/twilio.service';
 import { UsersService } from '../users/services/users.service';
 
 @Injectable()
@@ -9,6 +10,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private twilioService: TwilioService,
   ) {}
 
   async validateUser(credentials: { username: string; password: string }) {
@@ -36,6 +38,18 @@ export class AuthService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async sendOtp(to:string) {
+    return await this.twilioService.sendCodeToUser(to);
+  }
+
+  async verifyOtp(to: string, code: string) {
+    const verification = await this.twilioService.verifyUserCode(to, code);
+    if (!verification || verification.status != 'approved') {
+      throw new UnauthorizedException('OTP Verification Failed');
+    }
+    return true;
   }
 
   async login(user: UserEntity) {

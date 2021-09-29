@@ -26,6 +26,12 @@ export class CreateUserDto {
   @IsNotEmpty()
   firstName: string;
 
+  
+  @ApiProperty()
+  @IsOptional()
+  require2fa: boolean;
+
+
   @ApiProperty()
   @Length(3, 20)
   @IsNotEmpty()
@@ -181,6 +187,11 @@ export class UpdateProfileDto {
   @ApiProperty()
   @IsOptional()
   isActive: boolean;
+
+  
+  @ApiProperty()
+  @IsOptional()
+  require2fa: boolean;
 
   @ApiProperty()
   @IsOptional()

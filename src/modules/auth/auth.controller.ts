@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   Request,
+  Res,
   UnprocessableEntityException,
   UsePipes,
   ValidationPipe
@@ -70,12 +71,12 @@ export class AuthController {
     }
   }
 
+  @ApiBody({ required: true })
   @Post('verify2fa')
   async verify2fa(@Request() req: any) {
-    const check = true;
+    const validate = await this.authService.validateUser(req.body);
+    const check = true;// await this.authService.verifyOtp(validate.mobile,req.body.code);
     if (check) {
-     
-      const validate = await this.authService.validateUser(req.body);
       return this.authService.login(validate);
     }
     throw new BadRequestException("Invalid 2fa code");
@@ -85,16 +86,19 @@ export class AuthController {
 
   @ApiBody({ required: true })
   @Post('login')
-  async login(@Request() req: any) {
+  async login(@Request() req: any,@Res({ passthrough: true }) res: any,) {
 
     const validate = await this.authService.validateUser(req.body);
     try{
-      if (true) {
-        return {
+      if (validate.require2fa) {
+        res.status(HttpStatus.ACCEPTED);
+        //await this.authService.sendOtp(validate.mobile);
+        return  {
           success: true,
           message: 'Please verify your phone number to continue',
           sessionId: uniqueId(10),
         };
+        
       }
         
       return this.authService.login(validate);

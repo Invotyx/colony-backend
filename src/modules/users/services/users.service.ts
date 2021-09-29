@@ -419,6 +419,9 @@ export class UsersService {
       if (user.meta) {
         updateData.meta = user.meta;
       }
+      if (user.require2fa) {
+        updateData.require2fa = user.require2fa;
+      }
 
       updateData.gender = user.gender;
 

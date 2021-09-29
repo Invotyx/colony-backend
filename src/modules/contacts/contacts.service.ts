@@ -668,6 +668,7 @@ export class ContactsService {
     return file.filename;
   }
 
+
   async checkContact(urlId: string) {
     try {
       const glink = await this.globalLinks.getLink(urlId);
@@ -681,6 +682,16 @@ export class ContactsService {
 
         if (contact) {
           const user = await this.users.findOne({ where: { id: userId } });
+          
+          const influencer = {
+            username: user.username,
+            dob: user.dob,
+            image: user.image,
+            statusMessage: user.statusMessage,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email:user.email
+          };
           const conversation = await this.smsService.findOneConversations({
             where: {
               user: user,
@@ -691,7 +702,7 @@ export class ContactsService {
           user.subscription = null;
           user.paymentMethod = null;
           user.customerId = null;
-          return { influencer: user, contact, phone: conversation.phone };
+          return { influencer, contact, phone: conversation.phone };
         } else {
           throw new BadRequestException(
             'Contact does not exist in our system.',
@@ -703,6 +714,7 @@ export class ContactsService {
       throw new BadRequestException(e.message);
     }
   }
+
 
   async addToFavorites(_user: UserEntity, contactId: number) {
     try {
@@ -744,6 +756,155 @@ export class ContactsService {
       console.error(e);
       throw new BadRequestException(e.message);
     }
+  }
+
+
+  
+  async createContact(inf:string,data: ContactDto, image?: any) {
+    
+    const user = await this.users.findOne({ where: { username: inf } });
+    if (!user) {
+      throw new BadRequestException("Influencer not found");
+    }
+    const contactDetails = new ContactsEntity();
+      let flag = 0;
+      if (data.firstName) {
+        contactDetails.firstName = data.firstName;
+        flag++;
+      }
+      if (data.lastName) {
+        contactDetails.lastName = data.lastName;
+        flag++;
+      }
+      if (data.gender) {
+        contactDetails.gender = data.gender;
+        flag++;
+      }
+      if (data.dob) {
+        contactDetails.dob = data.dob;
+        flag++;
+      }
+      if (data.state) {
+        contactDetails.state = data.state;
+        flag++;
+      }
+      if (data.timezone) {
+        contactDetails.timezone = data.timezone;
+        flag++;
+      }
+      if (data.country) {
+        contactDetails.country = data.country;
+        flag++;
+      }
+      if (data.city) {
+        contactDetails.city = data.city;
+        const city = await getRepository(CityEntity).findOne(data.city);
+        if (city) {
+          contactDetails.lat = city.lat ? city.lat : null;
+          contactDetails.long = city.long ? city.long : null;
+        }
+        flag++;
+      }
+      if (data.facebook) {
+        contactDetails.facebook = data.facebook;
+        flag++;
+      }
+
+      if (data.instagram) {
+        contactDetails.instagram = data.instagram;
+        flag++;
+      }
+
+      if (data.twitter) {
+        contactDetails.twitter = data.twitter;
+        flag++;
+      }
+      if (data.email) {
+        contactDetails.email = data.email;
+        flag++;
+      }
+
+      if (data.linkedin) {
+        contactDetails.linkedin = data.linkedin;
+        flag++;
+      }
+
+      if (image) {
+        const file = await this.setProfileImage(contactDetails, image);
+        contactDetails.profileImage = file;
+        flag++;
+      }
+
+      if (flag >= 7) {
+        contactDetails.isComplete = true;
+      } else {
+        contactDetails.isComplete = false;
+      }
+
+      try {
+
+        let preset_onboard: any = await this.smsService.findOneInPreSets({
+          where: { trigger: 'onBoard', user: user },
+        });
+
+        if (!preset_onboard) {
+          preset_onboard = {
+            body: 'Welcome onboard ${name}.',
+          };
+        }
+
+        
+        const newCon = await this.addContact(contactDetails.phoneNumber, user.id, data.fromCountry);
+        contactDetails.id = newCon.id;
+        const savedContact = await this.repository.save(contactDetails);
+
+        let onboardBody = preset_onboard.body;
+        const links = onboardBody.match(/\$\{link:[1-9]*[0-9]*\d\}/gm);
+        if (links && links.length > 0) {
+          for (const link of links) {
+            const id = link.replace('${link:', '').replace('}', '');
+            const shareableUri = (
+              await this.infLinks.getUniqueLinkForContact(
+                parseInt(id),
+                savedContact.phoneNumber,
+              )
+            ).url;
+
+            //do action here
+            const _publicLink = await this.globalLinks.createLink(shareableUri);
+            await this.infLinks.sendLink(shareableUri, savedContact.id + ':');
+            onboardBody = onboardBody.replace(
+              link,
+              env.API_URL + '/api/s/o/' + _publicLink.shareableId,
+            );
+          }
+        }
+
+        const phone = await this.phoneService.findOne({ where: { user: user.id, country: data.fromCountry.toUpperCase(), status: 'in-use' } });
+        await this.smsService.sendSms(
+          contactDetails,
+          phone,
+          tagReplace(onboardBody, {
+            first_name: contactDetails.firstName
+              ? contactDetails.firstName
+              : '',
+            last_name: contactDetails.lastName ? contactDetails.lastName : '',
+            inf_first_name: user.firstName,
+            inf_last_name: user.lastName,
+            country: savedContact.country ? savedContact.country.name : '',
+            city: savedContact.city ? savedContact.city.name : '',
+          }) +
+            ' ' +
+            preset_onboard.fixedText,
+          'outBound',
+        );
+
+        return { message: 'Contact added successfully.', data: contactDetails };
+      } catch (e) {
+        console.error(e);
+        throw new BadRequestException(e.message);
+      }
+    
   }
 
   async removeFromFavorites(_user: UserEntity, contactId: number) {

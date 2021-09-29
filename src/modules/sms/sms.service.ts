@@ -4,7 +4,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
-  Injectable,
+  Injectable
 } from '@nestjs/common';
 import { env } from 'process';
 import Pusher from 'pusher';
@@ -285,7 +285,7 @@ export class SmsService {
           influencerNumber,
           fromCountry,
         );
-        console.log('Onboarding end');
+        console.log('Onboarding end', JSON.stringify(newContact, undefined, 2));
         await this.saveSms(
           contact,
           influencerNumber,
@@ -306,7 +306,7 @@ export class SmsService {
         });
 
         if (checkKeyword) {
-          console.log('Keyword found');
+          console.log('Keyword found', body);
 
           const text_body: string = await this.replaceTextUtility(
             checkKeyword.message,
@@ -322,7 +322,7 @@ export class SmsService {
             text_body,
             'outBound',
           );
-          console.log("keyword response sent")
+          console.log("keyword response sent", text_body)
 
           checkKeyword.usageCount = checkKeyword.usageCount + 1;
           await this.keywordsService.save(checkKeyword);
@@ -335,9 +335,9 @@ export class SmsService {
           newContact,
           false,
         );
-        console.log("sending welcome message")
+        console.log("sending welcome message", message)
         await this.sendSms(newContact, influencerNumber, message, 'outBound');
-        console.log("welcome message sent")
+        console.log("welcome message sent", message)
         
         //}
         return 200;

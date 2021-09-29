@@ -761,7 +761,9 @@ export class ContactsService {
 
   
   async createContact(inf:string,data: ContactDto, image?: any) {
-    
+    if (inf=='admin') {
+      throw new BadRequestException("Influencer not found");
+    }
     const user = await this.users.findOne({ where: { username: inf } });
     if (!user) {
       throw new BadRequestException("Influencer not found");

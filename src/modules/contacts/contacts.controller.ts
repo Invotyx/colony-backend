@@ -132,7 +132,6 @@ export class ContactsController {
     }),
   )
   async createContact(
-    @Param('urlId') id: string,
     @Body() data: ContactDto,
     @UploadedFile() image: any,
   ) {

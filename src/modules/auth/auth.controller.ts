@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpException,
   HttpStatus,
@@ -14,9 +15,11 @@ import {
   ValidationPipe
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { logger } from 'src/services/logs/log.storage';
 import { error } from 'src/shared/error.dto';
+import { uniqueId } from 'src/shared/random-keygen';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { AuthMailer } from '../../mails/users/auth.mailer';
@@ -29,6 +32,14 @@ import {
   UpdateProfilePasswordDto
 } from '../users/users.dto';
 import { AuthService } from './auth.service';
+
+export class VerifyOTPDto {
+  @IsString()
+  sessionId: string;
+
+  @IsString()
+  code: string;
+}
 
 @Controller('auth')
 @ApiTags('auth')
@@ -59,13 +70,34 @@ export class AuthController {
     }
   }
 
+  @Post('verify2fa')
+  async verify2fa(@Request() req: any) {
+    const check = true;
+    if (check) {
+     
+      const validate = await this.authService.validateUser(req.body);
+      return this.authService.login(validate);
+    }
+    throw new BadRequestException("Invalid 2fa code");
+  }
+
+
+
   @ApiBody({ required: true })
   @Post('login')
   async login(@Request() req: any) {
-    try {
-      return this.authService.login(
-        await this.authService.validateUser(req.body),
-      );
+
+    const validate = await this.authService.validateUser(req.body);
+    try{
+      if (true) {
+        return {
+          success: true,
+          message: 'Please verify your phone number to continue',
+          sessionId: uniqueId(10),
+        };
+      }
+        
+      return this.authService.login(validate);
     } catch (e) {
       throw new HttpException(e, HttpStatus.UNPROCESSABLE_ENTITY);
     }

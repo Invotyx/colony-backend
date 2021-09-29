@@ -77,6 +77,10 @@ export class UserEntity {
   @Column({ default: false })
   public isActive: boolean;
 
+  
+  @Column({ default: false })
+  public require2fa: boolean;
+
   @Column({ default: false })
   public isApproved: boolean;
 

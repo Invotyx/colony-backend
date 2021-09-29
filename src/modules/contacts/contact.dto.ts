@@ -20,10 +20,13 @@ export enum gender {
 }
 
 export class ContactDto {
-
   @ApiPropertyOptional()
   @IsOptional()
   public fromCountry: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public phoneNumber: string;
 
   @ApiPropertyOptional()
   @IsOptional()

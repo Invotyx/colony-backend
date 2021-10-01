@@ -84,15 +84,15 @@ export class AuthController {
 
   @ApiBody({ required: true })
   @Post('send2fa')
-  async send2fa(@Request() req: any) {
+  async send2fa(@Body('mobile') mobile: string) {
     
-    const mobile = req.mobile
+    try {
+      mobile = mobile
       .replace(' ', '')
       .replace('(', '')
       .replace(')', '')
       .replace('-', '');
-    try {
-      await this.authService.sendOtp(mobile);
+      //await this.authService.sendOtp(mobile);
     }
     catch (ex) {
       throw new HttpException("Contact system admin. Unable to send OTP.", HttpStatus.METHOD_NOT_ALLOWED);
@@ -213,7 +213,7 @@ export class AuthController {
         .replace(')', '')
         .replace('-', '');
       try {
-        await this.authService.verifyOtp(user.mobile, user.otp);
+        //await this.authService.verifyOtp(user.mobile, user.otp);
       }
       catch (ex) {
         throw new HttpException("Contact system admin. Unable to verify OTP.", HttpStatus.METHOD_NOT_ALLOWED);

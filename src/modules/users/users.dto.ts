@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
   IsIn,
@@ -21,6 +21,11 @@ export enum gender {
 }
 
 export class CreateUserDto {
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  otp: string;
+
   @ApiProperty()
   @Length(3, 20)
   @IsNotEmpty()

@@ -82,7 +82,19 @@ export class AuthController {
     throw new BadRequestException("Invalid 2fa code");
   }
 
-
+  @ApiBody({ required: true })
+  @Post('send2fa')
+  async send2fa(@Request() req: any) {
+    
+    const mobile = req.mobile
+      .replace(' ', '')
+      .replace('(', '')
+      .replace(')', '')
+      .replace('-', '');
+    await this.authService.sendOtp(mobile);
+    
+    return { message: " 2fa code sent to number." };
+  }
 
   @ApiBody({ required: true })
   @Post('login')
@@ -196,6 +208,8 @@ export class AuthController {
         .replace('(', '')
         .replace(')', '')
         .replace('-', '');
+      await this.authService.verifyOtp(user.mobile, user.otp);
+      
       const newUser = await this.userService.createUser(user);
       return {
         data: newUser,

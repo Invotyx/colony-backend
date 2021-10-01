@@ -91,8 +91,12 @@ export class AuthController {
       .replace('(', '')
       .replace(')', '')
       .replace('-', '');
-    await this.authService.sendOtp(mobile);
-    
+    try {
+      await this.authService.sendOtp(mobile);
+    }
+    catch (ex) {
+      throw new HttpException("Contact system admin. Unable to send OTP.", HttpStatus.METHOD_NOT_ALLOWED);
+    }
     return { message: " 2fa code sent to number." };
   }
 
@@ -208,8 +212,12 @@ export class AuthController {
         .replace('(', '')
         .replace(')', '')
         .replace('-', '');
-      await this.authService.verifyOtp(user.mobile, user.otp);
-      
+      try {
+        await this.authService.verifyOtp(user.mobile, user.otp);
+      }
+      catch (ex) {
+        throw new HttpException("Contact system admin. Unable to verify OTP.", HttpStatus.METHOD_NOT_ALLOWED);
+      }
       const newUser = await this.userService.createUser(user);
       return {
         data: newUser,

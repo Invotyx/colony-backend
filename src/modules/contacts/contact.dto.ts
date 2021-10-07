@@ -20,10 +20,13 @@ export enum gender {
 }
 
 export class ContactDto {
-
   @ApiPropertyOptional()
   @IsOptional()
   public fromCountry: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  public phoneNumber: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -92,12 +95,12 @@ export class PaginationDto {
   @IsNumber()
   @Min(1)
   @Max(100)
-  perPage?: number;
+  perPage?: number = 100;
 
   @IsOptional()
   @IsNumber()
   @Min(1)
-  page?: number;
+  page?: number=1;
 }
 
 export enum dob {

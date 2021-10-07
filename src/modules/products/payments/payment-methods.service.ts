@@ -73,10 +73,17 @@ export class PaymentMethodsService {
           pm.card.exp_month.toString() + '/' + pm.card.exp_year.toString();
         check.default = true;
         check.id = pm.id;
+
+        const methods = await this.repository.find({ where: { user: customer } });
+        methods.forEach(async method => {
+          await this.removePaymentMethod(customer, method.id);
+        });
         await this.repository.save(check);
         await this.stripe.customers.update(customer.customerId, {
           invoice_settings: { default_payment_method: pm.id },
+        
         });
+
         return { message: 'Payment method added' };
       } else {
         throw new BadRequestException('Invalid Data entered');

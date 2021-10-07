@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpException,
   HttpStatus,
@@ -9,14 +10,17 @@ import {
   Post,
   Query,
   Request,
+  Res,
   UnprocessableEntityException,
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 import { ROLES } from 'src/services/access-control/consts/roles.const';
 import { logger } from 'src/services/logs/log.storage';
 import { error } from 'src/shared/error.dto';
+import { uniqueId } from 'src/shared/random-keygen';
 import { Auth } from '../../decorators/auth.decorator';
 import { LoginUser } from '../../decorators/user.decorator';
 import { AuthMailer } from '../../mails/users/auth.mailer';
@@ -29,6 +33,14 @@ import {
   UpdateProfilePasswordDto
 } from '../users/users.dto';
 import { AuthService } from './auth.service';
+
+export class VerifyOTPDto {
+  @IsString()
+  sessionId: string;
+
+  @IsString()
+  code: string;
+}
 
 @Controller('auth')
 @ApiTags('auth')
@@ -60,12 +72,52 @@ export class AuthController {
   }
 
   @ApiBody({ required: true })
-  @Post('login')
-  async login(@Request() req: any) {
+  @Post('verify2fa')
+  async verify2fa(@Request() req: any) {
+    const validate = await this.authService.validateUser(req.body);
+    const check = true;// await this.authService.verifyOtp(validate.mobile,req.body.code);
+    if (check) {
+      return this.authService.login(validate);
+    }
+    throw new BadRequestException("Invalid 2fa code");
+  }
+
+  @ApiBody({ required: true })
+  @Post('send2fa')
+  async send2fa(@Body('mobile') mobile: string) {
+    
     try {
-      return this.authService.login(
-        await this.authService.validateUser(req.body),
-      );
+      mobile = mobile
+      .replace(' ', '')
+      .replace('(', '')
+      .replace(')', '')
+      .replace('-', '');
+      //await this.authService.sendOtp(mobile);
+    }
+    catch (ex) {
+      throw new HttpException("Contact system admin. Unable to send OTP.", HttpStatus.METHOD_NOT_ALLOWED);
+    }
+    return { message: " 2fa code sent to number." };
+  }
+
+  @ApiBody({ required: true })
+  @Post('login')
+  async login(@Request() req: any,@Res({ passthrough: true }) res: any,) {
+
+    const validate = await this.authService.validateUser(req.body);
+    try{
+      if (true) {
+        res.status(HttpStatus.ACCEPTED);
+        //await this.authService.sendOtp(validate.mobile);
+        return  {
+          success: true,
+          message: 'Please verify your phone number to continue',
+          sessionId: uniqueId(10),
+        };
+        
+      }
+        
+      return this.authService.login(validate);
     } catch (e) {
       throw new HttpException(e, HttpStatus.UNPROCESSABLE_ENTITY);
     }
@@ -160,6 +212,12 @@ export class AuthController {
         .replace('(', '')
         .replace(')', '')
         .replace('-', '');
+      try {
+        //await this.authService.verifyOtp(user.mobile, user.otp);
+      }
+      catch (ex) {
+        throw new HttpException("Contact system admin. Unable to verify OTP.", HttpStatus.METHOD_NOT_ALLOWED);
+      }
       const newUser = await this.userService.createUser(user);
       return {
         data: newUser,

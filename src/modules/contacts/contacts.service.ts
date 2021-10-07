@@ -761,7 +761,9 @@ export class ContactsService {
 
   
   async createContact(inf:string,data: ContactDto, image?: any) {
-    
+    if (inf=='admin') {
+      throw new BadRequestException("Influencer not found");
+    }
     const user = await this.users.findOne({ where: { username: inf } });
     if (!user) {
       throw new BadRequestException("Influencer not found");
@@ -839,7 +841,9 @@ export class ContactsService {
         contactDetails.isComplete = true;
       } else {
         contactDetails.isComplete = false;
-      }
+    }
+    
+    contactDetails.phoneNumber = data.phoneNumber;
 
       try {
 
@@ -854,7 +858,7 @@ export class ContactsService {
         }
 
         
-        const newCon = await this.addContact(contactDetails.phoneNumber, user.id, data.fromCountry);
+        const newCon = await this.addContact(data.phoneNumber, user.id, data.fromCountry);
         contactDetails.id = newCon.id;
         const savedContact = await this.repository.save(contactDetails);
 

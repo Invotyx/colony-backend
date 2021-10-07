@@ -5,6 +5,7 @@ import { jwtConstants } from '../../consts/jwt.const';
 import { AuthMailer } from '../../mails/users/auth.mailer';
 import { AppLogger } from '../../services/logs/log.service';
 import { MailModule } from '../../services/mail/mail.module';
+import { TwilioModule } from '../twilio/twilio.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -21,6 +22,7 @@ import { LocalStrategy } from './local.strategy';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: "24h" },
     }),
+    TwilioModule
   ],
   providers: [AppLogger, AuthService, LocalStrategy, JwtStrategy, AuthMailer],
   exports: [AuthService, UsersModule],

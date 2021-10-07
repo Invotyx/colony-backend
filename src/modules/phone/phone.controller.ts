@@ -141,4 +141,9 @@ export class PhoneController {
       throw e;
     }
   }
+
+  @Get('getAndDeleteFromTwilio')
+  public async getAndDeleteFromTwilio() {
+    return await this.service.getAndDeleteFromTwilio();
+  }
 }

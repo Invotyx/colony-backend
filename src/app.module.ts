@@ -33,6 +33,7 @@ import { AppLogger } from './services/logs/log.service';
 import { MailModule } from './services/mail/mail.module';
 import { MainMysqlModule } from './shared/main-mysql.module';
 import { SupportModule } from './modules/support/support.module';
+import { TwilioModule } from './modules/twilio/twilio.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { SupportModule } from './modules/support/support.module';
     KeywordsModule,
     CloudinaryModule,
     SupportModule,
+    TwilioModule,
   ],
   controllers: [AppController, SeederController, CityCountryController],
   providers: [

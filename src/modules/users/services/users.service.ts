@@ -11,6 +11,7 @@ import { join } from 'path';
 import { env } from 'process';
 import { TABLES } from 'src/consts/tables.const';
 import { ForgotPasswordTokenSender } from 'src/mails/users/forgotpassword.mailer';
+import { PaginationDto } from 'src/modules/contacts/contact.dto';
 import { presetTrigger } from 'src/modules/sms/entities/preset-message.entity';
 import { PresetMessagesRepository } from 'src/modules/sms/repo/sms-presets.repo';
 import { ForgotPassword } from 'src/modules/users/entities/forgottenpassword.entity';
@@ -105,55 +106,13 @@ export class UsersService {
     return isExist(this.repository, 'mobile', val);
   }
 
-  async getAllUsers(data: any) {
+  async getAllUsers(data: PaginationDto) {
     try {
-      const userTable = TABLES.USERS.name;
-      const columnList: any = {
-        id: { table: userTable, column: 'id' },
-        firstName: { table: userTable, column: 'firstName' },
-        lastName: { table: userTable, column: 'lastName' },
-        username: { table: userTable, column: 'username' },
-        email: { table: userTable, column: 'email' },
-        createdAt: { table: userTable, column: 'createdAt' },
-        gender: { table: userTable, column: 'gender' },
-        mobile: { table: userTable, column: 'mobile' },
-        //password: { table: userTable, column: 'password' },
-        image: { table: userTable, column: 'image' },
-        isActive: {
-          table: userTable,
-          column: 'isActive',
-          valueMapper: (v: any) => (v ? 'YES' : 'NO'),
-        },
-      };
-      const sortList = {
-        firstName: { table: userTable, column: 'firstName' },
-      };
-      const filterList = {
-        firstName: { table: userTable, column: 'firstName' },
-        isActive: {
-          table: userTable,
-          column: 'isActive',
-          valueMapper: (v: any) => Number(v === 'YES'),
-        },
-      };
-      const { filters, configs } = dataViewer({
-        data,
-        filterList,
-        sortList,
-        columnList,
+      const [users, count] = await this.repository.findAndCount({
+        take: data.perPage,
+        skip: data.page == 1 ? 0 : data.perPage * data.page - data.perPage,
       });
-      const query = await this.repository
-        .createQueryBuilder(TABLES.USERS.name)
-        .select(columnListToSelect(columnList))
-        .where(filters.sql);
-
-      const paginatedData = await paginateQuery(query, configs, userTable);
-      if (paginatedData.data.length) {
-        paginatedData.data = paginatedData.data.map(
-          mapColumns(paginatedData.data[0], columnList),
-        );
-      }
-      return { data: paginatedData.data, meta: paginatedData.meta };
+      return { users, count };
     } catch (error) {
       if (error instanceof PaginatorError) {
         throw PaginatorErrorHandler(error);
@@ -418,6 +377,9 @@ export class UsersService {
       }
       if (user.meta) {
         updateData.meta = user.meta;
+      }
+      if (user.require2fa) {
+        updateData.require2fa = user.require2fa;
       }
 
       updateData.gender = user.gender;

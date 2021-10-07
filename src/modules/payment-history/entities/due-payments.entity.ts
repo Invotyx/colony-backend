@@ -1,7 +1,9 @@
 import {
+  AfterUpdate,
   Column,
   CreateDateColumn,
   Entity,
+  getRepository,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,

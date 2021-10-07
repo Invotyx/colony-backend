@@ -257,7 +257,8 @@ export class UsersController {
         };
         const phone = null;
         const contact = null;
-        return { influencer,phone,contact };
+        const phoneNumbers = _u.numbers;
+        return { influencer,phone,contact,phoneNumbers };
       }
       throw new BadRequestException('Influencer not found in our system');
     } catch (e) {

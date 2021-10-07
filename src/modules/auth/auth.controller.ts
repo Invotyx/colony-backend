@@ -13,26 +13,26 @@ import {
   Res,
   UnprocessableEntityException,
   UsePipes,
-  ValidationPipe
-} from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
-import { ROLES } from 'src/services/access-control/consts/roles.const';
-import { logger } from 'src/services/logs/log.storage';
-import { error } from 'src/shared/error.dto';
-import { uniqueId } from 'src/shared/random-keygen';
-import { Auth } from '../../decorators/auth.decorator';
-import { LoginUser } from '../../decorators/user.decorator';
-import { AuthMailer } from '../../mails/users/auth.mailer';
-import { AppLogger } from '../../services/logs/log.service';
-import { UserEntity } from '../users/entities/user.entity';
-import { UsersService } from '../users/services/users.service';
+  ValidationPipe,
+} from "@nestjs/common";
+import { ApiBody, ApiTags } from "@nestjs/swagger";
+import { IsString } from "class-validator";
+import { ROLES } from "src/services/access-control/consts/roles.const";
+import { logger } from "src/services/logs/log.storage";
+import { error } from "src/shared/error.dto";
+import { uniqueId } from "src/shared/random-keygen";
+import { Auth } from "../../decorators/auth.decorator";
+import { LoginUser } from "../../decorators/user.decorator";
+import { AuthMailer } from "../../mails/users/auth.mailer";
+import { AppLogger } from "../../services/logs/log.service";
+import { UserEntity } from "../users/entities/user.entity";
+import { UsersService } from "../users/services/users.service";
 import {
   CreateUserDto,
   UpdateProfileDto,
-  UpdateProfilePasswordDto
-} from '../users/users.dto';
-import { AuthService } from './auth.service';
+  UpdateProfilePasswordDto,
+} from "../users/users.dto";
+import { AuthService } from "./auth.service";
 
 export class VerifyOTPDto {
   @IsString()
@@ -42,8 +42,8 @@ export class VerifyOTPDto {
   code: string;
 }
 
-@Controller('auth')
-@ApiTags('auth')
+@Controller("auth")
+@ApiTags("auth")
 export class AuthController {
   constructor(
     private readonly authMailer: AuthMailer,
@@ -51,20 +51,20 @@ export class AuthController {
     private readonly logger: AppLogger,
     private readonly userService: UsersService,
   ) {
-    this.logger.setContext('AuthController');
+    this.logger.setContext("AuthController");
   }
 
-  @Get('verify/:token')
-  async verifyEmail(@Param('token') token: any) {
+  @Get("verify/:token")
+  async verifyEmail(@Param("token") token: any) {
     try {
       const isEmailVerified = await this.userService.verifyEmail(token);
       if (isEmailVerified) {
         return {
-          message: 'Email verified',
+          message: "Email verified",
           accessToken: (await this.authService.login(isEmailVerified))
             .accessToken,
         };
-      } else throw new BadRequestException('LOGIN_EMAIL_NOT_VERIFIED');
+      } else throw new BadRequestException("LOGIN_EMAIL_NOT_VERIFIED");
     } catch (error) {
       logger.error(error);
       throw error;
@@ -72,10 +72,13 @@ export class AuthController {
   }
 
   @ApiBody({ required: true })
-  @Post('verify2fa')
+  @Post("verify2fa")
   async verify2fa(@Request() req: any) {
     const validate = await this.authService.validateUser(req.body);
-    const check = true;// await this.authService.verifyOtp(validate.mobile,req.body.code);
+    const check = await this.authService.verifyOtp(
+      validate.mobile,
+      req.body.code,
+    );
     if (check) {
       return this.authService.login(validate);
     }
@@ -83,47 +86,46 @@ export class AuthController {
   }
 
   @ApiBody({ required: true })
-  @Post('send2fa')
-  async send2fa(@Body('mobile') mobile: string) {
-    
+  @Post("send2fa")
+  async send2fa(@Body("mobile") mobile: string) {
     try {
       mobile = mobile
-      .replace(' ', '')
-      .replace('(', '')
-      .replace(')', '')
-      .replace('-', '');
-      //await this.authService.sendOtp(mobile);
-    }
-    catch (ex) {
-      throw new HttpException("Contact system admin. Unable to send OTP.", HttpStatus.METHOD_NOT_ALLOWED);
+        .replace(" ", "")
+        .replace("(", "")
+        .replace(")", "")
+        .replace("-", "");
+      await this.authService.sendOtp(mobile);
+    } catch (ex) {
+      throw new HttpException(
+        "Contact system admin. Unable to send OTP.",
+        HttpStatus.METHOD_NOT_ALLOWED,
+      );
     }
     return { message: " 2fa code sent to number." };
   }
 
   @ApiBody({ required: true })
-  @Post('login')
-  async login(@Request() req: any,@Res({ passthrough: true }) res: any,) {
-
+  @Post("login")
+  async login(@Request() req: any, @Res({ passthrough: true }) res: any) {
     const validate = await this.authService.validateUser(req.body);
-    try{
+    try {
       if (true) {
         res.status(HttpStatus.ACCEPTED);
-        //await this.authService.sendOtp(validate.mobile);
-        return  {
+        await this.authService.sendOtp(validate.mobile);
+        return {
           success: true,
-          message: 'Please verify your phone number to continue',
+          message: "Please verify your phone number to continue",
           sessionId: uniqueId(10),
         };
-        
       }
-        
+
       return this.authService.login(validate);
     } catch (e) {
       throw new HttpException(e, HttpStatus.UNPROCESSABLE_ENTITY);
     }
   }
 
-  @Get('verify-forgot-password')
+  @Get("verify-forgot-password")
   async verfiyResetPasswordToken(@Query() param: any) {
     try {
       const isEmailVerified = await this.userService.verifyResetPasswordToken(
@@ -136,28 +138,28 @@ export class AuthController {
           accessToken: (await this.authService.login(isEmailVerified))
             .accessToken,
         };
-      else throw new BadRequestException('PASSWORD_NOT_VERIFIED');
+      else throw new BadRequestException("PASSWORD_NOT_VERIFIED");
     } catch (error) {
       throw error;
     }
   }
 
   @Auth({})
-  @Get('profile')
+  @Get("profile")
   async getProfile(@LoginUser() user: UserEntity) {
     const allData = await this.userService.findOne(user.id);
-    allData.password = '';
+    allData.password = "";
     return { data: allData };
   }
 
-  @Post('user-tfa')
+  @Post("user-tfa")
   async userTFA(@Body() data: any) {
     const user = await this.userService.isTFARequire(data.username);
     return user;
   }
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
-  @Post('updateUserProfile')
+  @Post("updateUserProfile")
   @UsePipes(ValidationPipe)
   async updateUserProfile(
     @Body() user: UpdateProfileDto,
@@ -171,13 +173,13 @@ export class AuthController {
     }
   }
   // @Auth({})
-  @Post('register')
+  @Post("register")
   @UsePipes(ValidationPipe)
   async createUser(@Body() user: CreateUserDto) {
     try {
-      if (user.username == 'admin') {
+      if (user.username == "admin") {
         throw new BadRequestException(
-          'You cannot create user with username admin',
+          "You cannot create user with username admin",
         );
       }
       if (
@@ -189,34 +191,36 @@ export class AuthController {
         !user.username
       ) {
         throw new BadRequestException(
-          'One of mandatory fields(firstName,lastName,username,email,password,mobile) missing.',
+          "One of mandatory fields(firstName,lastName,username,email,password,mobile) missing.",
         );
       }
-      if (user.username.includes(' ')) {
+      if (user.username.includes(" ")) {
         throw new UnprocessableEntityException(
           error(
             [
               {
-                key: 'username',
-                reason: 'invalidData',
-                description: 'Username contains space character',
+                key: "username",
+                reason: "invalidData",
+                description: "Username contains space character",
               },
             ],
             HttpStatus.UNPROCESSABLE_ENTITY,
-            'Unprocessable entity',
+            "Unprocessable entity",
           ),
         );
       }
       user.mobile = user.mobile
-        .replace(' ', '')
-        .replace('(', '')
-        .replace(')', '')
-        .replace('-', '');
+        .replace(" ", "")
+        .replace("(", "")
+        .replace(")", "")
+        .replace("-", "");
       try {
-        //await this.authService.verifyOtp(user.mobile, user.otp);
-      }
-      catch (ex) {
-        throw new HttpException("Contact system admin. Unable to verify OTP.", HttpStatus.METHOD_NOT_ALLOWED);
+        await this.authService.verifyOtp(user.mobile, user.otp);
+      } catch (ex) {
+        throw new HttpException(
+          "Contact system admin. Unable to verify OTP.",
+          HttpStatus.METHOD_NOT_ALLOWED,
+        );
       }
       const newUser = await this.userService.createUser(user);
       return {
@@ -229,7 +233,7 @@ export class AuthController {
   }
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
-  @Post('updateProfile')
+  @Post("updateProfile")
   @UsePipes(ValidationPipe)
   async updateProfile(
     @Body() user: UpdateProfileDto,
@@ -244,7 +248,7 @@ export class AuthController {
   }
 
   @Auth({ roles: [ROLES.ADMIN, ROLES.INFLUENCER] })
-  @Post('updatePassword')
+  @Post("updatePassword")
   @UsePipes(ValidationPipe)
   async updatePassword(
     @Body() data: UpdateProfilePasswordDto,

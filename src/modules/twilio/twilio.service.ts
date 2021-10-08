@@ -24,7 +24,7 @@ export class TwilioService {
   }
 
   async verifyUserCode(userNumber: string, code_: string): Promise<any> {
-    const verificationToken = env.TWILIO_VERIFICATION_SID;
+    const verificationToken = env.VERIFICATION_SID;
     return this.client.verify
       .services(verificationToken)
       .verificationChecks.create({ to: userNumber, code: code_ });

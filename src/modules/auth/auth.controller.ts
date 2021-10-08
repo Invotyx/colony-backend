@@ -109,8 +109,9 @@ export class AuthController {
   async login(@Request() req: any, @Res({ passthrough: true }) res: any) {
     const validate = await this.authService.validateUser(req.body);
     try {
-      if (true) {
+      if (validate.require2fa) {
         res.status(HttpStatus.ACCEPTED);
+        console.log(validate);
         await this.authService.sendOtp(validate.mobile);
         return {
           success: true,

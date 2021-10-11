@@ -6,6 +6,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   UnprocessableEntityException,
@@ -65,6 +66,15 @@ export class UsersController {
       where: { id: user.id },
       relations: ['paymentMethod'],
     });
+  }
+
+
+  @Auth({roles:[ROLES.ADMIN,ROLES.INFLUENCER]})
+  @Patch("2fa")
+  async enableDisable2fa(
+    @LoginUser() user:UserEntity
+  ) {
+    return this.userService.enableDisable2fa(user);
   }
 
   @Get('resend-verification/:email')

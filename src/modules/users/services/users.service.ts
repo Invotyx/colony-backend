@@ -121,6 +121,14 @@ export class UsersService {
     }
   }
 
+  async enableDisable2fa(user:UserEntity) {
+    user.require2fa = user.require2fa ? false : true;
+    await this.repository.save(user);
+    return {
+      message: "2FA by phone updated."
+    };
+  }
+
   makeid(length: any) {
     let result = '' + Math.round(+new Date() / 1000);
     const characters =
